@@ -1,0 +1,65 @@
+#!/bin/sh
+
+
+ACTION=$1
+WHERE=/where/projects/are\ at/
+DOMAIN=$2
+DOMAINPATH=$WHERE$DOMAIN
+
+
+
+if [ ! -z $ACTION ] && [ $ACTION == "-d" ]
+then
+    if [ -z $DOMAIN ] || [ ! -d "$DOMAINPATH" ]
+    then
+    	echo ""
+    	echo "Please provide a domain name."
+    	echo "Usage: "
+    	exit 0
+    elif [ ! -z $3 ] && [ $3 == "-l" ]
+    then		
+        H_PATTERN=local_db_host
+        U_PATTERN=local_db_user
+        P_PATTERN=local_db_password
+        N_PATTERN=local_db_name
+        
+    elif [ ! -z $3 ] && [ $3 == "-p" ]
+    then
+        H_PATTERN=prod_db_host
+    	U_PATTERN=prod_db_user
+        P_PATTERN=prod_db_password
+        N_PATTERN=prod_db_name
+    else
+        echo ""
+        echo "Please provide a an option:"
+        echo "Enter -l for local or -p for production."
+        echo ""
+        exit 0
+    fi
+
+    #looks for database username, database password and database name in the wp-config file 
+    host=`awk -F\' -v H_PATTERN="$H_PATTERN" '$0 ~ H_PATTERN {print $4}' "$DOMAINPATH/wp-config.php"`
+    user=`awk -F\' -v U_PATTERN="$U_PATTERN" '$0 ~ U_PATTERN {print $4}' "$DOMAINPATH/wp-config.php"`
+    pass=`awk -F\' -v P_PATTERN="$P_PATTERN" '$0 ~ P_PATTERN {print $4}' "$DOMAINPATH/wp-config.php"`
+    db=`awk -F\' -v N_PATTERN="$N_PATTERN" '$0 ~ N_PATTERN {print $4}' "$DOMAINPATH/wp-config.php"`
+
+    d="$(date +%Y%m%d-%T)"
+    t=$db
+    the_file_name=$t$d
+    /Applications/MAMP/Library/bin/mysqldump -h$host -u$user -p$pass $db > ~/Desktop/$the_file_name.sql
+
+    echo ""
+    echo "Database dump successful"
+    echo ""
+else
+         echo ""
+        echo "Please choose an action:"
+        echo "Enter -d for dump."
+        echo ""
+        exit 0
+fi
+
+
+
+
+

@@ -1,0 +1,87 @@
+#!/bin/sh
+
+# Store the type of project to create
+PROJ_TYPE=$1
+
+# Store the name of the new project which will double as the project folder name
+PROJ_FOLDER_NAME=$2
+
+# If third parameter (project path) is left empty, 
+if [ -z $3 ]
+then
+
+	# Then use the default project folder
+	PROJ_PATH=$HOME/where/projects/are\ at/
+
+else
+
+	# Else store the given directory as the project folder as the third variable
+	PROJ_PATH=$3/
+fi
+
+# Store the project path and the project name as a single string 
+PROJ=$PROJ_PATH$PROJ_FOLDER_NAME
+
+# Check to see if a name was give to store as the project name
+if  [ -z "$PROJ_FOLDER_NAME" ]
+then 
+	clear
+	echo ""
+	echo "\t\t\t""You didn't enter a desired project folder name"
+	echo ""
+	echo "\t\t\t""Usage: [new] then a flag [-w for wordpress git repo] or [-g for empty git repo]"
+	echo "\t\t\t\tthen [project_name]"
+	echo ""
+
+# Check to see if the directory given is writable and a flag was given for the project type
+elif [ ! -d "$PROJ" ] && [ -d "$PROJ_PATH" -a -w "$PROJ_PATH" ] && 
+	   [ ! -z "$PROJ_TYPE"  ]
+	   
+then
+	case $PROJ_TYPE in
+		-g )
+			clear 
+			cd "$PROJ_PATH"
+			mkdir $PROJ_FOLDER_NAME
+			cd $PROJ_FOLDER_NAME
+			git init
+			git remote add beanstalk git@psstudios.beanstalkapp.com:/$PROJ_FOLDER_NAME.git
+			git config branch.master.remote beanstalk
+			echo ".DS_Store\nwp-config.php" > .gitignore 
+			ls -laO ;;
+		-w )
+			clear 
+			cd "$PROJ_PATH"
+			mkdir $PROJ_FOLDER_NAME
+			cd $PROJ_FOLDER_NAME
+			git init
+			git remote add beanstalk git@psstudios.beanstalkapp.com:/$PROJ_FOLDER_NAME.git
+			git config branch.master.remote beanstalk
+			wget http://wordpress.org/latest.zip
+			tar --strip-components=1 -zxvf latest.zip
+			rm latest.zip
+			git clone https://github.com/kylelarkin/klas.git wp-content/themes/$PROJ_FOLDER_NAME
+			mv wp-content/themes/$PROJ_FOLDER_NAME/.htaccess .
+			mv wp-config-sample.php wp-config.php
+			echo ".DS_Store \nwp-config.php" > .gitignore 
+	 ls -laO ;;
+		 * ) 
+			clear
+			echo ""
+			echo "\t\t\t""Unrecognized syntax"
+			echo ""
+			echo "\t\t\t""Usage: nugit [-w for wordpress] or [-g for empty git repo] then [project_name]"
+			echo ""
+	esac
+
+
+else
+		clear	
+		echo ""
+		echo "\t\t" "Looks like the project name [ $PROJ_FOLDER_NAME ] already exist "
+		echo ""
+		echo "\t\t" "[ $PROJ_PATH ]"
+		echo ""
+
+
+fi
