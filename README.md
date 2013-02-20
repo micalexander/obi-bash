@@ -8,5 +8,5 @@ The purpose of this repository is to design a swiss army knife shell script that
 ## wicket 
 - Currently only dumps databases
 
-## deply 
+## deploy 
 - Currently only deploys folders to the server via rsync
