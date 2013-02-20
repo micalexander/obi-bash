@@ -63,7 +63,7 @@ then
 			git clone https://github.com/kylelarkin/klas.git wp-content/themes/$PROJ_FOLDER_NAME
 			mv wp-content/themes/$PROJ_FOLDER_NAME/.htaccess .
 			mv wp-config-sample.php wp-config.php
-			echo ".DS_Store \nwp-config.php" > .gitignore 
+			echo ".DS_Store \n.sass-cache\nwp-config.php" > .gitignore 
 	 ls -laO ;;
 		 * ) 
 			clear
