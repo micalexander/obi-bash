@@ -1,5 +1,17 @@
 #!/bin/sh
 
+#functions
+salts()  { 
+perl -i -pe '
+  BEGIN { 
+    $keysalts = qx(curl -sS https://api.wordpress.org/secret-key/1.1/salt) 
+  } 
+  s/\/\/ Insert_Salts_Below/$keysalts/g
+' wp-config.php
+
+}
+
+
 # Store the type of project to create
 PROJ_TYPE=$1
 
@@ -64,15 +76,19 @@ then
 			rm wp-content/themes/$PROJ_FOLDER_NAME/.gitignore
 			mv wp-content/themes/$PROJ_FOLDER_NAME/.htaccess .
 			mv wp-content/themes/$PROJ_FOLDER_NAME/wp-config.php .
+
 			user=`awk -F\' '/local_db_user/ {print $4}' "wp-config.php"`
 			name="$PROJ_FOLDER_NAME"_local_db
 			pass=`awk -F\' '/local_db_password/ {print $4}' "wp-config.php"`
 			host=`ifconfig | grep -Eo 192.168.[0-9]+.[0-9]+ | head -n 1`
+
 			grep -rl replace_with_local_db wp-config.php | xargs sed -i.bak "s/replace_with_local_db/${name}/g" 
 			grep -rl replace_with_local_ip wp-config.php | xargs sed -i.bak "s/replace_with_local_ip/${host}/g" 
+			grep -rl 'wp_' wp-config.php | xargs sed -i.bak "s/'\wp_'\/'\${name}_'\/g" 
 			rm wp-config.php.bak
+			salts
 			echo ".DS_Store \n.sass-cache/\nwp-config.php" > .gitignore 
-			/Applications/MAMP/Library/bin/mysql -u $user -h localhost -p$pass -Bse "CREATE DATABASE ${name};"
+			/Applications/MAMP/Library/bin/mysql -uroot -hlocalhost -p$pass -Bse "CREATE DATABASE ${name};"
 	 		ls -laO ;;
 		 * ) 
 			clear
