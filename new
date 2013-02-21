@@ -11,7 +11,7 @@ if [ -z $3 ]
 then
 
 	# Then use the default project folder
-	PROJ_PATH=$HOME/where/projects/are\ at/
+	PROJ_PATH=$HOME
 
 else
 
@@ -51,25 +51,39 @@ then
 			ls -laO ;;
 		-w )
 			clear 
-			cd "$PROJ_PATH"
-			mkdir $PROJ_FOLDER_NAME
-			cd $PROJ_FOLDER_NAME
-			git init
-			git remote add beanstalk git@psstudios.beanstalkapp.com:/$PROJ_FOLDER_NAME.git
-			git config branch.master.remote beanstalk
-			wget http://wordpress.org/latest.zip
-			tar --strip-components=1 -zxvf latest.zip
-			rm latest.zip
-			git clone https://github.com/kylelarkin/klas.git wp-content/themes/$PROJ_FOLDER_NAME
-			mv wp-content/themes/$PROJ_FOLDER_NAME/.htaccess .
-			mv wp-config-sample.php wp-config.php
-			# Clean up stock wordpress themes/plugins
+            cd "$PROJ_PATH"
+            mkdir $PROJ_FOLDER_NAME
+            cd $PROJ_FOLDER_NAME
+            git init
+            git remote add beanstalk git@psstudios.beanstalkapp.com:/$PROJ_FOLDER_NAME.git
+            # Get latest version of wordpress
+            wget http://wordpress.org/latest.zip
+            tar --strip-components=1 -zxvf latest.zip
+            rm latest.zip
+            # Clean up stock wordpress themes/plugins
 			rm -Rf wp-content/themes/twentyeleven/
 			rm -Rf wp-content/themes/twentytwelve/
 			rm -Rf wp-content/plugins/akismet/
 			rm wp-content/plugins/hello.php
-			echo ".DS_Store \n.sass-cache\nwp-config.php" > .gitignore 
-	 ls -laO ;;
+			rm wp-config-sample.php
+            # Get latest version of klas starter theme
+            git clone https://github.com/kylelarkin/klas.git wp-content/themes/$PROJ_FOLDER_NAME
+            rm -Rf wp-content/themes/$PROJ_FOLDER_NAME/.git
+            rm wp-content/themes/$PROJ_FOLDER_NAME/.gitignore
+            mv wp-content/themes/$PROJ_FOLDER_NAME/.htaccess .
+            mv wp-content/themes/$PROJ_FOLDER_NAME/wp-config.php .
+            # Setup local database values in wp-config.php
+            user=`awk -F\' '/local_db_user/ {print $4}' "wp-config.php"`
+            name="$PROJ_FOLDER_NAME"_local_db
+            pass=`awk -F\' '/local_db_password/ {print $4}' "wp-config.php"`
+            host=`ifconfig | grep -Eo 192.168.[0-9]+.[0-9]+ | head -n 1`
+            grep -rl replace_with_local_db wp-config.php | xargs sed -i.bak "s/replace_with_local_db/${name}/g" 
+            grep -rl replace_with_local_ip wp-config.php | xargs sed -i.bak "s/replace_with_local_ip/${host}/g" 
+            rm wp-config.php.bak            
+			# Build project's .gitignore
+            echo ".DS_Store \n.sass-cache/\nwp-config.php" > .gitignore 
+            /Applications/MAMP/Library/bin/mysql -u $user -h localhost -p$pass -Bse "CREATE DATABASE ${name};"
+            ls -laO ;;
 		 * ) 
 			clear
 			echo ""
