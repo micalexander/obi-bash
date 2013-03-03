@@ -2,7 +2,7 @@
 
 
 ACTION=$1
-WHERE=/where/projects/are\ at/
+WHERE=$HOME/Dropbox/Business/Web\ Development/www/
 DOMAIN=$2
 DOMAINPATH=$WHERE$DOMAIN
 

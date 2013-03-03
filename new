@@ -23,7 +23,7 @@ if [ -z $3 ]
 then
 
 	# Then use the default project folder
-	PROJ_PATH=$HOME
+	PROJ_PATH=$HOME/
 
 else
 
@@ -91,9 +91,15 @@ then
             host=`ifconfig | grep -Eo 192.168.[0-9]+.[0-9]+ | head -n 1`
             grep -rl replace_with_local_db wp-config.php | xargs sed -i.bak "s/replace_with_local_db/${name}/g" 
             grep -rl replace_with_local_ip wp-config.php | xargs sed -i.bak "s/replace_with_local_ip/${host}/g" 
+            grep -rl wp_ wp-config.php | xargs sed -i.bak "s/wp_/${PROJ_FOLDER_NAME}_/" 
+            grep -rl \".dev\" wp-config.php | xargs sed -i.bak "s/\".dev\"/\"${PROJ_FOLDER_NAME}.dev\"/" 
+			# add stalts
+		    salts       
+		    # clean up     
             rm wp-config.php.bak            
 			# Build project's .gitignore
             echo ".DS_Store \n.sass-cache/\nwp-config.php" > .gitignore 
+            # Create project's databse
             /Applications/MAMP/Library/bin/mysql -u $user -h localhost -p$pass -Bse "CREATE DATABASE ${name};"
             ls -laO ;;
 		 * ) 
@@ -101,7 +107,7 @@ then
 			echo ""
 			echo "\t\t\t""Unrecognized syntax"
 			echo ""
-			echo "\t\t\t""Usage: nugit [-w for wordpress] or [-g for empty git repo] then [project_name]"
+			echo "\t\t\t""Usage: new [-w for wordpress] or [-g for empty git repo] then [project_name]"
 			echo ""
 	esac
 
@@ -109,7 +115,7 @@ then
 else
 		clear	
 		echo ""
-		echo "\t\t" "Looks like the project name [ $PROJ_FOLDER_NAME ] already exist "
+		echo "\t\t" "Looks like the project name [ $PROJ_FOLDER_NAME ] already exist in this directory "
 		echo ""
 		echo "\t\t" "[ $PROJ_PATH ]"
 		echo ""
