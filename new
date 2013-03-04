@@ -1,11 +1,11 @@
 #!/bin/sh
 
 #functions
-salts()  { 
+salts()  {
 perl -i -pe '
-  BEGIN { 
-    $keysalts = qx(curl -sS https://api.wordpress.org/secret-key/1.1/salt) 
-  } 
+  BEGIN {
+    $keysalts = qx(curl -sS https://api.wordpress.org/secret-key/1.1/salt)
+  }
   s/\/\/ Insert_Salts_Below/$keysalts/g
 ' wp-config.php
 
@@ -18,107 +18,152 @@ PROJ_TYPE=$1
 # Store the name of the new project which will double as the project folder name
 PROJ_FOLDER_NAME=$2
 
-# If third parameter (project path) is left empty, 
-if [ -z $3 ]
-then
 
-	# Then use the default project folder
-	PROJ_PATH=$HOME/
+case $1 in
+	setup )
+			if [ ! -d "$2" ] || [ -z "$2" ]
+			then
+				clear
+				echo ""
+				echo "\t\t\t""Please enter the path of your projects folder"
+				echo ""
+				echo "\t\t\t""Usage: [new] then [setup] then [path-to-projects]"
+				echo ""
 
-else
+			else
+				cd ~
+				echo "$2/" > .newconfig
+				echo ""
+				echo "\t\t\t""Your path to your projects folder has ben set to"
+				echo ""
+				echo "\t\t\t"`cat ~/.newconfig`
+				echo ""
+				echo "\t\t\t""To change this simply run setup again"
+			fi
+		;;
+		* )
+		# If third parameter (project path) is left empty,
+		if [ -z $3 ]
+		then
 
-	# Else store the given directory as the project folder as the third variable
-	PROJ_PATH=$3/
-fi
+			# Then use the default project folder
+			PROJ_PATH=`cat ~/.newconfig`
 
-# Store the project path and the project name as a single string 
-PROJ=$PROJ_PATH$PROJ_FOLDER_NAME
+		else
 
-# Check to see if a name was give to store as the project name
-if  [ -z "$PROJ_FOLDER_NAME" ]
-then 
-	clear
-	echo ""
-	echo "\t\t\t""You didn't enter a desired project folder name"
-	echo ""
-	echo "\t\t\t""Usage: [new] then a flag [-w for wordpress git repo] or [-g for empty git repo]"
-	echo "\t\t\t\tthen [project_name]"
-	echo ""
+			# Else store the given directory as the project folder as the third variable
+			PROJ_PATH=$3/
+		fi
 
-# Check to see if the directory given is writable and a flag was given for the project type
-elif [ ! -d "$PROJ" ] && [ -d "$PROJ_PATH" -a -w "$PROJ_PATH" ] && 
-	   [ ! -z "$PROJ_TYPE"  ]
-	   
-then
-	case $PROJ_TYPE in
-		-g )
-			clear 
-			cd "$PROJ_PATH"
-			mkdir $PROJ_FOLDER_NAME
-			cd $PROJ_FOLDER_NAME
-			git init
-			git remote add beanstalk git@psstudios.beanstalkapp.com:/$PROJ_FOLDER_NAME.git
-			git config branch.master.remote beanstalk
-			echo ".DS_Store\nwp-config.php" > .gitignore 
-			ls -laO ;;
-		-w )
-			clear 
-            cd "$PROJ_PATH"
-            mkdir $PROJ_FOLDER_NAME
-            cd $PROJ_FOLDER_NAME
-            git init
-            git remote add beanstalk git@psstudios.beanstalkapp.com:/$PROJ_FOLDER_NAME.git
-            # Get latest version of wordpress
-            wget http://wordpress.org/latest.zip
-            tar --strip-components=1 -zxvf latest.zip
-            rm latest.zip
-            # Clean up stock wordpress themes/plugins
-			rm -Rf wp-content/themes/twentyeleven/
-			rm -Rf wp-content/themes/twentytwelve/
-			rm -Rf wp-content/plugins/akismet/
-			rm wp-content/plugins/hello.php
-			rm wp-config-sample.php
-            # Get latest version of klas starter theme
-            git clone https://github.com/kylelarkin/klas.git wp-content/themes/$PROJ_FOLDER_NAME
-            rm -Rf wp-content/themes/$PROJ_FOLDER_NAME/.git
-            rm wp-content/themes/$PROJ_FOLDER_NAME/.gitignore
-            mv wp-content/themes/$PROJ_FOLDER_NAME/.htaccess .
-            mv wp-content/themes/$PROJ_FOLDER_NAME/wp-config.php .
-            # Setup local database values in wp-config.php
-            user=`awk -F\' '/local_db_user/ {print $4}' "wp-config.php"`
-            name="$PROJ_FOLDER_NAME"_local_db
-            pass=`awk -F\' '/local_db_password/ {print $4}' "wp-config.php"`
-            host=`ifconfig | grep -Eo 192.168.[0-9]+.[0-9]+ | head -n 1`
-            grep -rl replace_with_local_db wp-config.php | xargs sed -i.bak "s/replace_with_local_db/${name}/g" 
-            grep -rl replace_with_local_ip wp-config.php | xargs sed -i.bak "s/replace_with_local_ip/${host}/g" 
-            grep -rl wp_ wp-config.php | xargs sed -i.bak "s/wp_/${PROJ_FOLDER_NAME}_/" 
-            grep -rl \".dev\" wp-config.php | xargs sed -i.bak "s/\".dev\"/\"${PROJ_FOLDER_NAME}.dev\"/" 
-			# add stalts
-		    salts       
-		    # clean up     
-            rm wp-config.php.bak            
-			# Build project's .gitignore
-            echo ".DS_Store \n.sass-cache/\nwp-config.php" > .gitignore 
-            # Create project's databse
-            /Applications/MAMP/Library/bin/mysql -u $user -h localhost -p$pass -Bse "CREATE DATABASE ${name};"
-            ls -laO ;;
-		 * ) 
+		# Store the project path and the project name as a single string
+		PROJ=$PROJ_PATH$PROJ_FOLDER_NAME
+
+		# Check to see if a name was give to store as the project name
+		if  [ -z "$PROJ_FOLDER_NAME" ]
+		then
 			clear
 			echo ""
-			echo "\t\t\t""Unrecognized syntax"
+			echo "\t\t\t""You didn't enter a desired project folder name"
 			echo ""
-			echo "\t\t\t""Usage: new [-w for wordpress] or [-g for empty git repo] then [project_name]"
+			echo "\t\t\t""Usage: [new] then a flag [-w for wordpress git repo] or [-g for empty git repo]"
+			echo "\t\t\t\tthen [project_name]"
 			echo ""
-	esac
+		elif [ ! -f ~/.newconfig ] || [ -s ~/.newconfig ]
+		then
+			clear
+			echo ""
+			echo "\t\t\t""You don't seem to have a .newconfig file configured"
+			echo ""
+			echo "\t\t\t""please run [new] [setup] [path-to-projects]"
+			echo "\t\t\t\t""then try again"
+			echo ""
+
+		# Check to see if the directory given is writable and a flag was given for the project type
+		elif [ ! -d "$PROJ" ] && [ -d "$PROJ_PATH" -a -w "$PROJ_PATH" ] &&
+			   [ ! -z "$PROJ_TYPE"  ]
+
+		then
+			case $PROJ_TYPE in
+				-f )
+					clear
+					cd "$PROJ_PATH"
+					mkdir $PROJ_FOLDER_NAME
+					cd $PROJ_FOLDER_NAME
+					mkdir -p architecture/estimates architecture assets/ai assets/content assets/images/gif assets/images/jpg assets/images/png assets/images assets/pdf assets/psd assets dumps/local dumps/production dumps/staging dumps emails fonts mock-ups site
+					ls -laO ;;
+				-g )
+					clear
+					cd "$PROJ_PATH"
+					mkdir $PROJ_FOLDER_NAME
+					cd $PROJ_FOLDER_NAME
+					mkdir -p architecture/estimates architecture assets/ai assets/content assets/images/gif assets/images/jpg assets/images/png assets/images assets/pdf assets/psd assets dumps/local dumps/production dumps/staging dumps emails fonts mock-ups site
+					cd site
+					git init
+					git remote add beanstalk git@psstudios.beanstalkapp.com:/$PROJ_FOLDER_NAME.git
+					git config branch.master.remote beanstalk
+					echo ".DS_Store\nwp-config.php" > .gitignore
+					ls -laO ;;
+				-w )
+					clear
+		            cd "$PROJ_PATH"
+		            mkdir $PROJ_FOLDER_NAME
+		            cd $PROJ_FOLDER_NAME
+		            mkdir -p architecture/estimates architecture assets/ai assets/content assets/images/gif assets/images/jpg assets/images/png assets/images assets/pdf assets/psd assets dumps/local dumps/production dumps/staging dumps emails fonts mock-ups site
+		            cd site
+		            git init
+		            git remote add beanstalk git@psstudios.beanstalkapp.com:/$PROJ_FOLDER_NAME.git
+		            # Get latest version of wordpress
+		            wget http://wordpress.org/latest.zip
+		            tar --strip-components=1 -zxvf latest.zip
+		            rm latest.zip
+		            # Clean up stock wordpress themes/plugins
+					rm -Rf wp-content/themes/twentyeleven/
+					rm -Rf wp-content/themes/twentytwelve/
+					rm -Rf wp-content/plugins/akismet/
+					rm wp-content/plugins/hello.php
+					rm wp-config-sample.php
+		            # Get latest version of klas starter theme
+		            git clone https://github.com/kylelarkin/klas.git wp-content/themes/$PROJ_FOLDER_NAME
+		            rm -Rf wp-content/themes/$PROJ_FOLDER_NAME/.git
+		            rm wp-content/themes/$PROJ_FOLDER_NAME/.gitignore
+		            mv wp-content/themes/$PROJ_FOLDER_NAME/.htaccess .
+		            mv wp-content/themes/$PROJ_FOLDER_NAME/wp-config.php .
+		            # Setup local database values in wp-config.php
+		            user=`awk -F\' '/local_db_user/ {print $4}' "wp-config.php"`
+		            name="$PROJ_FOLDER_NAME"_local_db
+		            pass=`awk -F\' '/local_db_password/ {print $4}' "wp-config.php"`
+		            host=`ifconfig | grep -Eo 192.168.[0-9]+.[0-9]+ | head -n 1`
+		            grep -rl replace_with_local_db wp-config.php | xargs sed -i.bak "s/replace_with_local_db/${name}/g"
+		            grep -rl replace_with_local_ip wp-config.php | xargs sed -i.bak "s/replace_with_local_ip/${host}/g"
+		            grep -rl wp_ wp-config.php | xargs sed -i.bak "s/wp_/${PROJ_FOLDER_NAME}_/"
+		            grep -rl \".dev\" wp-config.php | xargs sed -i.bak "s/\".dev\"/\"${PROJ_FOLDER_NAME}.dev\"/"
+					# add stalts
+				    salts
+				    # clean up
+		            rm wp-config.php.bak
+					# Build project's .gitignore
+		            echo ".DS_Store \n.sass-cache/\nwp-config.php" > .gitignore
+		            # Create project's databse
+		            /Applications/MAMP/Library/bin/mysql -u $user -h localhost -p$pass -Bse "CREATE DATABASE ${name};"
+		            ls -laO ;;
+				 * )
+					clear
+					echo ""
+					echo "\t\t\t""Unrecognized syntax"
+					echo ""
+					echo "\t\t\t""Usage: new [-w for wordpress] or [-g for empty git repo] then [project_name]"
+					echo ""
+			esac
 
 
-else
-		clear	
-		echo ""
-		echo "\t\t" "Looks like the project name [ $PROJ_FOLDER_NAME ] already exist in this directory "
-		echo ""
-		echo "\t\t" "[ $PROJ_PATH ]"
-		echo ""
+		else
+				clear
+				echo ""
+				echo "\t\t" "Looks like the project name [ $PROJ_FOLDER_NAME ] already exist in this directory "
+				echo ""
+				echo "\t\t" "[ $PROJ_PATH ]"
+				echo ""
 
 
-fi
+		fi
+esac
