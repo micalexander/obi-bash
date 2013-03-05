@@ -21,7 +21,7 @@ PROJ_FOLDER_NAME=$2
 
 case $1 in
 	setup )
-			if [ ! -d "$2" ] || [ -z "$2" ]
+			if [ -d "$2" ] || [ -z "$2" ]
 			then
 				clear
 				echo ""
@@ -68,7 +68,7 @@ case $1 in
 			echo "\t\t\t""Usage: [new] then a flag [-w for wordpress git repo] or [-g for empty git repo]"
 			echo "\t\t\t\tthen [project_name]"
 			echo ""
-		elif [ ! -f ~/.newconfig ] || [ -s ~/.newconfig ]
+		elif [ ! -f ~/.newconfig ] || [ ! -s ~/.newconfig ]
 		then
 			clear
 			echo ""
@@ -90,7 +90,8 @@ case $1 in
 					mkdir $PROJ_FOLDER_NAME
 					cd $PROJ_FOLDER_NAME
 					mkdir -p architecture/estimates architecture assets/ai assets/content assets/images/gif assets/images/jpg assets/images/png assets/images assets/pdf assets/psd assets dumps/local dumps/production dumps/staging dumps emails fonts mock-ups site
-					ls -laO ;;
+					ls -laO
+					echo "Project Location:" `pwd` ;;
 				-g )
 					clear
 					cd "$PROJ_PATH"
@@ -102,7 +103,8 @@ case $1 in
 					git remote add beanstalk git@psstudios.beanstalkapp.com:/$PROJ_FOLDER_NAME.git
 					git config branch.master.remote beanstalk
 					echo ".DS_Store\nwp-config.php" > .gitignore
-					ls -laO ;;
+					ls -laO
+					echo "Project Location:" `pwd` ;;
 				-w )
 					clear
 		            cd "$PROJ_PATH"
@@ -145,7 +147,8 @@ case $1 in
 		            echo ".DS_Store \n.sass-cache/\nwp-config.php" > .gitignore
 		            # Create project's databse
 		            /Applications/MAMP/Library/bin/mysql -u $user -h localhost -p$pass -Bse "CREATE DATABASE ${name};"
-		            ls -laO ;;
+		            ls -laO
+		            echo "Project Location:" `pwd` ;;
 				 * )
 					clear
 					echo ""
