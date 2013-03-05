@@ -18,30 +18,37 @@ PROJ_TYPE=$1
 # Store the name of the new project which will double as the project folder name
 PROJ_FOLDER_NAME=$2
 
-
 case $1 in
 	setup )
-			if [ -d "$2" ] || [ -z "$2" ]
-			then
-				clear
-				echo ""
-				echo "\t\t\t""Please enter the path of your projects folder"
-				echo ""
-				echo "\t\t\t""Usage: [new] then [setup] then [path-to-projects]"
-				echo ""
+		if [ ! -d "$PROJ_FOLDER_NAME" ]
+		then
+			clear
+			echo ""
+			echo "\t\t\t""Please enter a valid path"
+			echo ""
+			echo "\t\t\t""Usage: [new] then [setup] then [path-to-projects]"
+			echo ""
 
-			else
-				cd ~
-				echo "$2/" > .newconfig
-				echo ""
-				echo "\t\t\t""Your path to your projects folder has ben set to"
-				echo ""
-				echo "\t\t\t"`cat ~/.newconfig`
-				echo ""
-				echo "\t\t\t""To change this simply run setup again"
-			fi
-		;;
-		* )
+		elif [ -z "$PROJ_FOLDER_NAME" ]
+		then
+			clear
+			echo ""
+			echo "\t\t\t""Please enter the path of your projects folder"
+			echo ""
+			echo "\t\t\t""Usage: [new] then [setup] then [path-to-projects]"
+			echo ""
+		else
+			clear
+			cd ~
+			echo "$PROJ_FOLDER_NAME/" > .newconfig
+			echo ""
+			echo "\t\t\t""Your path to your projects folder has ben set to"
+			echo ""
+			echo "\t\t\t"`cat ~/.newconfig`
+			echo ""
+			echo "\t\t\t""To change this simply run setup again"
+		fi ;;
+	* )
 		# If third parameter (project path) is left empty,
 		if [ -z $3 ]
 		then
