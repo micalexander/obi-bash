@@ -78,4 +78,7 @@ Provides "From:To" database sync as follows:
 
 `-pts`: Production to Staging
 
-Includes the [KLAS Wordpress Theme Framework](https://github.com/kylelarkin/klas) - A SASS based starter theme for WordPress.
+# Dependencies
+- Git (duh)
+- System must have wget installed (via [macports](http://www.macports.org/ports.php?by=library&substr=wget))
+- Includes the [KLAS Wordpress Theme Framework](https://github.com/kylelarkin/klas) - A SASS based starter theme for WordPress.
