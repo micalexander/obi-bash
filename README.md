@@ -17,8 +17,11 @@ Currently only deploys folders to the server via rsync
 `obi [$1] [$2] [$3]`
 
 ## Examples:
+
 `obi setup /User/obi-wan/Sites` - Setup config file with project containing directory root. **No trailing slash**.
+
 `obi -w deathstar_v3_project` - Setup folder structure and vanilla wordpress install in /User/obi-wan/Sites/deathstar_v3_project.
+
 `obi -s deathstar_v3_project -ltp` - Migrate local database (with find/replace) to production.
 
 ## Setup Obi: Commands to Run Once
