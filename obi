@@ -40,13 +40,14 @@ case $1 in
 		else
 			clear
 			cd ~
-			echo "$PROJ_FOLDER_NAME/" > .newconfig
+			echo "$PROJ_FOLDER_NAME/" > .obiconfig
 			echo ""
 			echo "\t\t\t""Your path to your projects folder has ben set to"
 			echo ""
-			echo "\t\t\t"`cat ~/.newconfig`
+			echo "\t\t\t"`cat ~/.obiconfig`
 			echo ""
 			echo "\t\t\t""To change this simply run setup again"
+			echo ""
 		fi ;;
 	* )
 		# If third parameter (project path) is left empty,
@@ -54,31 +55,31 @@ case $1 in
 		then
 
 			# Then use the default project folder
-			PROJ_PATH=`cat ~/.newconfig`
+			PROJ_PATH=`cat ~/.obiconfig`
 
 		elif [ $3 == "lts" ]
 		then
-			PROJ_PATH=`cat ~/.newconfig`
+			PROJ_PATH=`cat ~/.obiconfig`
 
 		elif [ $3 == "ltp" ]
 		then
-			PROJ_PATH=`cat ~/.newconfig`
+			PROJ_PATH=`cat ~/.obiconfig`
 
 		elif [ $3 == "stl" ]
 		then
-			PROJ_PATH=`cat ~/.newconfig`
+			PROJ_PATH=`cat ~/.obiconfig`
 
 		elif [ $3 == "stp" ]
 		then
-			PROJ_PATH=`cat ~/.newconfig`
+			PROJ_PATH=`cat ~/.obiconfig`
 
 		elif [ $3 == "ptl" ]
 		then
-			PROJ_PATH=`cat ~/.newconfig`
+			PROJ_PATH=`cat ~/.obiconfig`
 
 		elif [ $3 == "pts" ]
 		then
-			PROJ_PATH=`cat ~/.newconfig`
+			PROJ_PATH=`cat ~/.obiconfig`
 		else
 
 			# Else store the given directory as the project folder as the third variable
@@ -98,18 +99,18 @@ case $1 in
 			echo "\t\t\t""Usage: [new] then a flag [-w for wordpress git repo] or [-g for empty git repo]"
 			echo "\t\t\t\tthen [project_name]"
 			echo ""
-		elif [ ! -f ~/.newconfig ] || [ ! -s ~/.newconfig ]
+		elif [ ! -f ~/.obiconfig ] || [ ! -s ~/.obiconfig ]
 		then
 			clear
 			echo ""
-			echo "\t\t\t""You don't seem to have a .newconfig file configured"
+			echo "\t\t\t""You don't seem to have a .obiconfig file configured"
 			echo ""
 			echo "\t\t\t""please run [new] [setup] [path-to-projects]"
 			echo "\t\t\t\t""then try again"
 			echo ""
 
 		# Check to see if the directory given is writable and a flag was given for the project type
-		elif [ -d "$PROJ" ] && [ $3 != "ptl" ]
+		elif [ -d "$PROJ" ] && [ $3 != "lts" ] && [ $3 != "ltp" ] && [ $3 != "stl" ] && [ $3 != "stp" ] && [ $3 != "ptl" ] && [ $3 != "pts" ]
 		then
 			echo "project exist"
 		elif [ ! -d "$PROJ_PATH" -a -w "$PROJ_PATH" ]
@@ -231,7 +232,7 @@ case $1 in
 				    d="$(date +%A-%m-%d-%Y)"
 				    t=$db
 				    the_file_name=$t-$d
-				    /Applications/MAMP/Library/bin/mysqldump -h$host -u$user -p$pass $db > $PROJ_PATH$PROJ_FOLDER_NAME/dumps/$the_file_name.sql
+				    /Applications/MAMP/Library/bin/mysqldump --net_buffer_length=50000 -h$host -u$user -p$pass $db > $PROJ_PATH$PROJ_FOLDER_NAME/dumps/$the_file_name.sql
 
 				    echo ""
 				    echo "Database dump successful"
@@ -432,7 +433,7 @@ case $1 in
 			        t=$f_db
 			        the_file_name=$t-$d
 
-			        /Applications/MAMP/Library/bin/mysqldump -h$r_host -u$r_user -p$r_pass $r_db > $PROJ_PATH$PROJ_FOLDER_NAME/dumps/$the_file_name.sql
+			        /Applications/MAMP/Library/bin/mysqldump --net_buffer_length=50000 -h$r_host -u$r_user -p$r_pass $r_db > $PROJ_PATH$PROJ_FOLDER_NAME/dumps/$the_file_name.sql
 			        sed -i '' 's/$find/$replace/g' "$PROJ_PATH$PROJ_FOLDER_NAME/dumps/$the_file_name.sql"
 			        /Applications/MAMP/Library/bin/mysql -h$f_host -u$f_user -p$f_pass $f_db < $PROJ_PATH$PROJ_FOLDER_NAME/dumps/$the_file_name.sql
 			        ;;
