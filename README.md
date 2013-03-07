@@ -78,6 +78,8 @@ Provides "From:To" database sync as follows:
 
 `-pts`: Production to Staging
 
+**Note:** Database dumps are saved according to environment and the date of the dump. Multiple dumps from the same environment on the same day will overwrite eachother, but dumps on different days will not.
+
 # Dependencies
 - Git (duh)
 - System must have wget installed (via [macports](http://www.macports.org/ports.php?by=library&substr=wget))
