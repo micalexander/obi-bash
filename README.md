@@ -16,12 +16,17 @@ Currently only deploys folders to the server via rsync
 # Useage:
 `obi [$1] [$2] [$3]`
 
+## Examples:
+`obi setup /User/obi-wan/Sites` - Setup config file with project containing directory root. **No trailing slash**.
+`obi -w deathstar_v3_project` - Setup folder structure and vanilla wordpress install in /User/obi-wan/Sites/deathstar_v3_project.
+`obi -s deathstar_v3_project -ltp` - Migrate local database (with find/replace) to production.
+
 ## Setup Obi: Commands to Run Once
 $1 Params for setup (run once)
 `setup`: sets up .newconfig file in ~/. dir. Can be run again to overwrite .newconfig file.
 
 $2 Params for setup (run once)
-`%directory%`: path to root directory containing all project folders. (Can drag/drop desired folder here from Finder)
+`%directory%`: path to root directory containing all project folders. (Can drag/drop desired folder here from Finder). **No trailing slash**.
 
 ## Using Obi: Project Setup Commands
 $1 Params for projects:
@@ -69,3 +74,5 @@ Provides "From:To" database sync as follows:
 `-ptl`: Production to Local
 
 `-pts`: Production to Staging
+
+Includes the [KLAS Wordpress Theme Framework](https://github.com/kylelarkin/klas) - A SASS based starter theme for WordPress.
