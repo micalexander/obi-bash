@@ -25,8 +25,11 @@ $2 Params for setup (run once)
 
 ## Using Obi: Project Setup Commands
 $1 Params for projects:
+
 `-f`: create empty folder structure, no repo, no wordpress
+
 `-g`: create empty folder structure with git repo in ./site/ dir
+
 `-w`: create folder structure with git repo and latest wordpress install including KLAS framework in ./site/ dir
 
 $2 Params for projects:
@@ -40,7 +43,9 @@ $2 Params for projects:
 
 ## Using Obi: Database Management Commands
 $1 Params for databases:
+
 `-d`: database dump to ./dumps/ dir
+
 `-s`: sync databases between two environments
 
 $2 Params for databases:
@@ -54,8 +59,13 @@ Provides "From:To" database sync as follows:
 3. Import the find & replaced dump from step 2. into the "to" environment's database, using db credentials from the specified project's (`$2`) wp-config.php.
 
 `-lts`: Local to Staging
+
 `-ltp`: Local to Production
+
 `-stl`: Staging to Local
+
 `-stp`: Staging to Production
+
 `-ptl`: Production to Local
+
 `-pts`: Production to Staging
