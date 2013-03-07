@@ -173,7 +173,7 @@ case $1 in
 		            grep -rl replace_with_local_db wp-config.php | xargs sed -i.bak "s/replace_with_local_db/${name}/g"
 		            grep -rl replace_with_local_ip wp-config.php | xargs sed -i.bak "s/replace_with_local_ip/${host}/g"
 		            grep -rl wp_ wp-config.php | xargs sed -i.bak "s/wp_/${PROJ_FOLDER_NAME}_/"
-		            grep -rl \".dev\" wp-config.php | xargs sed -i.bak "s/\".dev\"/\"${PROJ_FOLDER_NAME}.dev\"/"
+		            grep -rl \".dev\" wp-config.php | xargs sed -i.bak "s/\".dev\"/\"http:\/\/${PROJ_FOLDER_NAME}.dev\"/"
 					# add stalts
 				    salts
 				    # clean up
