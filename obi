@@ -52,7 +52,7 @@ sql_credentials()  {
 	user=`awk -F\' -v U_PATTERN="$U_PATTERN" '$0 ~ U_PATTERN {print $4}' "$PROJ/site/wp-config.php"`
 	pass=`awk -F\' -v P_PATTERN="$P_PATTERN" '$0 ~ P_PATTERN {print $4}' "$PROJ/site/wp-config.php"`
 	db=`awk -F\' -v N_PATTERN="$N_PATTERN" '$0 ~ N_PATTERN {print $4}' "$PROJ/site/wp-config.php"`
-	url=`awk -F\' -v URL_PATTERN="$URL_PATTERN" '$0 ~ N_PATTERN {print $4}' "$PROJ/site/wp-config.php"`
+	url=`awk -F\' -v URL_PATTERN="$URL_PATTERN" '$0 ~ URL_PATTERN {print $4}' "$PROJ/site/wp-config.php"`
 }
 f_sql_credentials()  {
 
@@ -68,7 +68,7 @@ r_sql_credentials()  {
 	r_user=`awk -F\' -v R_U_PATTERN="$R_U_PATTERN" '$0 ~ R_U_PATTERN {print $4}' "$PROJ/site/wp-config.php"`
 	r_pass=`awk -F\' -v R_P_PATTERN="$R_P_PATTERN" '$0 ~ R_P_PATTERN {print $4}' "$PROJ/site/wp-config.php"`
 	r_db=`awk -F\' -v R_N_PATTERN="$R_N_PATTERN" '$0 ~ R_N_PATTERN {print $4}' "$PROJ/site/wp-config.php"`
-	replace=`awk -F\' -v R_URL_PATTERN="$R_URL_PATTERN" '$0 ~ R_N_PATTERN {print $4}' "$PROJ/site/wp-config.php"`
+	replace=`awk -F\' -v R_URL_PATTERN="$R_URL_PATTERN" '$0 ~ R_URL_PATTERN {print $4}' "$PROJ/site/wp-config.php"`
 }
 empty_second_string_check()  {
 
@@ -131,6 +131,32 @@ mysql_timestamp() {
 	THE_FILE_NAME=$THE_DATE-$THE_DB_NAME
 
 }
+create_directories()  {
+	cd "$PROJ_PATH"
+	mkdir $PROJ_FOLDER_NAME
+	cd $PROJ_FOLDER_NAME
+	mkdir -p architecture/estimates architecture assets/ai assets/content assets/images/gif assets/images/jpg assets/images/png assets/images assets/pdf assets/psd assets dumps/local dumps/production dumps/staging dumps emails fonts mock-ups site
+	cd site
+}
+wp_config_check()  {
+	file_exist_check "site/wp-config.php"
+	ret=$?
+
+	if [ "$ret" == "10" ]
+	then
+		file_exist_check "wp-config.php"
+		ret=$?
+
+		if [ "$ret" == "10" ]
+		then
+			clear
+			echo ""
+			echo "\t\t\t""The file [ $file ] does not exist"
+			echo ""
+			exit 0
+		fi
+	fi
+}
 
 # -----------------------------------------------#
 ## Commands
@@ -157,11 +183,7 @@ case $ACTION in
 		project_exist_check "$PROJ"
 
 		clear
-		cd "$PROJ_PATH"
-		mkdir $PROJ_FOLDER_NAME
-		cd $PROJ_FOLDER_NAME
-		mkdir -p architecture/estimates architecture assets/ai assets/content assets/images/gif assets/images/jpg assets/images/png assets/images assets/pdf assets/psd assets dumps/local dumps/production dumps/staging dumps emails fonts mock-ups site
-		ls -laO
+		create_directories
 		echo "Project Location:" `pwd`
 		;;
 	-g)
@@ -169,10 +191,7 @@ case $ACTION in
 		project_exist_check "$PROJ"
 
 		clear
-		cd "$PROJ_PATH"
-		mkdir $PROJ_FOLDER_NAME
-		cd $PROJ_FOLDER_NAME
-		mkdir -p architecture/estimates architecture assets/ai assets/content assets/images/gif assets/images/jpg assets/images/png assets/images assets/pdf assets/psd assets dumps/local dumps/production dumps/staging dumps emails fonts mock-ups site
+		create_directories
 		cd site
 		git init
 		git config branch.master.remote beanstalk
@@ -185,10 +204,7 @@ case $ACTION in
 		project_exist_check "$PROJ"
 
 		clear
-		cd "$PROJ_PATH"
-		mkdir $PROJ_FOLDER_NAME
-		cd $PROJ_FOLDER_NAME
-		mkdir -p architecture/estimates architecture assets/ai assets/content assets/images/gif assets/images/jpg assets/images/png assets/images assets/pdf assets/psd assets dumps/local dumps/production dumps/staging dumps emails fonts mock-ups site
+		create_directories
 		cd site
 		git init
 		# Get latest version of wordpress
@@ -226,7 +242,6 @@ case $ACTION in
 		/Applications/MAMP/Library/bin/mysql -u $user -h localhost -p$pass -Bse "CREATE DATABASE ${name};"
 		ls -laO
 		echo "Project Location:" `pwd`
-
 		;;
 	-d)
 		empty_second_string_check "$PROJ_FOLDER_NAME"
@@ -272,26 +287,8 @@ case $ACTION in
 				mkdir dumps
 				fi
 
-				# if  [ ! -f "wp-config.php" ]
-				# then
+				wp_config_check
 
-				file_exist_check "site/wp-config.php"
-				# fi
-				ret=$?
-				if [ "$ret" == "10" ]
-				then
-					file_exist_check "wp-config.php"
-					ret=$?
-
-					if [ "$ret" == "10" ]
-					then
-						clear
-						echo ""
-						echo "\t\t\t""The file [ $file ] does not exist"
-						echo ""
-						exit 0
-					fi
-				fi
 
 				/Applications/MAMP/Library/bin/mysqldump --net_buffer_length=50000 -h$host -u$user -p$pass $db > "dumps/$THE_FILE_NAME.sql"
 
@@ -445,6 +442,13 @@ case $ACTION in
 		esac
 
 	cd "$PROJ"
+
+	if [ ! -d "dumps" ]
+	then
+	mkdir dumps
+	fi
+
+	wp_config_check
 
 	#mysql credentials used to find
 	f_sql_credentials
