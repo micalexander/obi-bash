@@ -1,6 +1,9 @@
 #!/bin/sh
 
-######################################-----variables
+# -----------------------------------------------#
+## Variables
+## ----------------------------------------------#
+
 # Store the type of project to create
 ACTION=$1
 
@@ -9,7 +12,7 @@ PROJ_FOLDER_NAME=$2
 
 # If third parameter (project path) is left empty,
 case $3 in
-	lts|ltp|stl|stp|ptl|pts) PROJ_PATH=`cat ~/.obiconfig`
+	lts|ltp|stl|stp|ptl|pts|-l|-s|-p) PROJ_PATH=`cat ~/.obiconfig`
 		;;
 		* )
 			if [ -z "$3" ]
@@ -23,10 +26,17 @@ case $3 in
 			fi
 esac
 
+
 # Store the project path and the project name as a single string
 PROJ=$PROJ_PATH$PROJ_FOLDER_NAME
 
-######################################-----functions
+CUT_NAME=`echo $PROJ_FOLDER_NAME | cut -c1-3`
+
+
+# -----------------------------------------------#
+## Functions
+## ----------------------------------------------#
+
 salts()  {
 perl -i -pe '
   BEGIN {
@@ -37,6 +47,7 @@ perl -i -pe '
 
 }
 sql_credentials()  {
+
 	host=`awk -F\' -v H_PATTERN="$H_PATTERN" '$0 ~ H_PATTERN {print $4}' "$PROJ/site/wp-config.php"`
 	user=`awk -F\' -v U_PATTERN="$U_PATTERN" '$0 ~ U_PATTERN {print $4}' "$PROJ/site/wp-config.php"`
 	pass=`awk -F\' -v P_PATTERN="$P_PATTERN" '$0 ~ P_PATTERN {print $4}' "$PROJ/site/wp-config.php"`
@@ -44,6 +55,7 @@ sql_credentials()  {
 	url=`awk -F\' -v URL_PATTERN="$URL_PATTERN" '$0 ~ N_PATTERN {print $4}' "$PROJ/site/wp-config.php"`
 }
 f_sql_credentials()  {
+
 	f_host=`awk -F\' -v F_H_PATTERN="$F_H_PATTERN" '$0 ~ F_H_PATTERN {print $4}' "$PROJ/site/wp-config.php"`
 	f_user=`awk -F\' -v F_U_PATTERN="$F_U_PATTERN" '$0 ~ F_U_PATTERN {print $4}' "$PROJ/site/wp-config.php"`
 	f_pass=`awk -F\' -v F_P_PATTERN="$F_P_PATTERN" '$0 ~ F_P_PATTERN {print $4}' "$PROJ/site/wp-config.php"`
@@ -51,6 +63,7 @@ f_sql_credentials()  {
 	find=`awk -F\' -v F_URL_PATTERN="$F_URL_PATTERN" '$0 ~ F_URL_PATTERN {print $4}' "$PROJ/site/wp-config.php"`
 }
 r_sql_credentials()  {
+
 	r_host=`awk -F\' -v R_H_PATTERN="$R_H_PATTERN" '$0 ~ R_H_PATTERN {print $4}' "$PROJ/site/wp-config.php"`
 	r_user=`awk -F\' -v R_U_PATTERN="$R_U_PATTERN" '$0 ~ R_U_PATTERN {print $4}' "$PROJ/site/wp-config.php"`
 	r_pass=`awk -F\' -v R_P_PATTERN="$R_P_PATTERN" '$0 ~ R_P_PATTERN {print $4}' "$PROJ/site/wp-config.php"`
@@ -84,9 +97,6 @@ project_exist_check()  {
 		echo ""
 		echo "\t\t\t""The desired project folder name you specified already exist"
 		echo ""
-		echo ""
-		echo ""
-		echo ""
 		exit 0
 	fi
 }
@@ -95,317 +105,330 @@ directory_exist_check()  {
 
 	writable=$1
 
-	if [ ! -d "$writable" -a -w "$writable" ]
+	if [ ! -d "$writable" ]
 	then
 		clear
 		echo ""
 		echo "\t\t\t""The desired directory chosen is not writable or it does not exist"
 		echo ""
-		echo ""
-		echo ""
-		echo ""
 		exit 0
 	fi
 }
+mysql_timestamp() {
 
-######################################-----commands
+	#mysql variables
+	THE_DATE="$(date +%A-%m-%d-%Y)"
+	THE_DB_NAME=$db
+	THE_FILE_NAME=$THE_DATE-$THE_DB_NAME
+
+}
+
+# -----------------------------------------------#
+## Commands
+## ----------------------------------------------#
 
 case $ACTION in
 	setup )
-			directory_exist_check $PROJ_FOLDER_NAME
-			empty_second_string_check $PROJ_FOLDER_NAME
+		directory_exist_check $PROJ_FOLDER_NAME
+		empty_second_string_check $PROJ_FOLDER_NAME
 
-			clear
-			cd ~
-			echo "$PROJ_FOLDER_NAME/" > .obiconfig
-			echo ""
-			echo "\t\t\t""Your path to your projects folder has ben set to"
-			echo ""
-			echo "\t\t\t"`cat ~/.obiconfig`
-			echo ""
-			echo "\t\t\t""To change this simply run setup again"
-			echo ""
-			 ;;
-		-f)
-			empty_second_string_check $PROJ_FOLDER_NAME
-			project_exist_check $PROJ
+		clear
+		cd ~
+		echo "$PROJ_FOLDER_NAME/" > .obiconfig
+		echo ""
+		echo "\t\t\t""Your path to your projects folder has ben set to"
+		echo ""
+		echo "\t\t\t"`cat ~/.obiconfig`
+		echo ""
+		echo "\t\t\t""To change this simply run setup again"
+		echo ""
+		 ;;
+	-f)
+		empty_second_string_check "$PROJ_FOLDER_NAME"
+		project_exist_check "$PROJ"
 
-			clear
-			cd "$PROJ_PATH"
-			mkdir $PROJ_FOLDER_NAME
-			cd $PROJ_FOLDER_NAME
-			mkdir -p architecture/estimates architecture assets/ai assets/content assets/images/gif assets/images/jpg assets/images/png assets/images assets/pdf assets/psd assets dumps/local dumps/production dumps/staging dumps emails fonts mock-ups site
-			ls -laO
-			echo "Project Location:" `pwd`
-			;;
-		-g)
-			empty_second_string_check $PROJ_FOLDER_NAME
-			project_exist_check $PROJ
+		clear
+		cd "$PROJ_PATH"
+		mkdir $PROJ_FOLDER_NAME
+		cd $PROJ_FOLDER_NAME
+		mkdir -p architecture/estimates architecture assets/ai assets/content assets/images/gif assets/images/jpg assets/images/png assets/images assets/pdf assets/psd assets dumps/local dumps/production dumps/staging dumps emails fonts mock-ups site
+		ls -laO
+		echo "Project Location:" `pwd`
+		;;
+	-g)
+		empty_second_string_check "$PROJ_FOLDER_NAME"
+		project_exist_check "$PROJ"
 
-			clear
-			cd "$PROJ_PATH"
-			mkdir $PROJ_FOLDER_NAME
-			cd $PROJ_FOLDER_NAME
-			mkdir -p architecture/estimates architecture assets/ai assets/content assets/images/gif assets/images/jpg assets/images/png assets/images assets/pdf assets/psd assets dumps/local dumps/production dumps/staging dumps emails fonts mock-ups site
-			cd site
-			git init
-			git remote add beanstalk git@psstudios.beanstalkapp.com:/$PROJ_FOLDER_NAME.git
-			git config branch.master.remote beanstalk
-			echo ".DS_Store\nwp-config.php" > .gitignore
-			ls -laO
-			echo "Project Location:" `pwd`
-			;;
-		-w)
-			empty_second_string_check $PROJ_FOLDER_NAME
-			project_exist_check $PROJ
+		clear
+		cd "$PROJ_PATH"
+		mkdir $PROJ_FOLDER_NAME
+		cd $PROJ_FOLDER_NAME
+		mkdir -p architecture/estimates architecture assets/ai assets/content assets/images/gif assets/images/jpg assets/images/png assets/images assets/pdf assets/psd assets dumps/local dumps/production dumps/staging dumps emails fonts mock-ups site
+		cd site
+		git init
+		git config branch.master.remote beanstalk
+		echo ".DS_Store\nwp-config.php" > .gitignore
+		ls -laO
+		echo "Project Location:" `pwd`
+		;;
+	-w)
+		empty_second_string_check "$PROJ_FOLDER_NAME"
+		project_exist_check "$PROJ"
 
-			clear
-			cd "$PROJ_PATH"
-			mkdir $PROJ_FOLDER_NAME
-			cd $PROJ_FOLDER_NAME
-			mkdir -p architecture/estimates architecture assets/ai assets/content assets/images/gif assets/images/jpg assets/images/png assets/images assets/pdf assets/psd assets dumps/local dumps/production dumps/staging dumps emails fonts mock-ups site
-			cd site
-			git init
-			git remote add beanstalk git@psstudios.beanstalkapp.com:/$PROJ_FOLDER_NAME.git
-			# Get latest version of wordpress
-			wget http://wordpress.org/latest.zip
-			tar --strip-components=1 -zxvf latest.zip
-			rm latest.zip
-			# Clean up stock wordpress themes/plugins
-			rm -Rf wp-content/themes/twentyeleven/
-			rm -Rf wp-content/themes/twentytwelve/
-			rm -Rf wp-content/plugins/akismet/
-			rm wp-content/plugins/hello.php
-			rm wp-config-sample.php
-			# Get latest version of klas starter theme
-			git clone https://github.com/kylelarkin/klas.git wp-content/themes/$PROJ_FOLDER_NAME
-			rm -Rf wp-content/themes/$PROJ_FOLDER_NAME/.git
-			rm wp-content/themes/$PROJ_FOLDER_NAME/.gitignore
-			mv wp-content/themes/$PROJ_FOLDER_NAME/.htaccess .
-			mv wp-content/themes/$PROJ_FOLDER_NAME/wp-config.php .
-			# Setup local database values in wp-config.php
-			user=`awk -F\' '/local_db_user/ {print $4}' "wp-config.php"`
-			name="$PROJ_FOLDER_NAME"_local_db
-			pass=`awk -F\' '/local_db_password/ {print $4}' "wp-config.php"`
-			host=`ifconfig | grep -Eo 192.168.[0-9]+.[0-9]+ | head -n 1`
-			grep -rl replace_with_local_db wp-config.php | xargs sed -i.bak "s/replace_with_local_db/${name}/g"
-			grep -rl replace_with_local_ip wp-config.php | xargs sed -i.bak "s/replace_with_local_ip/${host}/g"
-			grep -rl wp_ wp-config.php | xargs sed -i.bak "s/wp_/${PROJ_FOLDER_NAME}_/"
-			grep -rl \".dev\" wp-config.php | xargs sed -i.bak "s/\".dev\"/\"http:\/\/${PROJ_FOLDER_NAME}.dev\"/"
-			# add stalts
-			salts
-			# clean up
-			rm wp-config.php.bak
-			# Build project's .gitignore
-			echo ".DS_Store \n.sass-cache/\nwp-config.php" > .gitignore
-			# Create project's databse
-			/Applications/MAMP/Library/bin/mysql -u $user -h localhost -p$pass -Bse "CREATE DATABASE ${name};"
-			ls -laO
-			echo "Project Location:" `pwd`
+		clear
+		cd "$PROJ_PATH"
+		mkdir $PROJ_FOLDER_NAME
+		cd $PROJ_FOLDER_NAME
+		mkdir -p architecture/estimates architecture assets/ai assets/content assets/images/gif assets/images/jpg assets/images/png assets/images assets/pdf assets/psd assets dumps/local dumps/production dumps/staging dumps emails fonts mock-ups site
+		cd site
+		git init
+		# Get latest version of wordpress
+		wget http://wordpress.org/latest.zip
+		tar --strip-components=1 -zxvf latest.zip
+		rm latest.zip
+		# Clean up stock wordpress themes/plugins
+		rm -Rf wp-content/themes/twentyeleven/
+		rm -Rf wp-content/themes/twentytwelve/
+		rm -Rf wp-content/plugins/akismet/
+		rm wp-content/plugins/hello.php
+		rm wp-config-sample.php
+		# Get latest version of klas starter theme
+		git clone https://github.com/kylelarkin/klas.git wp-content/themes/$PROJ_FOLDER_NAME
+		rm -Rf wp-content/themes/$PROJ_FOLDER_NAME/.git
+		rm wp-content/themes/$PROJ_FOLDER_NAME/.gitignore
+		mv wp-content/themes/$PROJ_FOLDER_NAME/.htaccess .
+		mv wp-content/themes/$PROJ_FOLDER_NAME/wp-config.php .
+		# Setup local database values in wp-config.php
+		user=`awk -F\' '/local_db_user/ {print $4}' "wp-config.php"`
+		name="$PROJ_FOLDER_NAME"_local_db
+		pass=`awk -F\' '/local_db_password/ {print $4}' "wp-config.php"`
+		host=`ifconfig | grep -Eo 192.168.[0-9]+.[0-9]+ | head -n 1`
+		grep -rl replace_with_local_db wp-config.php | xargs sed -i.bak "s/replace_with_local_db/${name}/g"
+		grep -rl replace_with_local_ip wp-config.php | xargs sed -i.bak "s/replace_with_local_ip/${host}/g"
+		grep -rl wp_ wp-config.php | xargs sed -i.bak "s/wp_/${CUT_NAME}_/"
+		grep -rl \".dev\" wp-config.php | xargs sed -i.bak "s/\".dev\"/\"http:\/\/${PROJ_FOLDER_NAME}.dev\"/"
+		# add stalts
+		salts
+		# clean up
+		rm wp-config.php.bak
+		# Build project's .gitignore
+		echo ".DS_Store \n.sass-cache/\nwp-config.php" > .gitignore
+		# Create project's databse
+		/Applications/MAMP/Library/bin/mysql -u $user -h localhost -p$pass -Bse "CREATE DATABASE ${name};"
+		ls -laO
+		echo "Project Location:" `pwd`
 
-			;;
-		-d)
-			empty_second_string_check $PROJ_FOLDER_NAME
-			directory_exist_check $PROJ_FOLDERPATH
+		;;
+	-d)
+		empty_second_string_check "$PROJ_FOLDER_NAME"
+		directory_exist_check "$PROJ"
 
-			case $PROJ_PATH in
-				-l )
-					H_PATTERN=local_db_host
-					U_PATTERN=local_db_user
-					P_PATTERN=local_db_password
-					N_PATTERN=local_db_name
-					URL_PATTERN=local_site_url
-					;;
-				-s )
-					H_PATTERN=staging_db_host
-					U_PATTERN=staging_db_user
-					P_PATTERN=staging_db_password
-					N_PATTERN=staging_db_name
-					URL_PATTERN=staging_site_url
-					;;
-				-p )
-					H_PATTERN=prod_db_host
-					U_PATTERN=prod_db_user
-					P_PATTERN=prod_db_password
-					N_PATTERN=prod_db_name
-					URL_PATTERN=prod_site_url
-					;;
-			esac
+		case $3 in
+			-l )
+				H_PATTERN=local_db_host
+				U_PATTERN=local_db_user
+				P_PATTERN=local_db_password
+				N_PATTERN=local_db_name
+				URL_PATTERN=local_site_url
+				;;
+			-s)
 
-			#looks for database username, database password and database name in the wp-config file
-			sql_credentials
+				H_PATTERN=staging_db_host
+				U_PATTERN=staging_db_user
+				P_PATTERN=staging_db_password
+				N_PATTERN=staging_db_name
+				URL_PATTERN=staging_site_url
 
-			d="$(date +%A-%m-%d-%Y)"
-			t=$db
-			the_file_name=$t-$d
-			/Applications/MAMP/Library/bin/mysqldump --net_buffer_length=50000 -h$host -u$user -p$pass $db > $PROJ_PATH$PROJ_FOLDER_NAME/dumps/$the_file_name.sql
 
-			echo ""
-			echo "Database dump successful"
-			echo ""
-			;;
-		-s)
-			case $3 in
-			    lts )
-			        #staging information used to import
-			        F_H_PATTERN=staging_db_host
-			        F_U_PATTERN=staging_db_user
-			        F_P_PATTERN=staging_db_password
-			        F_N_PATTERN=staging_db_name
+				;;
+			-p )
+				H_PATTERN=prod_db_host
+				U_PATTERN=prod_db_user
+				P_PATTERN=prod_db_password
+				N_PATTERN=prod_db_name
+				URL_PATTERN=prod_site_url
+				;;
+		esac
 
-			        #find prod url to find and replace prod url throughout the db
-			        F_URL_PATTERN=local_site_url
+				#looks for database username, database password and database name in the wp-config file
+				sql_credentials
 
-					#mysql credentials used to find
-					f_sql_credentials
+				mysql_timestamp
 
-			        #local information used to dump
-			        R_H_PATTERN=local_db_host
-			        R_U_PATTERN=local_db_user
-			        R_P_PATTERN=local_db_password
-			        R_N_PATTERN=local_db_name
+				cd "$PROJ"
 
-			        #local url to replace prod url throughout the db
-			        R_URL_PATTERN=staging_site_url
+				/Applications/MAMP/Library/bin/mysqldump --net_buffer_length=50000 -h$host -u$user -p$pass $db > "dumps/$THE_FILE_NAME.sql"
 
-					#mysql credentials used to replace
-					r_sql_credentials
-			        ;;
-			    ltp )
-			        #prod information used to import
-			        F_H_PATTERN=prod_db_host
-			        F_U_PATTERN=prod_db_user
-			        F_P_PATTERN=prod_db_password
-			        F_N_PATTERN=prod_db_name
+				clear
+				echo "\t\t\t"
+				echo "\t\t\t""Database dump complete"
+				echo "\t\t\t"
+		;;
+	-s)
+		empty_second_string_check "$PROJ_FOLDER_NAME"
+		directory_exist_check "$PROJ"
 
-			        #find local url to find and replace local url throughout the db
-			        F_URL_PATTERN=local_site_url
+		case $3 in
+		    lts )
+				backup_folder=staging
 
-					#mysql credentials used to find
-					f_sql_credentials
+		        #staging information used to import
+		        F_H_PATTERN=staging_db_host
+		        F_U_PATTERN=staging_db_user
+		        F_P_PATTERN=staging_db_password
+		        F_N_PATTERN=staging_db_name
 
-			        R_H_PATTERN=local_db_host
-			        R_U_PATTERN=local_db_user
-			        R_P_PATTERN=local_db_password
-			        R_N_PATTERN=local_db_name
+		        #find prod url to find and replace prod url throughout the db
+		        F_URL_PATTERN=local_site_url
 
-			        #prod url to replace local url throughout the db
-			        R_URL_PATTERN=prod_site_url
 
-					#mysql credentials used to replace
-					r_sql_credentials
+		        #local information used to dump
+		        R_H_PATTERN=local_db_host
+		        R_U_PATTERN=local_db_user
+		        R_P_PATTERN=local_db_password
+		        R_N_PATTERN=local_db_name
 
-			        ;;
-			    stl )
-			        #local information used to import
-			        F_H_PATTERN=local_db_host
-			        F_U_PATTERN=local_db_user
-			        F_P_PATTERN=local_db_password
-			        F_N_PATTERN=local_db_name
+		        #local url to replace prod url throughout the db
+		        R_URL_PATTERN=staging_site_url
+		        ;;
+		    ltp )
+				backup_folder=production
 
-			        #find staging url to find and replace staging url throughout the db
-			        F_URL_PATTERN=staging_site_url
+		        #prod information used to import
+		        F_H_PATTERN=prod_db_host
+		        F_U_PATTERN=prod_db_user
+		        F_P_PATTERN=prod_db_password
+		        F_N_PATTERN=prod_db_name
 
-					#mysql credentials used to find
-					f_sql_credentials
+		        #find local url to find and replace local url throughout the db
+		        F_URL_PATTERN=local_site_url
 
-			        #staging information used to dump
-			        R_H_PATTERN=staging_db_host
-			        R_U_PATTERN=staging_db_user
-			        R_P_PATTERN=staging_db_password
-			        R_N_PATTERN=staging_db_name
 
-			        #local url to replace prod url throughout the db
-			        R_URL_PATTERN=local_site_url
+		        R_H_PATTERN=local_db_host
+		        R_U_PATTERN=local_db_user
+		        R_P_PATTERN=local_db_password
+		        R_N_PATTERN=local_db_name
 
-					#mysql credentials used to replace
-					r_sql_credentials
-			        ;;
-			    stp )
-			        #prod information used to import
-			        F_H_PATTERN=prod_db_host
-			        F_U_PATTERN=prod_db_user
-			        F_P_PATTERN=prod_db_password
-			        F_N_PATTERN=prod_db_name
+		        #prod url to replace local url throughout the db
+		        R_URL_PATTERN=prod_site_url
+		        ;;
+		    stl )
+				backup_folder=local
 
-			        #find staging url to find and replace staging url throughout the db
-			        F_URL_PATTERN=staging_site_url
+		        #local information used to import
+		        F_H_PATTERN=local_db_host
+		        F_U_PATTERN=local_db_user
+		        F_P_PATTERN=local_db_password
+		        F_N_PATTERN=local_db_name
 
-					#mysql credentials used to find
-					f_sql_credentials
+		        #find staging url to find and replace staging url throughout the db
+		        F_URL_PATTERN=staging_site_url
 
-			        #staging information used to dump
-			        R_H_PATTERN=staging_db_host
-			        R_U_PATTERN=staging_db_user
-			        R_P_PATTERN=staging_db_password
-			        R_N_PATTERN=staging_db_name
+		        #staging information used to dump
+		        R_H_PATTERN=staging_db_host
+		        R_U_PATTERN=staging_db_user
+		        R_P_PATTERN=staging_db_password
+		        R_N_PATTERN=staging_db_name
 
-			        #prod url to replace prod url throughout the db
-			        R_URL_PATTERN=prod_site_url
+		        #local url to replace prod url throughout the db
+		        R_URL_PATTERN=local_site_url
+		        ;;
+		    stp )
+				backup_folder=production
 
-					#mysql credentials used to replace
-					r_sql_credentials
-			        ;;
-			    ptl )
-			        #local information used to import
-			        F_H_PATTERN=local_db_host
-			        F_U_PATTERN=local_db_user
-			        F_P_PATTERN=local_db_password
-			        F_N_PATTERN=local_db_name
+		        #prod information used to import
+		        F_H_PATTERN=prod_db_host
+		        F_U_PATTERN=prod_db_user
+		        F_P_PATTERN=prod_db_password
+		        F_N_PATTERN=prod_db_name
 
-			        #find prod url to find and replace prod url throughout the db
-			        F_URL_PATTERN=prod_site_url
+		        #find staging url to find and replace staging url throughout the db
+		        F_URL_PATTERN=staging_site_url
 
-					#mysql credentials used to find
-					f_sql_credentials
+		        #staging information used to dump
+		        R_H_PATTERN=staging_db_host
+		        R_U_PATTERN=staging_db_user
+		        R_P_PATTERN=staging_db_password
+		        R_N_PATTERN=staging_db_name
 
-			        #prod information used to dump
-			        R_H_PATTERN=prod_db_host
-			        R_U_PATTERN=prod_db_user
-			        R_P_PATTERN=prod_db_password
-			        R_N_PATTERN=prod_db_name
+		        #prod url to replace prod url throughout the db
+		        R_URL_PATTERN=prod_site_url
+		        ;;
+		    ptl )
+				backup_folder=local
 
-			        #local url to replace prod url throughout the db
-			        R_URL_PATTERN=local_site_url
+		        #local information used to import
+		        F_H_PATTERN=local_db_host
+		        F_U_PATTERN=local_db_user
+		        F_P_PATTERN=local_db_password
+		        F_N_PATTERN=local_db_name
 
-					#mysql credentials used to replace
-					r_sql_credentials
-			        ;;
-			    pts )
-			        #staging information used to import
-			        F_H_PATTERN=staging_db_host
-			        F_U_PATTERN=staging_db_user
-			        F_P_PATTERN=staging_db_password
-			        F_N_PATTERN=staging_db_name
+		        #find prod url to find and replace prod url throughout the db
+		        F_URL_PATTERN=prod_site_url
 
-			        #find prod url to find and replace prod url throughout the db
-			        F_URL_PATTERN=prod_site_url
+		        #prod information used to dump
+		        R_H_PATTERN=prod_db_host
+		        R_U_PATTERN=prod_db_user
+		        R_P_PATTERN=prod_db_password
+		        R_N_PATTERN=prod_db_name
 
-					#mysql credentials used to find
-					f_sql_credentials
+		        #local url to replace prod url throughout the db
+		        R_URL_PATTERN=local_site_url
+		        ;;
+		    pts )
+				backup_folder=staging
 
-			        #prod information used to dump
-			        R_H_PATTERN=prod_db_host
-			        R_U_PATTERN=prod_db_user
-			        R_P_PATTERN=prod_db_password
-			        R_N_PATTERN=prod_db_name
+		        #staging information used to import
+		        F_H_PATTERN=staging_db_host
+		        F_U_PATTERN=staging_db_user
+		        F_P_PATTERN=staging_db_password
+		        F_N_PATTERN=staging_db_name
 
-			        #staging url to replace prod url throughout the db
-			        R_URL_PATTERN=staging_site_url
+		        #find prod url to find and replace prod url throughout the db
+		        F_URL_PATTERN=prod_site_url
 
-					#mysql credentials used to replace
-					r_sql_credentials
-			        ;;
-			        *) echo "empty"
-			esac
 
-			d="$(date +%A-%m-%d-%Y)"
-			t=$f_db
-			the_file_name=$t-$d
+		        #prod information used to dump
+		        R_H_PATTERN=prod_db_host
+		        R_U_PATTERN=prod_db_user
+		        R_P_PATTERN=prod_db_password
+		        R_N_PATTERN=prod_db_name
 
-			/Applications/MAMP/Library/bin/mysqldump --net_buffer_length=50000 -h$r_host -u$r_user -p$r_pass $r_db > $PROJ_PATH$PROJ_FOLDER_NAME/dumps/$the_file_name.sql
-			sed -i '' 's,$find,$replace,g' "$PROJ_PATH$PROJ_FOLDER_NAME/dumps/$the_file_name.sql"
-			/Applications/MAMP/Library/bin/mysql -h$f_host -u$f_user -p$f_pass $f_db < $PROJ_PATH$PROJ_FOLDER_NAME/dumps/$the_file_name.sql
-			;;
+		        #staging url to replace prod url throughout the db
+		        R_URL_PATTERN=staging_site_url
+		        ;;
+		        *)
+				clear
+				echo ""
+				echo "\t\t\t""Please specify database sync order"
+				echo ""
+				echo "\t\t\t""Usage: obi [-s] [project_name] [direction]"
+				echo ""
+				exit 0
+				;;
+		esac
+
+	cd "$PROJ"
+
+	#mysql credentials used to find
+	f_sql_credentials
+
+	#mysql credentials used to replace
+	r_sql_credentials
+
+	mysql_timestamp
+
+	/Applications/MAMP/Library/bin/mysqldump -h$f_host -u$f_user -p$f_pass $f_db > "dumps/$backup_folder/$THE_FILE_NAME.sql"
+
+	/Applications/MAMP/Library/bin/mysqldump --net_buffer_length=50000 -h$r_host -u$r_user -p$r_pass $r_db > "dumps/$THE_FILE_NAME.sql"
+
+	sed -i '' 's,$find,$replace,g' "$PROJ_PATH$PROJ_FOLDER_NAME/dumps/$THE_FILE_NAME.sql"
+
+	/Applications/MAMP/Library/bin/mysql -h$f_host -u$f_user -p$f_pass $f_db < "dumps/$THE_FILE_NAME.sql"
+
+	clear
+	echo ""
+	echo "\t\t\t""Database sync complete"
+	echo ""
 
 esac
