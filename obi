@@ -52,7 +52,7 @@ sql_credentials()  {
 	user=`awk -F\' -v U_PATTERN="$U_PATTERN" '$0 ~ U_PATTERN {print $4}' "$PROJ/site/wp-config.php"`
 	pass=`awk -F\' -v P_PATTERN="$P_PATTERN" '$0 ~ P_PATTERN {print $4}' "$PROJ/site/wp-config.php"`
 	db=`awk -F\' -v N_PATTERN="$N_PATTERN" '$0 ~ N_PATTERN {print $4}' "$PROJ/site/wp-config.php"`
-	url=`awk -F\' -v URL_PATTERN="$URL_PATTERN" '$0 ~ URL_PATTERN {print $4}' "$PROJ/site/wp-config.php"`
+	url=`awk -F'"' -v URL_PATTERN="$URL_PATTERN" '$0 ~ URL_PATTERN {print $2}' "$PROJ/site/wp-config.php"`
 }
 f_sql_credentials()  {
 
@@ -60,7 +60,7 @@ f_sql_credentials()  {
 	f_user=`awk -F\' -v F_U_PATTERN="$F_U_PATTERN" '$0 ~ F_U_PATTERN {print $4}' "$PROJ/site/wp-config.php"`
 	f_pass=`awk -F\' -v F_P_PATTERN="$F_P_PATTERN" '$0 ~ F_P_PATTERN {print $4}' "$PROJ/site/wp-config.php"`
 	f_db=`awk -F\' -v F_N_PATTERN="$F_N_PATTERN" '$0 ~ F_N_PATTERN {print $4}' "$PROJ/site/wp-config.php"`
-	find=`awk -F\' -v F_URL_PATTERN="$F_URL_PATTERN" '$0 ~ F_URL_PATTERN {print $4}' "$PROJ/site/wp-config.php"`
+	find=`awk -F'"' -v F_URL_PATTERN="$F_URL_PATTERN" '$0 ~ F_URL_PATTERN {print $2}' "$PROJ/site/wp-config.php" | awk -F: '{print $2}' | cut -c 3-`
 }
 r_sql_credentials()  {
 
@@ -68,7 +68,7 @@ r_sql_credentials()  {
 	r_user=`awk -F\' -v R_U_PATTERN="$R_U_PATTERN" '$0 ~ R_U_PATTERN {print $4}' "$PROJ/site/wp-config.php"`
 	r_pass=`awk -F\' -v R_P_PATTERN="$R_P_PATTERN" '$0 ~ R_P_PATTERN {print $4}' "$PROJ/site/wp-config.php"`
 	r_db=`awk -F\' -v R_N_PATTERN="$R_N_PATTERN" '$0 ~ R_N_PATTERN {print $4}' "$PROJ/site/wp-config.php"`
-	replace=`awk -F\' -v R_URL_PATTERN="$R_URL_PATTERN" '$0 ~ R_URL_PATTERN {print $4}' "$PROJ/site/wp-config.php"`
+	replace=`awk -F'"' -v R_URL_PATTERN="$R_URL_PATTERN" '$0 ~ R_URL_PATTERN {print $2}' "$PROJ/site/wp-config.php" | awk -F: '{print $2}' | cut -c 3-`
 }
 empty_second_string_check()  {
 
@@ -458,11 +458,11 @@ case $ACTION in
 
 	mysql_timestamp
 
-	/Applications/MAMP/Library/bin/mysqldump -h$f_host -u$f_user -p$f_pass $f_db > "dumps/$backup_folder/$THE_FILE_NAME.sql"
+	/Applications/MAMP/Library/bin/mysqldump --net_buffer_length=50000 -h$f_host -u$f_user -p$f_pass $f_db > "dumps/$backup_folder/$THE_FILE_NAME.sql"
 
 	/Applications/MAMP/Library/bin/mysqldump --net_buffer_length=50000 -h$r_host -u$r_user -p$r_pass $r_db > "dumps/$THE_FILE_NAME.sql"
 
-	sed -i '' 's,$find,$replace,g' "$PROJ_PATH$PROJ_FOLDER_NAME/dumps/$THE_FILE_NAME.sql"
+	sed -i '' -e "s,$find,$replace,g" $PROJ_PATH$PROJ_FOLDER_NAME/dumps/$THE_FILE_NAME.sql
 
 	/Applications/MAMP/Library/bin/mysql -h$f_host -u$f_user -p$f_pass $f_db < "dumps/$THE_FILE_NAME.sql"
 
