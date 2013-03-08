@@ -114,6 +114,15 @@ directory_exist_check()  {
 		exit 0
 	fi
 }
+file_exist_check ()  {
+	file=$1
+
+	if [ ! -f "$file" ]
+	then
+
+		return 10
+	fi
+}
 mysql_timestamp() {
 
 	#mysql variables
@@ -223,6 +232,7 @@ case $ACTION in
 		empty_second_string_check "$PROJ_FOLDER_NAME"
 		directory_exist_check "$PROJ"
 
+
 		case $3 in
 			-l )
 				H_PATTERN=local_db_host
@@ -256,6 +266,32 @@ case $ACTION in
 				mysql_timestamp
 
 				cd "$PROJ"
+
+				if [ ! -d "dumps" ]
+				then
+				mkdir dumps
+				fi
+
+				# if  [ ! -f "wp-config.php" ]
+				# then
+
+				file_exist_check "site/wp-config.php"
+				# fi
+				ret=$?
+				if [ "$ret" == "10" ]
+				then
+					file_exist_check "wp-config.php"
+					ret=$?
+
+					if [ "$ret" == "10" ]
+					then
+						clear
+						echo ""
+						echo "\t\t\t""The file [ $file ] does not exist"
+						echo ""
+						exit 0
+					fi
+				fi
 
 				/Applications/MAMP/Library/bin/mysqldump --net_buffer_length=50000 -h$host -u$user -p$pass $db > "dumps/$THE_FILE_NAME.sql"
 
