@@ -8,7 +8,7 @@
 ACTION=$1
 
 # Store the name of the new project which will double as the project folder name
-PROJ_FOLDER_NAME=$2
+PROJ_FOLDER_NAME="$2"
 
 # If third parameter (project path) is left empty,
 case $3 in
@@ -103,15 +103,12 @@ project_exist_check()  {
 # Check to see if the directory given is writable to not overwrite it
 directory_exist_check()  {
 
-	writable=$1
+	writable="$1"
 
 	if [ ! -d "$writable" ]
 	then
-		clear
-		echo ""
-		echo "\t\t\t""The desired directory chosen is not writable or it does not exist"
-		echo ""
-		exit 0
+
+		return 10
 	fi
 }
 file_exist_check ()  {
@@ -157,26 +154,120 @@ wp_config_check()  {
 		fi
 	fi
 }
+set_dir() {
+
+	MSG="please enter your desired project path without the trailing slash or \nsimply drag and drop the desired folder into this window"
+	clear
+	main_menu
+	read DIRECTORY
+
+
+	directory_exist_check "$DIRECTORY"
+	empty_second_string_check "$DIRECTORY"
+}
 
 # -----------------------------------------------#
-## Commands
+## Menu System
+## ----------------------------------------------#
+aprompt="a. Set project working directory"
+bprompt="b. Set local environment"
+cprompt="c. Set staging environment"
+dprompt="d. Set production environment"
+eprompt="e. "
+fprompt="f. "
+gprompt="g. "
+hprompt="h. "
+iprompt="i. "
+jprompt="j. "
+kprompt="k. "
+lprompt="l. "
+
+invalidchoice () { MSG="Invalid Selection ... Please Try Again" ; } 
+
+achoice() {
+
+set_dir ;
+
+	ret=$?
+	if [ "$ret" = "10" ]
+	then
+		MSG="Directory is not writable or it does not exist"
+	else
+		MSG="Your project working directory has been set to \n$DIRECTORY"
+	fi ;
+}
+bchoice() { ls -l| more ; echo Press Enter ; read DUMMY ; }
+cchoice() { invalidchoice ; }
+dchoice() { invalidchoice ; }
+echoice() { invalidchoice ; }
+fchoice() { invalidchoice ; }
+gchoice() { invalidchoice ; }
+hchoice() { invalidchoice ; }
+ichoice() { invalidchoice ; }
+jchoice() { invalidchoice ; }
+kchoice() { invalidchoice ; }
+lchoice() { invalidchoice ; }
+
+
+main_menu() {
+	clear
+	echo `date`
+	echo
+	echo "\t\t\t" $aprompt
+	echo "\t\t\t" $bprompt
+	echo "\t\t\t" $cprompt
+	echo "\t\t\t" $dprompt
+	echo "\t\t\t" $eprompt
+	echo "\t\t\t" $fprompt
+	echo "\t\t\t" $gprompt
+	echo "\t\t\t" $hprompt
+	echo "\t\t\t" $iprompt
+	echo "\t\t\t" $jprompt
+	echo "\t\t\t" $kprompt
+	echo "\t\t\t" $lprompt
+	echo "\t\t\t"
+	echo "\t\t\t"
+	echo "\t\t\t"
+	echo "\t\t\tx. Exit"
+	echo
+	echo "$MSG"
+	echo
+	echo Select by pressing the letter and then ENTER ;
+}
+
+MSG=
+
+# -----------------------------------------------#
+## Main Logic
 ## ----------------------------------------------#
 
 case $ACTION in
 	setup )
-		directory_exist_check $PROJ_FOLDER_NAME
-		empty_second_string_check $PROJ_FOLDER_NAME
+		while true
+		do
+			main_menu
+			MSG=
+			read answer
 
-		clear
-		cd ~
-		echo "$PROJ_FOLDER_NAME/" > .obiconfig
-		echo ""
-		echo "\t\t\t""Your path to your projects folder has ben set to"
-		echo ""
-		echo "\t\t\t"`cat ~/.obiconfig`
-		echo ""
-		echo "\t\t\t""To change this simply run setup again"
-		echo ""
+			case $answer
+			in
+				a|A ) achoice ;;
+				b|B ) bchoice ;;
+				c|C ) cchoice ;;
+				d|D ) dchoice ;;
+				e|E ) echoice ;;
+				f|F ) fchoice ;;
+				g|G ) gchoice ;;
+				h|H ) hchoice ;;
+				i|I ) ichoice ;;
+				j|J ) jchoice ;;
+				k|K ) kchoice ;;
+				l|L ) lchoice ;;
+				x|X ) break ;;
+				*) invalidchoice ;;
+			esac
+
+		done
 		 ;;
 	-f)
 		empty_second_string_check "$PROJ_FOLDER_NAME"
