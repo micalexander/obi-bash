@@ -26,10 +26,6 @@ does_config_exist()
 				0 )
 					configerror
 					exit
-					echo "this is the: $localprojectdirectory"
-					;;
-				*)
-					echo "this is the: $localprojectdirectory"
 					;;
 			esac
 			;;
@@ -142,7 +138,7 @@ database_credentials()
 				* )
 		 			# Setup local database values in wp-config.php
 					serversettings="\033[31mdisabled\033[0m"
-					echo ; echo "obi: Your \033[36m$server\033[0m server settings are set to $serversettings this can be changed with [ obi ] [ config ]." ; echo ; exit
+					echo ; echo "obi: Your \033[36m$server\033[0m server settings are set to $serversettings. To change this run: \033[33mobi config\033[0m" ; echo ; exit
 					;;
 			esac
 		;;
@@ -167,12 +163,12 @@ database_credentials()
 				* )
 					# Setup local database values in wp-config.php
 					serversettings="\033[31mdisabled\033[0m"
-					echo ; echo "obi: Your \033[36m$server\033[0m server settings are set to $serversettings this can be changed with [ obi ] [ config ]." ; echo ; exit
+					echo ; echo "obi: Your \033[36m$server\033[0m server settings are set to $serversettings. To change this run: \033[33mobi config\033[0m" ; echo ; exit
 					;;
 			esac
 		;;
 	esac
-	echo ; echo "obi: Your \033[36m$server\033[0m server settings are set to $serversettings this can be changed with [ obi ] [ config ]." ; echo
+	echo ; echo "obi: Your \033[36m$server\033[0m server settings are set to $serversettings. To change this run: \033[33mobi config\033[0m" ; echo
 }
 
 wp_config_check()
@@ -627,7 +623,7 @@ case $ACTION in
 
 		done
 		 ;;
-	-e)
+	-e )
 		does_config_exist
 		empty_second_string_check "$PROJ_FOLDER_NAME"
 		strcheckret=$?
@@ -640,7 +636,7 @@ case $ACTION in
 		echo "obi: Your project is located at" `pwd`
 		echo
 		;;
-	-g)
+	-g )
 		does_config_exist
 		empty_second_string_check "$PROJ_FOLDER_NAME"
 		strcheckret=$?
@@ -657,7 +653,7 @@ case $ACTION in
 		echo "obi: Your project is located at" `pwd`
 		echo
 		;;
-	-w)
+	-w )
 		does_config_exist
 		empty_second_string_check "$PROJ_FOLDER_NAME"
 		strcheckret=$?
@@ -705,7 +701,7 @@ case $ACTION in
 		echo "obi: Your project is located at" `pwd`
 		echo
 		;;
-	-d)
+	-b )
 		does_config_exist
 		empty_second_string_check "$PROJ_FOLDER_NAME"
 		strcheckret=$?
@@ -726,17 +722,6 @@ case $ACTION in
 				clear
 				mysql_dump production
 				;;
-		esac
-		;;
-	-s)
-		does_config_exist
-		empty_second_string_check "$PROJ_FOLDER_NAME"
-		strcheckret=$?
-		directory_exist_check "$PROJ"
-		dircheckret=$?
-		check_returns
-
-		case $3 in
 		    -lts )
 				clear
 				backup_folder=staging
@@ -772,7 +757,7 @@ case $ACTION in
 				echo
 				echo "obi: Please specify database sync order"
 				echo
-				echo "obi: Usage: obi [ -s ] [ project_name ] [ sync_order ]"
+				echo "obi: Usage: obi [-b] [project_name] [location]"
 				echo
 				exit 0
 				;;
@@ -782,6 +767,40 @@ case $ACTION in
 		does_config_exist
 		database_credentials local
 		/Applications/MAMP/Library/bin/mysql -u"$user" -h"$host" -p"$pass"
+		;;
+	help )
+		clear
+		echo
+		echo "\tUsage: obi [argument]"
+		echo "\t   or: obi [argument] [project_name] [environment(s)]"
+		echo
+		echo "\tArguments:"
+		echo
+		echo "\t   config: configure obi."
+		echo "\t   help: prints usage to the terminal."
+		echo "\t   mysql: login local mysql database."
+		echo
+		echo "\t   -e: Create an empty working directory."
+		echo "\t   -g: Create a git repository working directory."
+		echo "\t   -w: Create a wordpress enabled git repository working directory."
+		echo "\t   -b: Backup mysql database. [environment(s)] expected."
+		echo
+		echo "\tProject name: Name of the folder that contains your project."
+		echo
+		echo "\tEnvironments:"
+		echo
+		echo "\t   -l: local"
+		echo "\t   -s: staging"
+		echo "\t   -p: production"
+		echo "\t   -lts: local to staging"
+		echo "\t   -ltp: local to production"
+		echo "\t   -stl: staging to local"
+		echo "\t   -stp: staging to production"
+		echo "\t   -ptl: production to local"
+		echo "\t   -pts: production to staging"
+		echo
+		echo
+		exit
 		;;
 	* )
 		clear
