@@ -2,34 +2,46 @@
 # -----------------------------------------------#
 ## Obi config
 ## ----------------------------------------------#
-config=$HOME/.obiconfig
+config="$HOME/.obiconfig"
 
 if [ -f "$config" ]
 then
 	. $HOME/.obiconfig
 fi
 
-#make obi config a must
-if [ ! -f "$config" ] && [ "$1" != "config" ]
-then
-	echo "localprojectdirectory=\"0\"\nlocalsettings=\"enabled\"\nlocalhost=\"localhost\"\nlocaluser=\"root\"\nlocalpassword=\"root\"\n\nstagingsettings=\"disabled\"\nstagingdomain=\"0\"\nstaginghost=\"0\"\nstaginguser=\"0\"\nstagingpassword=\"0\"\n\nproductionsettings=\"disabled\"\nproductiondomain=\"0\"\nproductionhost=\"0\"\nproductionuser=\"0\"\nproductionpassword=\"0\"" > $HOME/.obiconfig
+configerror()
+{
+	clear ; echo ; echo "obi: You must first set your local project directory to use that command" ; echo "obi: You can set it by running [ obi ] [ config ]" ; echo ;
+	exit
+}
 
-	runconfigmsg()
-	{
-		clear ; echo ; echo "\t\t\t""You must first set your local project directory to use that command" ; echo "\t\t\t""You can set it by running: obi [ config ]" ; echo ;
-		exit
-	}
-	runconfigmsg
+does_config_exist()
+{
+	file_exist_check "$HOME/.obiconfig"
+	fileexistreturn=$?
 
-elif [ -f "$config" ] && [ "$localprojectdirectory" == "0" ] && [ "$1" != "config" ]
-then
-	runconfigmsg
+	case "$fileexistreturn" in
+		9 )
+			case "$localprojectdirectory" in
+				0 )
+					configerror
+					exit
+					echo "this is the: $localprojectdirectory"
+					;;
+				*)
+					echo "this is the: $localprojectdirectory"
+					;;
+			esac
+			;;
+		10 )
+			echo "localprojectdirectory='0'\nlocalsettings='enabled'\nlocalhost='localhost'\nlocaluser='root'\nlocalpassword='root'\n\nstagingsettings='disabled'\nstagingdomain='0'\nstaginghost='0'\nstaginguser='0'\nstagingpassword='0'\n\nproductionsettings='disabled'\nproductiondomain='0'\nproductionhost='0'\nproductionuser='0'\nproductionpassword='0'" > $HOME/.obiconfig
+			configerror
+			exit
+			;;
 
-elif [ "$localprojectdirectory" == "0" ] && [ "$1" != "config" ]
-then
+	esac
 
-	runconfigmsg
-fi
+}
 
 # -----------------------------------------------#
 ## Variables
@@ -43,7 +55,7 @@ PROJ_FOLDER_NAME="$2"
 
 # If third parameter (project path) is left empty,
 case $3 in
-	lts|ltp|stl|stp|ptl|pts|-l|-s|-p) PROJ_PATH="$localprojectdirectory"
+	-lts|-ltp|-stl|-stp|-ptl|-pts|-l|-s|-p) PROJ_PATH="$localprojectdirectory"
 		;;
 		* )
 			if [ -z "$3" ]
@@ -81,94 +93,85 @@ perl -i -pe '
 
 database_credentials()
 {
-
 	server=$1
 
+	case "$server" in
+		local )
+			serversettings="$localsettings"
 
-	if [ "$server" == "local" ]
-	then
-		serversettings="$localsettings"
+			case "$serversettings" in
+				enabled )
+					host="$localhost"
+					user="$localuser"
+					pass="$localpassword"
+					name="$CUT_NAME"_"$server"_db
+					serversettings="\033[32menabled\033[0m"
+					;;
+				wp-enabled )
+					host=`awk -F\' '/local_db_host/ {print $4}' "$wpconfiglocation"`
+					user=`awk -F\' '/local_db_user/ {print $4}' "$wpconfiglocation"`
+					pass=`awk -F\' '/local_db_password/ {print $4}' "$wpconfiglocation"`
+					name=`awk -F\' '/local_db_name/ {print $4}' "$wpconfiglocation"`
+					serversettings="\033[32mwp-enabled\033[0m"
+					;;
+				* )
+					serversettings="\033[31mdisabled\033[0m"
+					echo ; echo "obi: Your \033[36m$server\033[0m server settings are set to $serversettings this can be changed with [ obi ] [ config ]." ; echo ; exit
+					;;
+			esac
+		;;
+		staging )
+			serversettings="$stagingsettings"
 
-		if [ "$serversettings" == "enabled" ]
-		then
-			host="$localhost"
-			user="$localuser"
-			pass="$localpassword"
-			name="$CUT_NAME"_"$server"_db
-			serversettings="\033[32menabled\033[0m"
+			case $serversettings in
+				enabled )
+					host="$staginghost"
+					user="$staginguser"
+					pass="$stagingpassword"
+					name="$CUT_NAME"_"$server"_db
+					serversettings="\033[32menabled\033[0m"
+					;;
+				wp-enabled )
+					host=`awk -F\' '/staging_db_host/ {print $4}' "$wpconfiglocation"`
+					user=`awk -F\' '/staging_db_user/ {print $4}' "$wpconfiglocation"`
+					pass=`awk -F\' '/staging_db_password/ {print $4}' "$wpconfiglocation"`
+					name=`awk -F\' '/staging_db_name/ {print $4}' "$wpconfiglocation"`
+					serversettings="\033[32mwp-enabled\033[0m"
+					;;
+				* )
+		 			# Setup local database values in wp-config.php
+					serversettings="\033[31mdisabled\033[0m"
+					echo ; echo "obi: Your \033[36m$server\033[0m server settings are set to $serversettings this can be changed with [ obi ] [ config ]." ; echo ; exit
+					;;
+			esac
+		;;
+		production )
+			serversettings="$productionsettings"
 
-		elif [ "$serversettings" == "wp-enabled" ]
-		then
-			host=`awk -F\' '/local_db_host/ {print $4}' "$wpconfiglocation"`
-			user=`awk -F\' '/local_db_user/ {print $4}' "$wpconfiglocation"`
-			pass=`awk -F\' '/local_db_password/ {print $4}' "$wpconfiglocation"`
-			name=`awk -F\' '/local_db_name/ {print $4}' "$wpconfiglocation"`
-			serversettings="\033[32mwp-enabled\033[0m"
-		else
-			host=localhost
-			user=root
-			pass=root
-			name="$CUT_NAME"_"$server"_db
-			serversettings="\033[31mdisabled\033[0m"
-		fi
-
-	elif [ "$server" == "staging" ]
-	then
-		serversettings="$stagingsettings"
-
-		if  [ "$serversettings" == "enabled" ]
-		then
-			host="$staginghost"
-			user="$staginguser"
-			pass="$stagingpassword"
-			name="$CUT_NAME"_"$server"_db
-			serversettings="\033[32menabled\033[0m"
-
-		elif [ "$serversettings" == "wp-enabled"  ]
-		then
-			host=`awk -F\' '/staging_db_host/ {print $4}' "$wpconfiglocation"`
-			user=`awk -F\' '/staging_db_user/ {print $4}' "$wpconfiglocation"`
-			pass=`awk -F\' '/staging_db_password/ {print $4}' "$wpconfiglocation"`
-			name=`awk -F\' '/staging_db_name/ {print $4}' "$wpconfiglocation"`
-			serversettings="\033[32mwp-enabled\033[0m"
-		else
-			# Setup local database values in wp-config.php
-			host=localhost
-			user=root
-			pass=root
-			name="$CUT_NAME"_"$server"_db
-			serversettings="\033[31mdisabled\033[0m"
-		fi
-	elif [ "$server" == "production" ]
-	then
-		serversettings="$productionsettings"
-
-		if [ "$serversettings" == "enabled" ]
-		then
-			host="$productionhost"
-			user="$productionuser"
-			pass="$productionpassword"
-			name="$CUT_NAME"_"$server"_db
-			serversettings="\033[32menabled\033[0m"
-
-		elif [ "$serversettings" == "wp-enabled" ]
-		then
-			host=`awk -F\' '/prod_db_host/ {print $4}' "$wpconfiglocation"`
-			user=`awk -F\' '/prod_db_user/ {print $4}' "$wpconfiglocation"`
-			pass=`awk -F\' '/prod_db_password/ {print $4}' "$wpconfiglocation"`
-			name=`awk -F\' '/prod_db_name/ {print $4}' "$wpconfiglocation"`
-			serversettings="\033[32mwp-enabled\033[0m"
-		else
-			# Setup local database values in wp-config.php
-			host=localhost
-			user=root
-			pass=root
-			name="$CUT_NAME"_"$server"_db
-			serversettings="\033[31mdisabled\033[0m"
-		fi
-
-	fi
-	echo "Your \033[36m$server\033[0m server settings are set to $serversettings this can be changed with [ obi ] [ config ]."
+			case "$serversettings" in
+				enabled )
+					host="$productionhost"
+					user="$productionuser"
+					pass="$productionpassword"
+					name="$CUT_NAME"_"$server"_db
+					serversettings="\033[32menabled\033[0m"
+					;;
+				wp-enabled )
+					host=`awk -F\' '/prod_db_host/ {print $4}' "$wpconfiglocation"`
+					user=`awk -F\' '/prod_db_user/ {print $4}' "$wpconfiglocation"`
+					pass=`awk -F\' '/prod_db_password/ {print $4}' "$wpconfiglocation"`
+					name=`awk -F\' '/prod_db_name/ {print $4}' "$wpconfiglocation"`
+					serversettings="\033[32mwp-enabled\033[0m"
+					;;
+				* )
+					# Setup local database values in wp-config.php
+					serversettings="\033[31mdisabled\033[0m"
+					echo ; echo "obi: Your \033[36m$server\033[0m server settings are set to $serversettings this can be changed with [ obi ] [ config ]." ; echo ; exit
+					;;
+			esac
+		;;
+	esac
+	echo ; echo "obi: Your \033[36m$server\033[0m server settings are set to $serversettings this can be changed with [ obi ] [ config ]." ; echo
 }
 
 wp_config_check()
@@ -187,9 +190,9 @@ wp_config_check()
 		if [ "$ret10" == "10" ]
 		then
 			clear
-			echo ""
-			echo "\t\t\t""The file [ $file ] does not exist"
-			echo ""
+			echo
+			echo "obi: The file [ $file ] does not exist"
+			echo
 			exit 0
 		fi
 	fi
@@ -210,7 +213,6 @@ mysql_dump()
 
 	wp_config_check
 
-	clear
 	#looks for database username, database password and database name in the wp-config file
 	database_credentials $database
 
@@ -225,7 +227,6 @@ mysql_import()
 	mysql_timestamp
 
 	cd "$PROJ"
-	echo "$PROJ"
 
 	if [ ! -d "dumps" ]
 	then
@@ -272,7 +273,7 @@ find_and_replace_wp_url()
 
 	find=`awk -F'"' -v  find="$find_url" '$0 ~ find {print $2}' "$wpconfiglocation" | awk -F: '{print $2}' | cut -c 3-`
 	replace=`awk -F'"' -v  replace="$replace_url" '$0 ~ replace {print $2}' "$wpconfiglocation" | awk -F: '{print $2}' | cut -c 3-`
-
+	echo "obi: Replaceing \033[31m$find\033[0m with \033[32m$replace\033[0m"
 	sed -i '' -e "s,$find,$replace,g" "$PROJ_PATH$PROJ_FOLDER_NAME/dumps/$folder/$THE_FILE_NAME.sql"
 }
 empty_second_string_check()
@@ -294,9 +295,9 @@ project_exist_check()
 	if [  -d "$project" -a -w "$project" ]
 	then
 		clear
-		echo ""
-		echo "\t\t\t""The desired project folder name you specified already exist"
-		echo ""
+		echo
+		echo "obi: The desired project folder name you specified already exist"
+		echo
 		exit 0
 	fi
 }
@@ -318,6 +319,8 @@ file_exist_check ()
 	if [ ! -f "$file" ]
 	then
 		return 10
+	else
+		return 9
 	fi
 }
 mysql_timestamp()
@@ -340,17 +343,15 @@ create_directories()
 }
 check_returns()
 {
+
 	case "$strcheckret" in
-		6 ) clear ; echo ; echo "\t\t\t""\033[33m Your input was empty please try again\033[0m" ; echo ;
+		6 ) clear ; echo ; echo "obi: \033[33m Your input was empty please try again\033[0m" ; echo ;
 			exit
 			;;
 	esac
 
-	directory_exist_check "$PROJ"
-	dircheckret=$?
-
 	case "$dircheckret" in
-		5 ) clear ; echo ; echo "\t\t\t""\033[33m The project name entered does not exist\033[0m" ; echo ;
+		5 ) clear ; echo ; echo "obi: The project \033[33m$PROJ\033[0m" entered does not exist ; echo ;
 			exit
 			;;
 	esac
@@ -358,7 +359,7 @@ check_returns()
 set_project_dir()
 {
 
-	MSG="\033[36m Please enter your desired project working directory without the trailing slash or \n\t simply drag and drop the desired folder into this window and press ENTER"
+	MSG="\033[36m Please enter your desired project working directory without the trailing slash or \n     simply drag and drop the desired folder into this window and press ENTER"
 
 	clear
 
@@ -381,8 +382,8 @@ set_project_dir()
 	then
 		MSG="\033[31m Your input was empty or the directory does not exist"
 	else
-		sed -i '' "1s,localprojectdirectory=.*,localprojectdirectory=\"$DIRECTORY/\"," $HOME/.obiconfig
-		MSG="\033[32m Your project working directory has been set to \n\t $DIRECTORY/"
+		sed -i '' "1s,localprojectdirectory=.*,localprojectdirectory='$DIRECTORY/'," $HOME/.obiconfig
+		MSG="\033[32m Your project working directory has been set to \n     $DIRECTORY/"
 	fi ;
 
 }
@@ -402,7 +403,7 @@ set_environment()
 	then
 		MSG="\033[33m Your input was empty please try again"
 	else
-		sed -i '' "${linenumber}s,$environment$environmentvalue=.*,$environment$environmentvalue=\"$environmentanswer\"," $HOME/.obiconfig
+		sed -i '' "${linenumber}s,$environment$environmentvalue=.*,$environment$environmentvalue='$environmentanswer'," $HOME/.obiconfig
 		MSG="\033[32m Your local database host has been set to \n\t $environmentanswer"
 	fi ;
 
@@ -484,7 +485,7 @@ toggle_environment_settings()
 			;;
 	esac
 
-	sed -i '' "${linenumber}s,$setting=.*,$setting=\"$switchsettings\"," $HOME/.obiconfig
+	sed -i '' "${linenumber}s,$setting=.*,$setting='$switchsettings'," $HOME/.obiconfig
 	MSG="\033[32m Your $environment server settings has been set to \n\t $switchsettings"
 
 }
@@ -544,11 +545,11 @@ main_menu()
 	echo "\t\t\t""$mprompt"
 	echo "\t\t\t""$nprompt"
 	echo "\t\t\t""$oprompt"
-	echo "\t\t\t"
-	echo "\t\t\t"
+	echo
+	echo
 	echo "\t\t\tx. Exit and return back to the terminal"
 	echo
-	echo "Message:""$MSG"
+	echo "obi:""$MSG"
 	echo "\033[0m"
 	echo "Select by pressing the letter and then ENTER" ;
 
@@ -625,17 +626,25 @@ case $ACTION in
 
 		done
 		 ;;
-	-f)
+	-e)
+		does_config_exist
 		empty_second_string_check "$PROJ_FOLDER_NAME"
+		strcheckret=$?
 		project_exist_check "$PROJ"
+		dircheckret=$?
 		check_returns
 
 		create_directories
-		echo "Project Location:" `pwd`
+		echo
+		echo "obi: Your project is located at" `pwd`
+		echo
 		;;
 	-g)
+		does_config_exist
 		empty_second_string_check "$PROJ_FOLDER_NAME"
+		strcheckret=$?
 		project_exist_check "$PROJ"
+		dircheckret=$?
 		check_returns
 
 		create_directories
@@ -643,11 +652,16 @@ case $ACTION in
 		git init
 		echo ".DS_Store\nwp-config.php" > .gitignore
 		ls -laO
-		echo "Project Location:" `pwd`
+		echo
+		echo "obi: Your project is located at" `pwd`
+		echo
 		;;
 	-w)
+		does_config_exist
 		empty_second_string_check "$PROJ_FOLDER_NAME"
+		strcheckret=$?
 		project_exist_check "$PROJ"
+		dircheckret=$?
 		check_returns
 
 		create_directories
@@ -685,71 +699,94 @@ case $ACTION in
 		# Create project's databse
 		/Applications/MAMP/Library/bin/mysql -u $user -h localhost -p$pass -Bse "CREATE DATABASE ${name};"
 		ls -laO
-		echo "Project Location:" `pwd`
+		echo
+		echo "obi: Your project is located at" `pwd`
+		echo
 		;;
 	-d)
+		does_config_exist
 		empty_second_string_check "$PROJ_FOLDER_NAME"
+		strcheckret=$?
 		directory_exist_check "$PROJ"
+		dircheckret=$?
 		check_returns
 
 		case $3 in
 			-l )
+				clear
 				mysql_dump local
 				;;
-			-s)
+			-s )
+				clear
 				mysql_dump staging
 				;;
 			-p )
+				clear
 				mysql_dump production
 				;;
 		esac
 		;;
 	-s)
+		does_config_exist
 		empty_second_string_check "$PROJ_FOLDER_NAME"
+		strcheckret=$?
 		directory_exist_check "$PROJ"
+		dircheckret=$?
 		check_returns
 
 		case $3 in
-		    lts )
+		    -lts )
+				clear
 				backup_folder=staging
 				mysql_sync local staging local_site_url staging_site_url
 		        ;;
-		    ltp )
+		    -ltp )
+				clear
 				backup_folder=production
 				mysql_sync local production local_site_url production_site_url
 		        ;;
-		    stl )
+		    -stl )
+				clear
 				backup_folder=local
 				mysql_sync staging local staging_site_url local_site_url
 		        ;;
-		    stp )
+		    -stp )
+				clear
 				backup_folder=production
 				mysql_sync staging production staging_site_url production_site_url
 		        ;;
-		    ptl )
+		    -ptl )
+				clear
 				backup_folder=local
 				mysql_sync production local production_site_url local_site_url
 		        ;;
-		    pts )
+		    -pts )
+				clear
 				backup_folder=staging
 				mysql_sync production staging production_site_url staging_site_url
 		        ;;
 		    *)
 				clear
-				echo ""
-				echo "\t\t\t""Please specify database sync order"
-				echo ""
-				echo "\t\t\t""Usage: obi [-s] [project_name] [direction]"
-				echo ""
+				echo
+				echo "obi: Please specify database sync order"
+				echo
+				echo "obi: Usage: obi [ -s ] [ project_name ] [ sync_order ]"
+				echo
 				exit 0
 				;;
 			esac
 		;;
+	mysql )
+			does_config_exist
+			database_credentials local
+			/Applications/MAMP/Library/bin/mysql -u"$user" -h"$host" -p"$pass"
+
+		;;
 	* )
 		clear
-		echo ""
-		echo "\t\t\t""Please enter a valid selection"
-		echo ""
+		echo
+		echo "obi: Please enter a valid selection"
+		echo
 	;;
 
 esac
