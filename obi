@@ -1,4 +1,35 @@
 #!/bin/sh
+# -----------------------------------------------#
+## Obi config
+## ----------------------------------------------#
+config=$HOME/.obiconfig
+
+if [ -f "$config" ]
+then
+	. $HOME/.obiconfig
+fi
+
+#make obi config a must
+if [ ! -f "$config" ] && [ "$1" != "config" ]
+then
+	echo "localprojectdirectory=\"0\"\nlocalsettings=\"enabled\"\nlocalhost=\"localhost\"\nlocaluser=\"root\"\nlocalpassword=\"root\"\n\nstagingsettings=\"disabled\"\nstagingdomain=\"0\"\nstaginghost=\"0\"\nstaginguser=\"0\"\nstagingpassword=\"0\"\n\nproductionsettings=\"disabled\"\nproductiondomain=\"0\"\nproductionhost=\"0\"\nproductionuser=\"0\"\nproductionpassword=\"0\"" > $HOME/.obiconfig
+
+	runconfigmsg()
+	{
+		clear ; echo ; echo "\t\t\t""You must first set your local project directory to use that command" ; echo "\t\t\t""You can set it by running: obi [ config ]" ; echo ;
+		exit
+	}
+	runconfigmsg
+
+elif [ -f "$config" ] && [ "$localprojectdirectory" == "0" ] && [ "$1" != "config" ]
+then
+	runconfigmsg
+
+elif [ "$localprojectdirectory" == "0" ] && [ "$1" != "config" ]
+then
+
+	runconfigmsg
+fi
 
 # -----------------------------------------------#
 ## Variables
@@ -12,14 +43,14 @@ PROJ_FOLDER_NAME="$2"
 
 # If third parameter (project path) is left empty,
 case $3 in
-	lts|ltp|stl|stp|ptl|pts|-l|-s|-p) PROJ_PATH=`cat ~/.obiconfig`
+	lts|ltp|stl|stp|ptl|pts|-l|-s|-p) PROJ_PATH="$localprojectdirectory"
 		;;
 		* )
 			if [ -z "$3" ]
 
 			# Then use the default project folder
 			then
-				PROJ_PATH=`cat ~/.obiconfig`
+				PROJ_PATH="$localprojectdirectory"
 			else
 				# Else store the given directory as the project folder as the third variable
 				PROJ_PATH=$3/
@@ -37,7 +68,8 @@ CUT_NAME=`echo $PROJ_FOLDER_NAME | cut -c1-3`
 ## Functions
 ## ----------------------------------------------#
 
-salts()  {
+salts()
+{
 perl -i -pe '
   BEGIN {
     $keysalts = qx(curl -sS https://api.wordpress.org/secret-key/1.1/salt)
@@ -46,48 +78,216 @@ perl -i -pe '
 ' wp-config.php
 
 }
-sql_credentials()  {
 
-	host=`awk -F\' -v H_PATTERN="$H_PATTERN" '$0 ~ H_PATTERN {print $4}' "$PROJ/site/wp-config.php"`
-	user=`awk -F\' -v U_PATTERN="$U_PATTERN" '$0 ~ U_PATTERN {print $4}' "$PROJ/site/wp-config.php"`
-	pass=`awk -F\' -v P_PATTERN="$P_PATTERN" '$0 ~ P_PATTERN {print $4}' "$PROJ/site/wp-config.php"`
-	db=`awk -F\' -v N_PATTERN="$N_PATTERN" '$0 ~ N_PATTERN {print $4}' "$PROJ/site/wp-config.php"`
-	url=`awk -F'"' -v URL_PATTERN="$URL_PATTERN" '$0 ~ URL_PATTERN {print $2}' "$PROJ/site/wp-config.php"`
-}
-f_sql_credentials()  {
+database_credentials()
+{
 
-	f_host=`awk -F\' -v F_H_PATTERN="$F_H_PATTERN" '$0 ~ F_H_PATTERN {print $4}' "$PROJ/site/wp-config.php"`
-	f_user=`awk -F\' -v F_U_PATTERN="$F_U_PATTERN" '$0 ~ F_U_PATTERN {print $4}' "$PROJ/site/wp-config.php"`
-	f_pass=`awk -F\' -v F_P_PATTERN="$F_P_PATTERN" '$0 ~ F_P_PATTERN {print $4}' "$PROJ/site/wp-config.php"`
-	f_db=`awk -F\' -v F_N_PATTERN="$F_N_PATTERN" '$0 ~ F_N_PATTERN {print $4}' "$PROJ/site/wp-config.php"`
-	find=`awk -F'"' -v F_URL_PATTERN="$F_URL_PATTERN" '$0 ~ F_URL_PATTERN {print $2}' "$PROJ/site/wp-config.php" | awk -F: '{print $2}' | cut -c 3-`
-}
-r_sql_credentials()  {
+	server=$1
 
-	r_host=`awk -F\' -v R_H_PATTERN="$R_H_PATTERN" '$0 ~ R_H_PATTERN {print $4}' "$PROJ/site/wp-config.php"`
-	r_user=`awk -F\' -v R_U_PATTERN="$R_U_PATTERN" '$0 ~ R_U_PATTERN {print $4}' "$PROJ/site/wp-config.php"`
-	r_pass=`awk -F\' -v R_P_PATTERN="$R_P_PATTERN" '$0 ~ R_P_PATTERN {print $4}' "$PROJ/site/wp-config.php"`
-	r_db=`awk -F\' -v R_N_PATTERN="$R_N_PATTERN" '$0 ~ R_N_PATTERN {print $4}' "$PROJ/site/wp-config.php"`
-	replace=`awk -F'"' -v R_URL_PATTERN="$R_URL_PATTERN" '$0 ~ R_URL_PATTERN {print $2}' "$PROJ/site/wp-config.php" | awk -F: '{print $2}' | cut -c 3-`
+
+	if [ "$server" == "local" ]
+	then
+		serversettings="$localsettings"
+
+		if [ "$serversettings" == "enabled" ]
+		then
+			host="$localhost"
+			user="$localuser"
+			pass="$localpassword"
+			name="$CUT_NAME"_"$server"_db
+			serversettings="\033[32menabled\033[0m"
+
+		elif [ "$serversettings" == "wp-enabled" ]
+		then
+			host=`awk -F\' '/local_db_host/ {print $4}' "$wpconfiglocation"`
+			user=`awk -F\' '/local_db_user/ {print $4}' "$wpconfiglocation"`
+			pass=`awk -F\' '/local_db_password/ {print $4}' "$wpconfiglocation"`
+			name=`awk -F\' '/local_db_name/ {print $4}' "$wpconfiglocation"`
+			serversettings="\033[32mwp-enabled\033[0m"
+		else
+			host=localhost
+			user=root
+			pass=root
+			name="$CUT_NAME"_"$server"_db
+			serversettings="\033[31mdisabled\033[0m"
+		fi
+
+	elif [ "$server" == "staging" ]
+	then
+		serversettings="$stagingsettings"
+
+		if  [ "$serversettings" == "enabled" ]
+		then
+			host="$staginghost"
+			user="$staginguser"
+			pass="$stagingpassword"
+			name="$CUT_NAME"_"$server"_db
+			serversettings="\033[32menabled\033[0m"
+
+		elif [ "$serversettings" == "wp-enabled"  ]
+		then
+			host=`awk -F\' '/staging_db_host/ {print $4}' "$wpconfiglocation"`
+			user=`awk -F\' '/staging_db_user/ {print $4}' "$wpconfiglocation"`
+			pass=`awk -F\' '/staging_db_password/ {print $4}' "$wpconfiglocation"`
+			name=`awk -F\' '/staging_db_name/ {print $4}' "$wpconfiglocation"`
+			serversettings="\033[32mwp-enabled\033[0m"
+		else
+			# Setup local database values in wp-config.php
+			host=localhost
+			user=root
+			pass=root
+			name="$CUT_NAME"_"$server"_db
+			serversettings="\033[31mdisabled\033[0m"
+		fi
+	elif [ "$server" == "production" ]
+	then
+		serversettings="$productionsettings"
+
+		if [ "$serversettings" == "enabled" ]
+		then
+			host="$productionhost"
+			user="$productionuser"
+			pass="$productionpassword"
+			name="$CUT_NAME"_"$server"_db
+			serversettings="\033[32menabled\033[0m"
+
+		elif [ "$serversettings" == "wp-enabled" ]
+		then
+			host=`awk -F\' '/prod_db_host/ {print $4}' "$wpconfiglocation"`
+			user=`awk -F\' '/prod_db_user/ {print $4}' "$wpconfiglocation"`
+			pass=`awk -F\' '/prod_db_password/ {print $4}' "$wpconfiglocation"`
+			name=`awk -F\' '/prod_db_name/ {print $4}' "$wpconfiglocation"`
+			serversettings="\033[32mwp-enabled\033[0m"
+		else
+			# Setup local database values in wp-config.php
+			host=localhost
+			user=root
+			pass=root
+			name="$CUT_NAME"_"$server"_db
+			serversettings="\033[31mdisabled\033[0m"
+		fi
+
+	fi
+	echo "Your \033[36m$server\033[0m server settings are set to $serversettings this can be changed with [ obi ] [ config ]."
 }
-empty_second_string_check()  {
+
+wp_config_check()
+{
+
+	wpconfiglocation="site/wp-config.php"
+	file_exist_check "site/wp-config.php"
+	ret10=$?
+
+	if [ "$ret10" == "10" ]
+	then
+		wpconfiglocation="wp-config.php"
+		file_exist_check "wp-config.php"
+		ret10=$?
+
+		if [ "$ret10" == "10" ]
+		then
+			clear
+			echo ""
+			echo "\t\t\t""The file [ $file ] does not exist"
+			echo ""
+			exit 0
+		fi
+	fi
+}
+
+mysql_dump()
+{
+	database=$1
+
+	mysql_timestamp
+
+	cd "$PROJ"
+
+	if [ ! -d "dumps" ]
+	then
+	mkdir dumps
+	fi
+
+	wp_config_check
+
+	clear
+	#looks for database username, database password and database name in the wp-config file
+	database_credentials $database
+
+	/Applications/MAMP/Library/bin/mysqldump --net_buffer_length=50000 -h"$host" -u"$user" -p"$pass" "$name" > "dumps/$database/$THE_FILE_NAME.sql"
+}
+
+mysql_import()
+{
+	database=$1
+	from=$2
+
+	mysql_timestamp
+
+	cd "$PROJ"
+	echo "$PROJ"
+
+	if [ ! -d "dumps" ]
+	then
+	mkdir dumps
+	fi
+
+	wp_config_check
+
+	#looks for database username, database password and database name in the wp-config file
+	database_credentials $database
+
+	/Applications/MAMP/Library/bin/mysql -h"$host" -u"$user" -p"$pass" "$name" < "dumps/$from/$THE_FILE_NAME.sql"
+}
+
+mysql_sync()
+{
+	dump=$1
+	import=$2
+	find=$3
+	replace=$4
+
+	mysql_dump $import
+	mysql_dump $dump
+	find_and_replace_wp_url $find $replace $dump
+	mysql_import $import $dump
+
+}
+
+find_and_replace_wp_url()
+{
+
+	find_url=$1
+	replace_url=$2
+	folder=$3
+
+	cd "$PROJ"
+
+	if [ ! -d "dumps" ]
+	then
+	mkdir dumps
+	fi
+
+	wp_config_check
+
+	find=`awk -F'"' -v  find="$find_url" '$0 ~ find {print $2}' "$wpconfiglocation" | awk -F: '{print $2}' | cut -c 3-`
+	replace=`awk -F'"' -v  replace="$replace_url" '$0 ~ replace {print $2}' "$wpconfiglocation" | awk -F: '{print $2}' | cut -c 3-`
+
+	sed -i '' -e "s,$find,$replace,g" "$PROJ_PATH$PROJ_FOLDER_NAME/dumps/$folder/$THE_FILE_NAME.sql"
+}
+empty_second_string_check()
+{
 
 	string=$1
 
 	if  [ -z "$string" ]
 	then
-		clear
-		echo ""
-		echo "\t\t\t""You didn't enter a desired project folder name"
-		echo ""
-		echo "\t\t\t""Usage: [new] then a flag [-w for wordpress git repo] or [-g for empty git repo]"
-		echo "\t\t\t\tthen [project_name]"
-		echo ""
-		exit 0
+		return 6
 	fi
 }
 # Check to see if the directory given is writable to not overwrite it
-project_exist_check()  {
+project_exist_check()
+{
 
 	project=$1
 
@@ -101,26 +301,27 @@ project_exist_check()  {
 	fi
 }
 # Check to see if the directory given is writable to not overwrite it
-directory_exist_check()  {
+directory_exist_check()
+{
 
 	writable="$1"
 
 	if [ ! -d "$writable" ]
 	then
-
-		return 10
+		return 5
 	fi
 }
-file_exist_check ()  {
+file_exist_check ()
+{
 	file=$1
 
 	if [ ! -f "$file" ]
 	then
-
 		return 10
 	fi
 }
-mysql_timestamp() {
+mysql_timestamp()
+{
 
 	#mysql variables
 	THE_DATE="$(date +%A-%m-%d-%Y)"
@@ -128,142 +329,297 @@ mysql_timestamp() {
 	THE_FILE_NAME=$THE_DATE-$THE_DB_NAME
 
 }
-create_directories()  {
+create_directories()
+{
+	clear
 	cd "$PROJ_PATH"
 	mkdir $PROJ_FOLDER_NAME
 	cd $PROJ_FOLDER_NAME
 	mkdir -p architecture/estimates architecture assets/ai assets/content assets/images/gif assets/images/jpg assets/images/png assets/images assets/pdf assets/psd assets dumps/local dumps/production dumps/staging dumps emails fonts mock-ups site
 	cd site
 }
-wp_config_check()  {
-	file_exist_check "site/wp-config.php"
-	ret=$?
+check_returns()
+{
+	case "$strcheckret" in
+		6 ) clear ; echo ; echo "\t\t\t""\033[33m Your input was empty please try again\033[0m" ; echo ;
+			exit
+			;;
+	esac
 
-	if [ "$ret" == "10" ]
-	then
-		file_exist_check "wp-config.php"
-		ret=$?
+	directory_exist_check "$PROJ"
+	dircheckret=$?
 
-		if [ "$ret" == "10" ]
-		then
-			clear
-			echo ""
-			echo "\t\t\t""The file [ $file ] does not exist"
-			echo ""
-			exit 0
-		fi
-	fi
+	case "$dircheckret" in
+		5 ) clear ; echo ; echo "\t\t\t""\033[33m The project name entered does not exist\033[0m" ; echo ;
+			exit
+			;;
+	esac
 }
-set_dir() {
+set_project_dir()
+{
 
-	MSG="please enter your desired project path without the trailing slash or \nsimply drag and drop the desired folder into this window"
+	MSG="\033[36m Please enter your desired project working directory without the trailing slash or \n\t simply drag and drop the desired folder into this window and press ENTER"
+
 	clear
+
 	main_menu
+
 	read DIRECTORY
 
-
-	directory_exist_check "$DIRECTORY"
 	empty_second_string_check "$DIRECTORY"
+	ret6=$?
+	directory_exist_check "$DIRECTORY"
+	ret5=$?
+
+	if [ "$ret6" == "6" ] && [ "$ret5" != "5" ]
+	then
+		MSG="\033[31m Your input was empty please try again"
+	elif [ "$ret6" != "6" ] && [ "$ret5" == "5" ]
+	then
+		MSG="\033[31m The directory you entered is not writable or does not exist"
+	elif [ "$ret6" == "6" ] && [ "$ret5" == "5" ]
+	then
+		MSG="\033[31m Your input was empty or the directory does not exist"
+	else
+		sed -i '' "1s,localprojectdirectory=.*,localprojectdirectory=\"$DIRECTORY/\"," $HOME/.obiconfig
+		MSG="\033[32m Your project working directory has been set to \n\t $DIRECTORY/"
+	fi ;
+
+}
+
+set_environment()
+{
+
+	environment=$1
+	environmentvalue=$2
+	linenumber=$3
+	MSG="\033[36m Please enter your $environment database $environmentvalue"
+	clear
+	main_menu
+	read environmentanswer
+	empty_second_string_check "$environmentanswer"
+	if [ "$ret6" == "6" ]
+	then
+		MSG="\033[33m Your input was empty please try again"
+	else
+		sed -i '' "${linenumber}s,$environment$environmentvalue=.*,$environment$environmentvalue=\"$environmentanswer\"," $HOME/.obiconfig
+		MSG="\033[32m Your local database host has been set to \n\t $environmentanswer"
+	fi ;
+
+}
+#server settings
+
+server_toggle_settings()
+{
+
+	switch=$1
+
+	case "$switch" in
+		enabled ) return 1
+			;;
+		wp-enabled ) return 2
+			;;
+		* ) return 0
+			;;
+	esac
+
+}
+get_server_settings()
+{
+	server_toggle_settings "$localsettings"
+	localsettingreturn=$?
+
+	case "$localsettingreturn" in
+		0 ) localsettingsare="\033[31mdisabled\033[0m"
+			;;
+		1 ) localsettingsare="\033[32menabled\033[0m"
+			;;
+		2 ) localsettingsare="\033[32mwp-enabled\033[0m"
+			;;
+	esac
+
+	server_toggle_settings "$stagingsettings"
+	stagesettingreturn=$?
+
+	case "$stagesettingreturn" in
+		0 ) stagingsettingsare="\033[31mdisabled\033[0m"
+			;;
+		1 ) stagingsettingsare="\033[32menabled\033[0m"
+			;;
+		2 ) stagingsettingsare="\033[32mwp-enabled\033[0m"
+			;;
+	esac
+
+	server_toggle_settings "$productionsettings"
+	prodsettingreturn=$?
+
+	case "$prodsettingreturn" in
+		0 ) prodsettingsare="\033[31mdisabled\033[0m"
+			;;
+		1 ) prodsettingsare="\033[32menabled\033[0m"
+			;;
+		2 ) prodsettingsare="\033[32mwp-enabled\033[0m"
+			;;
+	esac
+}
+
+
+toggle_environment_settings()
+{
+
+	environment=$1
+	environmentvalue=$2
+	linenumber=$3
+
+	setting="$environment""settings"
+
+	case "$environmentvalue" in
+		enabled ) switchsettings="wp-enabled"
+			;;
+		wp-enabled ) switchsettings="disabled"
+			;;
+		disabled ) switchsettings="enabled"
+			;;
+		* ) switchsettings="disabled"
+			;;
+	esac
+
+	sed -i '' "${linenumber}s,$setting=.*,$setting=\"$switchsettings\"," $HOME/.obiconfig
+	MSG="\033[32m Your $environment server settings has been set to \n\t $switchsettings"
+
 }
 
 # -----------------------------------------------#
 ## Menu System
 ## ----------------------------------------------#
-aprompt="a. Set project working directory"
-bprompt="b. Set local environment"
-cprompt="c. Set staging environment"
-dprompt="d. Set production environment"
-eprompt="e. "
-fprompt="f. "
-gprompt="g. "
-hprompt="h. "
-iprompt="i. "
-jprompt="j. "
-kprompt="k. "
-lprompt="l. "
 
-invalidchoice () { MSG="Invalid Selection ... Please Try Again" ; } 
+main_menu()
+{
+	# get the server settings
+	get_server_settings
 
-achoice() {
+	aprompt="1. Set project working directory"
+	bprompt="2. Set local server to $localsettingsare"
+	cprompt="3. Set local database host"
+	dprompt="4. Set local database user"
+	eprompt="5. Set local database password"
+	fprompt="6. Set staging server to $stagingsettingsare"
+	gprompt="7. Set staging database domain"
+	hprompt="8. Set staging database host"
+	iprompt="9. Set staging database user"
+	jprompt="10. Set staging database password"
+	kprompt="11. Set production server to $prodsettingsare"
+	lprompt="12. Set production database domain"
+	mprompt="13. Set production database host"
+	nprompt="14. Set production database user"
+	oprompt="15. Set production database password"
 
-set_dir ;
-
-	ret=$?
-	if [ "$ret" = "10" ]
-	then
-		MSG="Directory is not writable or it does not exist"
-	else
-		MSG="Your project working directory has been set to \n$DIRECTORY"
-	fi ;
-}
-bchoice() { ls -l| more ; echo Press Enter ; read DUMMY ; }
-cchoice() { invalidchoice ; }
-dchoice() { invalidchoice ; }
-echoice() { invalidchoice ; }
-fchoice() { invalidchoice ; }
-gchoice() { invalidchoice ; }
-hchoice() { invalidchoice ; }
-ichoice() { invalidchoice ; }
-jchoice() { invalidchoice ; }
-kchoice() { invalidchoice ; }
-lchoice() { invalidchoice ; }
-
-
-main_menu() {
 	clear
 	echo `date`
 	echo
-	echo "\t\t\t" $aprompt
-	echo "\t\t\t" $bprompt
-	echo "\t\t\t" $cprompt
-	echo "\t\t\t" $dprompt
-	echo "\t\t\t" $eprompt
-	echo "\t\t\t" $fprompt
-	echo "\t\t\t" $gprompt
-	echo "\t\t\t" $hprompt
-	echo "\t\t\t" $iprompt
-	echo "\t\t\t" $jprompt
-	echo "\t\t\t" $kprompt
-	echo "\t\t\t" $lprompt
-	echo "\t\t\t"
-	echo "\t\t\t"
-	echo "\t\t\t"
-	echo "\t\t\tx. Exit"
+	echo "\t\t\t\t\t" $logo
 	echo
-	echo "$MSG"
+	echo "\t\t""\033[36m A Jedi's Workflow designed for the 21rst century"
+	echo "\033[0m"
+	echo "\t\t\t" "\033[4;37mLocal Enviornment \033[0m"
 	echo
-	echo Select by pressing the letter and then ENTER ;
+	echo "\t\t\t""$aprompt"
+	echo "\t\t\t""$bprompt"
+	echo "\t\t\t""$cprompt"
+	echo "\t\t\t""$dprompt"
+	echo "\t\t\t""$eprompt"
+	echo
+	echo "\t\t\t" "\033[4;37mStaging Enviornment \033[0m"
+	echo
+	echo "\t\t\t""$fprompt"
+	echo "\t\t\t""$gprompt"
+	echo "\t\t\t""$hprompt"
+	echo "\t\t\t""$iprompt"
+	echo "\t\t\t""$jprompt"
+	echo
+	echo "\t\t\t" "\033[4;37mProduction Enviornment \033[0m"
+	echo
+	echo "\t\t\t""$kprompt"
+	echo "\t\t\t""$lprompt"
+	echo "\t\t\t""$mprompt"
+	echo "\t\t\t""$nprompt"
+	echo "\t\t\t""$oprompt"
+	echo "\t\t\t"
+	echo "\t\t\t"
+	echo "\t\t\tx. Exit and return back to the terminal"
+	echo
+	echo "Message:""$MSG"
+	echo "\033[0m"
+	echo "Select by pressing the letter and then ENTER" ;
+
 }
 
+
 MSG=
+
+invalidchoice () { MSG="\033[33m Invalid Selection ... Please Try Again" ; }
+logo="\033[36m Obi"
+
+#
+# Menu Choices
+#
+achoice() {	set_project_dir ; }
+bchoice() { toggle_environment_settings local "$localsettings" 2 ; }
+cchoice() { set_environment local host 3 ; }
+dchoice() { set_environment local user 4 ;}
+echoice() { set_environment local password 5 ; }
+fchoice() { toggle_environment_settings staging "$stagingsettings" 7 ; }
+gchoice() { set_environment staging domain 8 ; }
+hchoice() { set_environment staging host 9 ; }
+ichoice() { set_environment staging user 10 ; }
+jchoice() { set_environment staging password 11 ; }
+kchoice() { toggle_environment_settings production "$productionsettings" 13 ; }
+lchoice() { set_environment production domain 14 ; }
+mchoice() { set_environment production host 15 ; }
+nchoice() { set_environment production user 16 ; }
+ochoice() { set_environment production password 17 ; }
 
 # -----------------------------------------------#
 ## Main Logic
 ## ----------------------------------------------#
 
 case $ACTION in
-	setup )
+	config )
 		while true
 		do
+			#source the config file
+			. $HOME/.obiconfig
+
+			#call the main_menu function
 			main_menu
+
+			#clear out the MSG variable
 			MSG=
+
+			#read the users input
 			read answer
 
+			#call the coresponding function based on the user input
+			#if the user input is not one of the available choices then call
+			#the invalidchoice function
 			case $answer
 			in
-				a|A ) achoice ;;
-				b|B ) bchoice ;;
-				c|C ) cchoice ;;
-				d|D ) dchoice ;;
-				e|E ) echoice ;;
-				f|F ) fchoice ;;
-				g|G ) gchoice ;;
-				h|H ) hchoice ;;
-				i|I ) ichoice ;;
-				j|J ) jchoice ;;
-				k|K ) kchoice ;;
-				l|L ) lchoice ;;
-				x|X ) break ;;
+				1 ) achoice ;;
+				2 ) bchoice ;;
+				3 ) cchoice ;;
+				4 ) dchoice ;;
+				5 ) echoice ;;
+				6 ) fchoice ;;
+				7 ) gchoice ;;
+				8 ) hchoice ;;
+				9 ) ichoice ;;
+				10 ) jchoice ;;
+				11 ) kchoice ;;
+				12 ) lchoice ;;
+				13 ) mchoice ;;
+				14 ) nchoice ;;
+				15 ) ochoice ;;
+				x|X ) clear ; break ;;
 				*) invalidchoice ;;
 			esac
 
@@ -272,20 +628,19 @@ case $ACTION in
 	-f)
 		empty_second_string_check "$PROJ_FOLDER_NAME"
 		project_exist_check "$PROJ"
+		check_returns
 
-		clear
 		create_directories
 		echo "Project Location:" `pwd`
 		;;
 	-g)
 		empty_second_string_check "$PROJ_FOLDER_NAME"
 		project_exist_check "$PROJ"
+		check_returns
 
-		clear
 		create_directories
 		cd site
 		git init
-		git config branch.master.remote beanstalk
 		echo ".DS_Store\nwp-config.php" > .gitignore
 		ls -laO
 		echo "Project Location:" `pwd`
@@ -293,8 +648,8 @@ case $ACTION in
 	-w)
 		empty_second_string_check "$PROJ_FOLDER_NAME"
 		project_exist_check "$PROJ"
+		check_returns
 
-		clear
 		create_directories
 		cd site
 		git init
@@ -314,12 +669,10 @@ case $ACTION in
 		rm wp-content/themes/$PROJ_FOLDER_NAME/.gitignore
 		mv wp-content/themes/$PROJ_FOLDER_NAME/.htaccess .
 		mv wp-content/themes/$PROJ_FOLDER_NAME/wp-config.php .
-		# Setup local database values in wp-config.php
-		user=`awk -F\' '/local_db_user/ {print $4}' "wp-config.php"`
-		name="$PROJ_FOLDER_NAME"_local_db
-		pass=`awk -F\' '/local_db_password/ {print $4}' "wp-config.php"`
-		host=`ifconfig | grep -Eo 192.168.[0-9]+.[0-9]+ | head -n 1`
+		database_credentials local
+		grep -rl staging_tld wp-config.php | xargs sed -i.bak "s/staging_tld/${stagingdomain}/g"
 		grep -rl replace_with_local_db wp-config.php | xargs sed -i.bak "s/replace_with_local_db/${name}/g"
+		grep -rl admin wp-config.php | xargs sed -i.bak "s/admin/${user}/g"
 		grep -rl replace_with_local_ip wp-config.php | xargs sed -i.bak "s/replace_with_local_ip/${host}/g"
 		grep -rl wp_ wp-config.php | xargs sed -i.bak "s/wp_/${CUT_NAME}_/"
 		grep -rl \".dev\" wp-config.php | xargs sed -i.bak "s/\".dev\"/\"http:\/\/${PROJ_FOLDER_NAME}.dev\"/"
@@ -337,191 +690,51 @@ case $ACTION in
 	-d)
 		empty_second_string_check "$PROJ_FOLDER_NAME"
 		directory_exist_check "$PROJ"
-
+		check_returns
 
 		case $3 in
 			-l )
-				H_PATTERN=local_db_host
-				U_PATTERN=local_db_user
-				P_PATTERN=local_db_password
-				N_PATTERN=local_db_name
-				URL_PATTERN=local_site_url
+				mysql_dump local
 				;;
 			-s)
-
-				H_PATTERN=staging_db_host
-				U_PATTERN=staging_db_user
-				P_PATTERN=staging_db_password
-				N_PATTERN=staging_db_name
-				URL_PATTERN=staging_site_url
-
-
+				mysql_dump staging
 				;;
 			-p )
-				H_PATTERN=prod_db_host
-				U_PATTERN=prod_db_user
-				P_PATTERN=prod_db_password
-				N_PATTERN=prod_db_name
-				URL_PATTERN=prod_site_url
+				mysql_dump production
 				;;
 		esac
-
-				#looks for database username, database password and database name in the wp-config file
-				sql_credentials
-
-				mysql_timestamp
-
-				cd "$PROJ"
-
-				if [ ! -d "dumps" ]
-				then
-				mkdir dumps
-				fi
-
-				wp_config_check
-
-
-				/Applications/MAMP/Library/bin/mysqldump --net_buffer_length=50000 -h$host -u$user -p$pass $db > "dumps/$THE_FILE_NAME.sql"
-
-				clear
-				echo "\t\t\t"
-				echo "\t\t\t""Database dump complete"
-				echo "\t\t\t"
 		;;
 	-s)
 		empty_second_string_check "$PROJ_FOLDER_NAME"
 		directory_exist_check "$PROJ"
+		check_returns
 
 		case $3 in
 		    lts )
 				backup_folder=staging
-
-		        #staging information used to import
-		        F_H_PATTERN=staging_db_host
-		        F_U_PATTERN=staging_db_user
-		        F_P_PATTERN=staging_db_password
-		        F_N_PATTERN=staging_db_name
-
-		        #find prod url to find and replace prod url throughout the db
-		        F_URL_PATTERN=local_site_url
-
-
-		        #local information used to dump
-		        R_H_PATTERN=local_db_host
-		        R_U_PATTERN=local_db_user
-		        R_P_PATTERN=local_db_password
-		        R_N_PATTERN=local_db_name
-
-		        #local url to replace prod url throughout the db
-		        R_URL_PATTERN=staging_site_url
+				mysql_sync local staging local_site_url staging_site_url
 		        ;;
 		    ltp )
 				backup_folder=production
-
-		        #prod information used to import
-		        F_H_PATTERN=prod_db_host
-		        F_U_PATTERN=prod_db_user
-		        F_P_PATTERN=prod_db_password
-		        F_N_PATTERN=prod_db_name
-
-		        #find local url to find and replace local url throughout the db
-		        F_URL_PATTERN=local_site_url
-
-
-		        R_H_PATTERN=local_db_host
-		        R_U_PATTERN=local_db_user
-		        R_P_PATTERN=local_db_password
-		        R_N_PATTERN=local_db_name
-
-		        #prod url to replace local url throughout the db
-		        R_URL_PATTERN=prod_site_url
+				mysql_sync local production local_site_url production_site_url
 		        ;;
 		    stl )
 				backup_folder=local
-
-		        #local information used to import
-		        F_H_PATTERN=local_db_host
-		        F_U_PATTERN=local_db_user
-		        F_P_PATTERN=local_db_password
-		        F_N_PATTERN=local_db_name
-
-		        #find staging url to find and replace staging url throughout the db
-		        F_URL_PATTERN=staging_site_url
-
-		        #staging information used to dump
-		        R_H_PATTERN=staging_db_host
-		        R_U_PATTERN=staging_db_user
-		        R_P_PATTERN=staging_db_password
-		        R_N_PATTERN=staging_db_name
-
-		        #local url to replace prod url throughout the db
-		        R_URL_PATTERN=local_site_url
+				mysql_sync staging local staging_site_url local_site_url
 		        ;;
 		    stp )
 				backup_folder=production
-
-		        #prod information used to import
-		        F_H_PATTERN=prod_db_host
-		        F_U_PATTERN=prod_db_user
-		        F_P_PATTERN=prod_db_password
-		        F_N_PATTERN=prod_db_name
-
-		        #find staging url to find and replace staging url throughout the db
-		        F_URL_PATTERN=staging_site_url
-
-		        #staging information used to dump
-		        R_H_PATTERN=staging_db_host
-		        R_U_PATTERN=staging_db_user
-		        R_P_PATTERN=staging_db_password
-		        R_N_PATTERN=staging_db_name
-
-		        #prod url to replace prod url throughout the db
-		        R_URL_PATTERN=prod_site_url
+				mysql_sync staging production staging_site_url production_site_url
 		        ;;
 		    ptl )
 				backup_folder=local
-
-		        #local information used to import
-		        F_H_PATTERN=local_db_host
-		        F_U_PATTERN=local_db_user
-		        F_P_PATTERN=local_db_password
-		        F_N_PATTERN=local_db_name
-
-		        #find prod url to find and replace prod url throughout the db
-		        F_URL_PATTERN=prod_site_url
-
-		        #prod information used to dump
-		        R_H_PATTERN=prod_db_host
-		        R_U_PATTERN=prod_db_user
-		        R_P_PATTERN=prod_db_password
-		        R_N_PATTERN=prod_db_name
-
-		        #local url to replace prod url throughout the db
-		        R_URL_PATTERN=local_site_url
+				mysql_sync production local production_site_url local_site_url
 		        ;;
 		    pts )
 				backup_folder=staging
-
-		        #staging information used to import
-		        F_H_PATTERN=staging_db_host
-		        F_U_PATTERN=staging_db_user
-		        F_P_PATTERN=staging_db_password
-		        F_N_PATTERN=staging_db_name
-
-		        #find prod url to find and replace prod url throughout the db
-		        F_URL_PATTERN=prod_site_url
-
-
-		        #prod information used to dump
-		        R_H_PATTERN=prod_db_host
-		        R_U_PATTERN=prod_db_user
-		        R_P_PATTERN=prod_db_password
-		        R_N_PATTERN=prod_db_name
-
-		        #staging url to replace prod url throughout the db
-		        R_URL_PATTERN=staging_site_url
+				mysql_sync production staging production_site_url staging_site_url
 		        ;;
-		        *)
+		    *)
 				clear
 				echo ""
 				echo "\t\t\t""Please specify database sync order"
@@ -530,36 +743,13 @@ case $ACTION in
 				echo ""
 				exit 0
 				;;
-		esac
-
-	cd "$PROJ"
-
-	if [ ! -d "dumps" ]
-	then
-	mkdir dumps
-	fi
-
-	wp_config_check
-
-	#mysql credentials used to find
-	f_sql_credentials
-
-	#mysql credentials used to replace
-	r_sql_credentials
-
-	mysql_timestamp
-
-	/Applications/MAMP/Library/bin/mysqldump --net_buffer_length=50000 -h$f_host -u$f_user -p$f_pass $f_db > "dumps/$backup_folder/$THE_FILE_NAME.sql"
-
-	/Applications/MAMP/Library/bin/mysqldump --net_buffer_length=50000 -h$r_host -u$r_user -p$r_pass $r_db > "dumps/$THE_FILE_NAME.sql"
-
-	sed -i '' -e "s,$find,$replace,g" $PROJ_PATH$PROJ_FOLDER_NAME/dumps/$THE_FILE_NAME.sql
-
-	/Applications/MAMP/Library/bin/mysql -h$f_host -u$f_user -p$f_pass $f_db < "dumps/$THE_FILE_NAME.sql"
-
-	clear
-	echo ""
-	echo "\t\t\t""Database sync complete"
-	echo ""
+			esac
+		;;
+	* )
+		clear
+		echo ""
+		echo "\t\t\t""Please enter a valid selection"
+		echo ""
+	;;
 
 esac
