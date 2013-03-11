@@ -94,6 +94,7 @@ perl -i -pe '
 database_credentials()
 {
 	server=$1
+	wp_config_check
 
 	case "$server" in
 		local )
@@ -683,11 +684,12 @@ case $ACTION in
 		rm wp-content/themes/$PROJ_FOLDER_NAME/.gitignore
 		mv wp-content/themes/$PROJ_FOLDER_NAME/.htaccess .
 		mv wp-content/themes/$PROJ_FOLDER_NAME/wp-config.php .
+		sed -i '' "s,klas,${PROJ_FOLDER_NAME},g" wp-content/themes/$PROJ_FOLDER_NAME/sass/ie.scss
 		database_credentials local
-		grep -rl staging_tld wp-config.php | xargs sed -i.bak "s/staging_tld/${stagingdomain}/g"
 		grep -rl replace_with_local_db wp-config.php | xargs sed -i.bak "s/replace_with_local_db/${name}/g"
 		grep -rl admin wp-config.php | xargs sed -i.bak "s/admin/${user}/g"
 		grep -rl replace_with_local_ip wp-config.php | xargs sed -i.bak "s/replace_with_local_ip/${host}/g"
+		grep -rl staging_tld wp-config.php | xargs sed -i.bak "s/staging_tld/${stagingdomain}/g"
 		grep -rl wp_ wp-config.php | xargs sed -i.bak "s/wp_/${CUT_NAME}_/"
 		grep -rl \".dev\" wp-config.php | xargs sed -i.bak "s/\".dev\"/\"http:\/\/${PROJ_FOLDER_NAME}.dev\"/"
 		# add stalts
@@ -777,10 +779,9 @@ case $ACTION in
 			esac
 		;;
 	mysql )
-			does_config_exist
-			database_credentials local
-			/Applications/MAMP/Library/bin/mysql -u"$user" -h"$host" -p"$pass"
-
+		does_config_exist
+		database_credentials local
+		/Applications/MAMP/Library/bin/mysql -u"$user" -h"$host" -p"$pass"
 		;;
 	* )
 		clear
