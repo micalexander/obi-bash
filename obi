@@ -94,7 +94,7 @@ mysql_credentials()
 					host="$localhost"
 					user="$localuser"
 					pass="$localpassword"
-					name="$CUT_NAME"_"$server"_db
+					name="$PROJ_FOLDER_NAME"_"$server"_wp
 					serversettings="\033[32menabled\033[0m"
 					;;
 				wp-enabled )
@@ -118,7 +118,7 @@ mysql_credentials()
 					host="$staginghost"
 					user="$staginguser"
 					pass="$stagingpassword"
-					name="$CUT_NAME"_"$server"_db
+					name="$PROJ_FOLDER_NAME"_"$server"_wp
 					serversettings="\033[32menabled\033[0m"
 					;;
 				wp-enabled )
@@ -143,14 +143,14 @@ mysql_credentials()
 					host="$productionhost"
 					user="$productionuser"
 					pass="$productionpassword"
-					name="$CUT_NAME"_"$server"_db
+					name="$PROJ_FOLDER_NAME"_"$server"_wp
 					serversettings="\033[32menabled\033[0m"
 					;;
 				wp-enabled )
-					host=`awk -F\' '/prod_db_host/ {print $4}' "$wpconfiglocation"`
-					user=`awk -F\' '/prod_db_user/ {print $4}' "$wpconfiglocation"`
-					pass=`awk -F\' '/prod_db_password/ {print $4}' "$wpconfiglocation"`
-					name=`awk -F\' '/prod_db_name/ {print $4}' "$wpconfiglocation"`
+					host=`awk -F\' '/production_db_host/ {print $4}' "$wpconfiglocation"`
+					user=`awk -F\' '/production_db_user/ {print $4}' "$wpconfiglocation"`
+					pass=`awk -F\' '/production_db_password/ {print $4}' "$wpconfiglocation"`
+					name=`awk -F\' '/production_db_name/ {print $4}' "$wpconfiglocation"`
 					serversettings="\033[32mwp-enabled\033[0m"
 					;;
 				* )
@@ -166,12 +166,10 @@ mysql_credentials()
 
 mysql_timestamp()
 {
-
 	# Mysql variables
 	THE_DATE="$(date +%A-%m-%d-%Y)"
 	THE_DB_NAME=$db
 	THE_FILE_NAME=$THE_DATE-$THE_DB_NAME
-
 }
 
 mysql_dump()
@@ -237,7 +235,6 @@ mysql_sync()
 
 wp_config_check()
 {
-
 	wpconfiglocation="site/wp-config.php"
 	file_exist_check "site/wp-config.php"
 	ret10=$?
@@ -258,8 +255,8 @@ wp_config_check()
 		fi
 	fi
 }
-wp_config_evironment() {
-
+wp_config_evironment()
+{
 	environment=$1
 	mysql_credentials "$environment"
 
@@ -270,15 +267,15 @@ wp_config_evironment() {
 
 	sed -i '' -e  "s|.*local_db_name.*|        $name|" -e "s|.*local_db_user.*|        $user|" -e "s|.*local_db_password.*|        '${pass}|" -e "s|.*local_db_host.*|        $host|" wp-config.php
 }
+
 add_salts()
 {
-perl -i -pe '
-  BEGIN {
-    $keysalts = qx(curl -sS https://api.wordpress.org/secret-key/1.1/salt)
-  }
-  s/\/\/ Insert_Salts_Below/$keysalts/g
-' wp-config.php
-
+	perl -i -pe '
+		BEGIN {
+		$keysalts = qx(curl -sS https://api.wordpress.org/secret-key/1.1/salt)
+		}
+		s/\/\/ Insert_Salts_Below/$keysalts/g
+	' wp-config.php
 }
 
 #
@@ -287,7 +284,6 @@ perl -i -pe '
 
 find_and_replace_wp_url()
 {
-
 	find_url=$1
 	replace_url=$2
 	folder=$3
@@ -306,9 +302,9 @@ find_and_replace_wp_url()
 	echo "obi: Replaceing \033[31m$find\033[0m with \033[32m$replace\033[0m"
 	sed -i '' -e "s,$find,$replace,g" "$PROJ_PATH$PROJ_FOLDER_NAME/dumps/$folder/$THE_FILE_NAME.sql"
 }
+
 empty_second_string_check()
 {
-
 	string=$1
 
 	if  [ -z "$string" ]
@@ -324,7 +320,6 @@ empty_second_string_check()
 # Check to see if the directory given is writable to not overwrite it
 project_exist_check()
 {
-
 	project=$1
 
 	if [  -d "$project" -a -w "$project" ]
@@ -340,7 +335,6 @@ project_exist_check()
 # Check to see if the directory given is writable to not overwrite it
 directory_exist_check()
 {
-
 	writable="$1"
 
 	if [ ! -d "$writable" ]
@@ -375,9 +369,9 @@ create_directories()
 	mkdir -p architecture/estimates architecture assets/ai assets/content assets/images/gif assets/images/jpg assets/images/png assets/images assets/pdf assets/psd assets dumps/local dumps/production dumps/staging dumps emails fonts mock-ups site
 	cd site
 }
+
 check_returns()
 {
-
 	case "$strcheckret" in
 		6 ) clear ; echo ; echo "obi: \033[33m Your input was empty please try again\033[0m" ; echo ;
 			exit
@@ -390,9 +384,9 @@ check_returns()
 			;;
 	esac
 }
+
 set_project_dir()
 {
-
 	MSG="\033[36m Please enter your desired project working directory without the trailing slash or \n     simply drag and drop the desired folder into this window and press ENTER"
 
 	clear
@@ -428,7 +422,6 @@ set_project_dir()
 
 set_environment()
 {
-
 	environment=$1
 	environmentvalue=$2
 	linenumber=$3
@@ -449,7 +442,6 @@ set_environment()
 
 server_toggle_settings()
 {
-
 	switch=$1
 
 	case "$switch" in
@@ -462,6 +454,7 @@ server_toggle_settings()
 	esac
 
 }
+
 get_server_settings()
 {
 	server_toggle_settings "$localsettings"
@@ -500,7 +493,6 @@ get_server_settings()
 			;;
 	esac
 }
-
 
 toggle_environment_settings()
 {
@@ -589,14 +581,7 @@ main_menu()
 	echo "obi:""$MSG"
 	echo "\033[0m"
 	echo "Select by pressing the letter and then ENTER" ;
-
 }
-
-
-MSG=
-
-invalidchoice () { MSG="\033[33m Invalid Selection ... Please Try Again" ; }
-logo="\033[36m Obi"
 
 # Menu Choices
 achoice() {	set_project_dir ; }
@@ -614,6 +599,10 @@ lchoice() { set_environment production domain 14 ; }
 mchoice() { set_environment production host 15 ; }
 nchoice() { set_environment production user 16 ; }
 ochoice() { set_environment production password 17 ; }
+invalidchoice () { MSG="\033[33m Invalid Selection ... Please Try Again" ; }
+
+logo="\033[36m Obi"
+MSG=
 
 # -----------------------------------------------#
 ## Main Logic
@@ -660,7 +649,7 @@ case $ACTION in
 			esac
 
 		done
-		 ;;
+		;;
 	-e )
 		# Create the folder structure
 		create_directories
@@ -846,9 +835,7 @@ case $ACTION in
 		;;
 	* )
 		clear
-		echo
-		echo "obi: Please enter a valid selection"
-		echo
-	;;
+		echo ; echo "obi: Please enter a valid selection" ; echo
+		;;
 
 esac
