@@ -194,6 +194,18 @@ wp_config_check()
 		fi
 	fi
 }
+wp_config_evironment() {
+
+	environment=$1
+	database_credentials "$environment"
+
+	name="define('DB_NAME', '$name'); // local_db_name"
+	user="define('DB_USER', '$user'); // local_db_user"
+	pass="define('DB_PASSWORD', '$pass'); // local_db_password"
+	host="define('DB_HOST', '$host'); // local_db_host"
+
+	sed -i '' -e  "s|.*local_db_name.*|        $name|" -e "s|.*local_db_user.*|        $user|" -e "s|.*local_db_password.*|        '${pass}|" -e "s|.*local_db_host.*|        $host|" wp-config.php
+}
 
 mysql_dump()
 {
@@ -668,24 +680,27 @@ case $ACTION in
 		curl -OL http://wordpress.org/latest.zip
 		tar --strip-components=1 -zxvf latest.zip
 		rm latest.zip
+
 		# Clean up stock wordpress themes/plugins
-		rm -Rf wp-content/themes/twentyeleven/
-		rm -Rf wp-content/themes/twentytwelve/
-		rm -Rf wp-content/plugins/akismet/
-		rm wp-content/plugins/hello.php
-		rm wp-config-sample.php
+		rm -Rf wp-content/themes/twentyeleven/ ; rm -Rf wp-content/themes/twentytwelve/ ; rm -Rf wp-content/plugins/akismet/ ; rm wp-content/plugins/hello.php ; rm wp-config-sample.php ;
+
 		# Get latest version of klas starter theme
 		git clone https://github.com/kylelarkin/klas.git wp-content/themes/$PROJ_FOLDER_NAME
-		rm -Rf wp-content/themes/$PROJ_FOLDER_NAME/.git
-		rm wp-content/themes/$PROJ_FOLDER_NAME/.gitignore
-		mv wp-content/themes/$PROJ_FOLDER_NAME/.htaccess .
-		mv wp-content/themes/$PROJ_FOLDER_NAME/wp-config.php .
+		rm -Rf wp-content/themes/$PROJ_FOLDER_NAME/.git ; rm wp-content/themes/$PROJ_FOLDER_NAME/.gitignore ;
+
+		# Move the wp-config and the .htaccess file to the site root
+		mv wp-content/themes/$PROJ_FOLDER_NAME/.htaccess . ; mv wp-content/themes/$PROJ_FOLDER_NAME/wp-config.php .
+
+		# Find and replace the klas name with the project name
 		sed -i '' "s,klas,${PROJ_FOLDER_NAME},g" wp-content/themes/$PROJ_FOLDER_NAME/sass/ie.scss
-		database_credentials local
-		grep -rl replace_with_local_db wp-config.php | xargs sed -i.bak "s/replace_with_local_db/${name}/g"
-		grep -rl admin wp-config.php | xargs sed -i.bak "s/admin/${user}/g"
-		grep -rl replace_with_local_ip wp-config.php | xargs sed -i.bak "s/replace_with_local_ip/${host}/g"
-		grep -rl staging_tld wp-config.php | xargs sed -i.bak "s/staging_tld/${stagingdomain}/g"
+
+		# Load the local database credentials
+
+		wp_config_evironment local
+
+		staging_tld="} elseif (preg_match('/$stagingdomain/', $_SERVER['HTTP_HOST'])) { // staging_server_domain"
+		sed -i '' -e  "s|.*staging_server_domain.*|$staging_tld|" wp-config.php
+
 		grep -rl wp_ wp-config.php | xargs sed -i.bak "s/wp_/${CUT_NAME}_/"
 		grep -rl \".dev\" wp-config.php | xargs sed -i.bak "s/\".dev\"/\"http:\/\/${PROJ_FOLDER_NAME}.dev\"/"
 		# add stalts
@@ -694,8 +709,10 @@ case $ACTION in
 		rm wp-config.php.bak
 		# Build project's .gitignore
 		echo ".DS_Store \n.sass-cache/" > .gitignore
+
+		database_credentials local
 		# Create project's databse
-		/Applications/MAMP/Library/bin/mysql -u $user -h localhost -p$pass -Bse "CREATE DATABASE ${name};"
+		/Applications/MAMP/Library/bin/mysql -u"$user" -h"$host" -p"$pass" -Bse "CREATE DATABASE ${name};"
 		ls -laO
 		echo
 		echo "obi: Your project is located at" `pwd`
