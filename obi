@@ -24,8 +24,15 @@ does_config_exist()
 		9 )
 			case "$localprojectdirectory" in
 				0 )
-					configerror
-					exit
+					case $ACTION in
+						config )
+							;;
+							*)
+								configerror
+								exit
+							;;
+					esac
+
 					;;
 			esac
 			;;
@@ -610,8 +617,10 @@ MSG=
 
 case $ACTION in
 	config )
+		does_config_exist
 		while true
 		do
+
 			# Source the config file
 			. $HOME/.obiconfig
 
@@ -834,6 +843,7 @@ case $ACTION in
 		exit
 		;;
 	* )
+		does_config_exist
 		clear
 		echo ; echo "obi: Please enter a valid selection" ; echo
 		;;
