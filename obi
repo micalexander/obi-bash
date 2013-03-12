@@ -665,7 +665,7 @@ case $ACTION in
 		cd site
 		git init
 		# Get latest version of wordpress
-		wget http://wordpress.org/latest.zip
+		curl -OL http://wordpress.org/latest.zip
 		tar --strip-components=1 -zxvf latest.zip
 		rm latest.zip
 		# Clean up stock wordpress themes/plugins
@@ -764,8 +764,18 @@ case $ACTION in
 			esac
 		;;
 	mysql )
-		does_config_exist
-		database_credentials local
+		empty_second_string_check "$2"
+		strcheckret=$?
+		check_returns
+
+		case $2 in
+			-l ) user="$localuser" ; host="$localhost" ; pass="$localpassword"
+				;;
+			-s ) user="$staginguser" ; host="$staginghost" ; pass="$stagingpassword"
+				;;
+			-p ) user="$productionuser" ; host="$productionhost" ; pass="$productionpassword"
+				;;
+		esac
 		/Applications/MAMP/Library/bin/mysql -u"$user" -h"$host" -p"$pass"
 		;;
 	help )
