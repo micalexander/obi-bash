@@ -76,18 +76,11 @@ CUT_NAME=`echo $PROJ_FOLDER_NAME | cut -c1-3`
 ## Functions
 ## ----------------------------------------------#
 
-salts()
-{
-perl -i -pe '
-  BEGIN {
-    $keysalts = qx(curl -sS https://api.wordpress.org/secret-key/1.1/salt)
-  }
-  s/\/\/ Insert_Salts_Below/$keysalts/g
-' wp-config.php
+#
+# Mysql functions
+#
 
-}
-
-database_credentials()
+mysql_credentials()
 {
 	server=$1
 	wp_config_check
@@ -171,6 +164,77 @@ database_credentials()
 	echo ; echo "obi: Your \033[36m$server\033[0m server settings are set to $serversettings. To change this run: \033[33mobi config\033[0m" ; echo
 }
 
+mysql_timestamp()
+{
+
+	# Mysql variables
+	THE_DATE="$(date +%A-%m-%d-%Y)"
+	THE_DB_NAME=$db
+	THE_FILE_NAME=$THE_DATE-$THE_DB_NAME
+
+}
+
+mysql_dump()
+{
+	database=$1
+
+	mysql_timestamp
+
+	cd "$PROJ"
+
+	if [ ! -d "dumps" ]
+	then
+	mkdir dumps
+	fi
+
+	wp_config_check
+
+	# Looks for database username, database password and database name in the wp-config file
+	mysql_credentials $database
+
+	/Applications/MAMP/Library/bin/mysqldump --net_buffer_length=50000 -h"$host" -u"$user" -p"$pass" "$name" > "dumps/$database/$THE_FILE_NAME.sql"
+}
+
+mysql_import()
+{
+	database=$1
+	from=$2
+
+	mysql_timestamp
+
+	cd "$PROJ"
+
+	if [ ! -d "dumps" ]
+	then
+	mkdir dumps
+	fi
+
+	wp_config_check
+
+	# Looks for database username, database password and database name in the wp-config file
+	mysql_credentials $database
+
+	/Applications/MAMP/Library/bin/mysql -h"$host" -u"$user" -p"$pass" "$name" < "dumps/$from/$THE_FILE_NAME.sql"
+}
+
+mysql_sync()
+{
+	dump=$1
+	import=$2
+	find=$3
+	replace=$4
+
+	mysql_dump $import
+	mysql_dump $dump
+	find_and_replace_wp_url $find $replace $dump
+	mysql_import $import $dump
+
+}
+
+#
+# Wp_config functions
+#
+
 wp_config_check()
 {
 
@@ -197,7 +261,7 @@ wp_config_check()
 wp_config_evironment() {
 
 	environment=$1
-	database_credentials "$environment"
+	mysql_credentials "$environment"
 
 	name="define('DB_NAME', '$name'); // local_db_name"
 	user="define('DB_USER', '$user'); // local_db_user"
@@ -206,63 +270,20 @@ wp_config_evironment() {
 
 	sed -i '' -e  "s|.*local_db_name.*|        $name|" -e "s|.*local_db_user.*|        $user|" -e "s|.*local_db_password.*|        '${pass}|" -e "s|.*local_db_host.*|        $host|" wp-config.php
 }
-
-mysql_dump()
+add_salts()
 {
-	database=$1
+perl -i -pe '
+  BEGIN {
+    $keysalts = qx(curl -sS https://api.wordpress.org/secret-key/1.1/salt)
+  }
+  s/\/\/ Insert_Salts_Below/$keysalts/g
+' wp-config.php
 
-	mysql_timestamp
-
-	cd "$PROJ"
-
-	if [ ! -d "dumps" ]
-	then
-	mkdir dumps
-	fi
-
-	wp_config_check
-
-	#looks for database username, database password and database name in the wp-config file
-	database_credentials $database
-
-	/Applications/MAMP/Library/bin/mysqldump --net_buffer_length=50000 -h"$host" -u"$user" -p"$pass" "$name" > "dumps/$database/$THE_FILE_NAME.sql"
 }
 
-mysql_import()
-{
-	database=$1
-	from=$2
-
-	mysql_timestamp
-
-	cd "$PROJ"
-
-	if [ ! -d "dumps" ]
-	then
-	mkdir dumps
-	fi
-
-	wp_config_check
-
-	#looks for database username, database password and database name in the wp-config file
-	database_credentials $database
-
-	/Applications/MAMP/Library/bin/mysql -h"$host" -u"$user" -p"$pass" "$name" < "dumps/$from/$THE_FILE_NAME.sql"
-}
-
-mysql_sync()
-{
-	dump=$1
-	import=$2
-	find=$3
-	replace=$4
-
-	mysql_dump $import
-	mysql_dump $dump
-	find_and_replace_wp_url $find $replace $dump
-	mysql_import $import $dump
-
-}
+#
+# Find and replace functions
+#
 
 find_and_replace_wp_url()
 {
@@ -295,6 +316,11 @@ empty_second_string_check()
 		return 6
 	fi
 }
+
+#
+# Directory functions
+#
+
 # Check to see if the directory given is writable to not overwrite it
 project_exist_check()
 {
@@ -310,6 +336,7 @@ project_exist_check()
 		exit 0
 	fi
 }
+
 # Check to see if the directory given is writable to not overwrite it
 directory_exist_check()
 {
@@ -332,17 +359,15 @@ file_exist_check ()
 		return 9
 	fi
 }
-mysql_timestamp()
-{
 
-	#mysql variables
-	THE_DATE="$(date +%A-%m-%d-%Y)"
-	THE_DB_NAME=$db
-	THE_FILE_NAME=$THE_DATE-$THE_DB_NAME
-
-}
 create_directories()
 {
+	does_config_exist
+	empty_second_string_check "$PROJ_FOLDER_NAME"
+	strcheckret=$?
+	project_exist_check "$PROJ"
+	dircheckret=$?
+	check_returns
 	clear
 	cd "$PROJ_PATH"
 	mkdir $PROJ_FOLDER_NAME
@@ -397,6 +422,10 @@ set_project_dir()
 
 }
 
+#
+# Server settings functions
+#
+
 set_environment()
 {
 
@@ -417,7 +446,6 @@ set_environment()
 	fi ;
 
 }
-#server settings
 
 server_toggle_settings()
 {
@@ -505,7 +533,7 @@ toggle_environment_settings()
 
 main_menu()
 {
-	# get the server settings
+	# Get the server settings
 	get_server_settings
 
 	aprompt="1. Set project working directory"
@@ -570,9 +598,7 @@ MSG=
 invalidchoice () { MSG="\033[33m Invalid Selection ... Please Try Again" ; }
 logo="\033[36m Obi"
 
-#
 # Menu Choices
-#
 achoice() {	set_project_dir ; }
 bchoice() { toggle_environment_settings local "$localsettings" 2 ; }
 cchoice() { set_environment local host 3 ; }
@@ -597,19 +623,19 @@ case $ACTION in
 	config )
 		while true
 		do
-			#source the config file
+			# Source the config file
 			. $HOME/.obiconfig
 
-			#call the main_menu function
+			# Call the main_menu function
 			main_menu
 
-			#clear out the MSG variable
+			# Clear out the MSG variable
 			MSG=
 
-			#read the users input
+			#Read the users input
 			read answer
 
-			#call the coresponding function based on the user input
+			# Call the coresponding function based on the user input
 			#if the user input is not one of the available choices then call
 			#the invalidchoice function
 			case $answer
@@ -636,46 +662,32 @@ case $ACTION in
 		done
 		 ;;
 	-e )
-		does_config_exist
-		empty_second_string_check "$PROJ_FOLDER_NAME"
-		strcheckret=$?
-		project_exist_check "$PROJ"
-		dircheckret=$?
-		check_returns
-
+		# Create the folder structure
 		create_directories
-		echo
-		echo "obi: Your project is located at" `pwd`
-		echo
+
+		# List directory contents and their location
+		ls -laO
+		echo ; echo "obi: Your project is located at" `pwd` ; echo
 		;;
 	-g )
-		does_config_exist
-		empty_second_string_check "$PROJ_FOLDER_NAME"
-		strcheckret=$?
-		project_exist_check "$PROJ"
-		dircheckret=$?
-		check_returns
-
+		# Create the folder structure
 		create_directories
-		cd site
+
+		# Setup git
 		git init
 		echo ".DS_Store" > .gitignore
+
+		# List directory contents and their location
 		ls -laO
-		echo
-		echo "obi: Your project is located at" `pwd`
-		echo
+		echo ; echo "obi: Your project is located at" `pwd` ; echo
 		;;
 	-w )
-		does_config_exist
-		empty_second_string_check "$PROJ_FOLDER_NAME"
-		strcheckret=$?
-		project_exist_check "$PROJ"
-		dircheckret=$?
-		check_returns
-
+		# Create the folder structure
 		create_directories
-		cd site
+
+		# Setup git
 		git init
+
 		# Get latest version of wordpress
 		curl -OL http://wordpress.org/latest.zip
 		tar --strip-components=1 -zxvf latest.zip
@@ -695,28 +707,31 @@ case $ACTION in
 		sed -i '' "s,klas,${PROJ_FOLDER_NAME},g" wp-content/themes/$PROJ_FOLDER_NAME/sass/ie.scss
 
 		# Load the local database credentials
-
 		wp_config_evironment local
 
+		# Replace escape the dot in the staging domain name
+		stagingdomain="${stagingdomain//\./\\\.}"
+
+		# Add the necessary variables to the wp-config
 		staging_tld="} elseif (preg_match('/$stagingdomain/', $_SERVER['HTTP_HOST'])) { // staging_server_domain"
 		sed -i '' -e  "s|.*staging_server_domain.*|$staging_tld|" wp-config.php
+		grep -rl wp_ wp-config.php | xargs sed -i '' "s/wp_/${CUT_NAME}_/"
+		grep -rl \".dev\" wp-config.php | xargs sed -i '' "s/\".dev\"/\"http:\/\/${PROJ_FOLDER_NAME}.dev\"/"
 
-		grep -rl wp_ wp-config.php | xargs sed -i.bak "s/wp_/${CUT_NAME}_/"
-		grep -rl \".dev\" wp-config.php | xargs sed -i.bak "s/\".dev\"/\"http:\/\/${PROJ_FOLDER_NAME}.dev\"/"
-		# add stalts
-		salts
-		# clean up
-		rm wp-config.php.bak
+		# add wp salts
+		add_salts
+
 		# Build project's .gitignore
 		echo ".DS_Store \n.sass-cache/" > .gitignore
 
-		database_credentials local
-		# Create project's databse
+		#load the database local credentials
+		mysql_credentials local
+		# Create project's database
 		/Applications/MAMP/Library/bin/mysql -u"$user" -h"$host" -p"$pass" -Bse "CREATE DATABASE ${name};"
+
+		# List directory contents and their location
 		ls -laO
-		echo
-		echo "obi: Your project is located at" `pwd`
-		echo
+		echo ; echo "obi: Your project is located at" `pwd` ; echo
 		;;
 	-b )
 		does_config_exist
