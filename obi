@@ -647,7 +647,7 @@ case $ACTION in
 		create_directories
 		cd site
 		git init
-		echo ".DS_Store\nwp-config.php" > .gitignore
+		echo ".DS_Store" > .gitignore
 		ls -laO
 		echo
 		echo "obi: Your project is located at" `pwd`
@@ -693,7 +693,7 @@ case $ACTION in
 		# clean up
 		rm wp-config.php.bak
 		# Build project's .gitignore
-		echo ".DS_Store \n.sass-cache/\nwp-config.php" > .gitignore
+		echo ".DS_Store \n.sass-cache/" > .gitignore
 		# Create project's databse
 		/Applications/MAMP/Library/bin/mysql -u $user -h localhost -p$pass -Bse "CREATE DATABASE ${name};"
 		ls -laO
