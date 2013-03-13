@@ -3,8 +3,15 @@
 ## Obi config
 ## ----------------------------------------------#
 config="$HOME/.obiconfig"
-
-
+create_obiconfig()
+{
+	if [ -f "$config" ]
+	then
+		. $HOME/.obiconfig
+	else
+		echo "localprojectdirectory='0'\nlocalsettings='enabled'\nlocalhost='localhost'\nlocaluser='root'\nlocalpassword='root'\n\nstagingsettings='disabled'\nstagingdomain='0'\nstaginghost='0'\nstaginguser='0'\nstagingpassword='0'\n\nproductionsettings='disabled'\nproductiondomain='0'\nproductionhost='0'\nproductionuser='0'\nproductionpassword='0'" > $HOME/.obiconfig
+	fi
+}
 configerror()
 {
 	clear ; echo ; echo "obi: You must first set your local project directory to use that command" ; echo "obi: You can set it by running [ obi ] [ config ]" ; echo ;
@@ -13,14 +20,7 @@ configerror()
 
 does_config_exist()
 {
-	if [ -f "$config" ]
-	then
-		. $HOME/.obiconfig
-	else
-		echo "localprojectdirectory='0'\nlocalsettings='enabled'\nlocalhost='localhost'\nlocaluser='root'\nlocalpassword='root'\n\nstagingsettings='disabled'\nstagingdomain='0'\nstaginghost='0'\nstaginguser='0'\nstagingpassword='0'\n\nproductionsettings='disabled'\nproductiondomain='0'\nproductionhost='0'\nproductionuser='0'\nproductionpassword='0'" > $HOME/.obiconfig
-		configerror
-		exit
-	fi
+
 
 	file_exist_check "$HOME/.obiconfig"
 	fileexistreturn=$?
@@ -42,7 +42,7 @@ does_config_exist()
 			esac
 			;;
 		10 )
-			echo "localprojectdirectory='0'\nlocalsettings='enabled'\nlocalhost='localhost'\nlocaluser='root'\nlocalpassword='root'\n\nstagingsettings='disabled'\nstagingdomain='0'\nstaginghost='0'\nstaginguser='0'\nstagingpassword='0'\n\nproductionsettings='disabled'\nproductiondomain='0'\nproductionhost='0'\nproductionuser='0'\nproductionpassword='0'" > $HOME/.obiconfig
+			create_obiconfig
 			configerror
 			exit
 			;;
@@ -622,9 +622,9 @@ MSG=
 
 case $ACTION in
 	config )
+		create_obiconfig
 		while true
 		do
-			does_config_exist
 			# Source the config file
 			. $HOME/.obiconfig
 
