@@ -413,7 +413,7 @@ set_environment()
 		MSG="\033[33m Your input was empty please try again"
 	else
 		sed -i '' "${linenumber}s,$environment$environmentvalue=.*,$environment$environmentvalue='$environmentanswer'," $HOME/.obiconfig
-		MSG="\033[32m Your local database host has been set to \n\t $environmentanswer"
+		MSG="\033[32m Your $environment database host has been set to \n\t $environmentanswer"
 	fi ;
 
 }
@@ -508,24 +508,24 @@ main_menu()
 	# get the server settings
 	get_server_settings
 
-	aprompt="1. Set project working directory"
-	bprompt="2. Set local server to $localsettingsare"
-	cprompt="3. Set local database host"
-	dprompt="4. Set local database user"
-	eprompt="5. Set local database password"
-	fprompt="6. Set staging server to $stagingsettingsare"
-	gprompt="7. Set staging database domain"
-	hprompt="8. Set staging database host"
-	iprompt="9. Set staging database user"
-	jprompt="10. Set staging database password"
-	kprompt="11. Set production server to $prodsettingsare"
-	lprompt="12. Set production database domain"
-	mprompt="13. Set production database host"
-	nprompt="14. Set production database user"
-	oprompt="15. Set production database password"
+	aprompt="1. Change project working directory"
+	bprompt="2. Toggle local server settings. $localsettingsare"
+	cprompt="3. Change local database host currentluy set to \033[33m$localhost\033[0m"
+	dprompt="4. Change local database user currentluy set to \033[33m$localuser\033[0m"
+	eprompt="5. Change local database password currentluy set to \033[33m******\033[0m"
+	fprompt="6. Toggle staging server settings. $stagingsettingsare"
+	gprompt="7. Change staging database domain"
+	hprompt="8. Change staging database host"
+	iprompt="9. Change staging database user"
+	jprompt="10. Toggle staging database password"
+	kprompt="11. Change production server settings. $prodsettingsare"
+	lprompt="12. Change production database domain"
+	mprompt="13. Change production database host"
+	nprompt="14. Change production database user"
+	oprompt="15. Change production database password"
 
 	clear
-	echo `date`
+	echo "`date`"
 	echo
 	echo "\t\t\t\t\t" $logo
 	echo
@@ -558,14 +558,14 @@ main_menu()
 	echo
 	echo "\t\t\tx. Exit and return back to the terminal"
 	echo
-	echo "obi:""$MSG"
+	echo "obi: $MSG"
 	echo "\033[0m"
 	echo "Select by pressing the letter and then ENTER" ;
 
 }
 
 
-MSG=
+MSG="Your project working directory is currently set to:\n     \033[32m$localprojectdirectory\033[0m"
 
 invalidchoice () { MSG="\033[33m Invalid Selection ... Please Try Again" ; }
 logo="\033[36m Obi"
