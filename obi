@@ -15,12 +15,9 @@ create_obiconfig()
 	fi
 }
 
-# Run the create obiconfig check
-create_obiconfig
-
 configerror()
 {
-	clear ; echo ; echo "obi: You must first set your local project directory to use that command" ; echo "obi: You can set it by running [ obi ] [ config ]" ; echo ;
+	clear ; echo ; echo "obi: You must first set your local project directory to use that command" ; echo "obi: You can set it by running \033[33mobi config\033[0m" ; echo ;
 	exit
 }
 
@@ -30,6 +27,7 @@ does_config_exist()
 	fileexistreturn=$?
 	case "$fileexistreturn" in
 		9 )
+			create_obiconfig
 			case "$localprojectdirectory" in
 				0 )
 					case $ACTION in
@@ -50,6 +48,8 @@ does_config_exist()
 			;;
 	esac
 }
+
+
 
 # -----------------------------------------------#
 ## Variables
@@ -118,7 +118,7 @@ mysql_credentials()
 					;;
 				* )
 					serversettings="\033[31mdisabled\033[0m"
-					echo ; echo "obi: Your \033[36m$server\033[0m server settings are set to $serversettings this can be changed with [ obi ] [ config ]." ; echo ; exit
+					echo ; echo "obi: Your \033[36m$server\033[0m server settings are set to $serversettings. To change this run: \033[33mobi config\033[0m" ; echo ; exit
 					;;
 			esac
 		;;
