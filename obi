@@ -14,6 +14,10 @@ create_obiconfig()
 		echo "localprojectdirectory='0'\nlocalsettings='enabled'\nlocalhost='localhost'\nlocaluser='root'\nlocalpassword='root'\n\nstagingsettings='disabled'\nstagingdomain='0'\nstaginghost='0'\nstaginguser='0'\nstagingpassword='0'\n\nproductionsettings='disabled'\nproductiondomain='0'\nproductionhost='0'\nproductionuser='0'\nproductionpassword='0'" > $HOME/.obiconfig
 	fi
 }
+
+# Run the create obiconfig check
+create_obiconfig
+
 configerror()
 {
 	clear ; echo ; echo "obi: You must first set your local project directory to use that command" ; echo "obi: You can set it by running [ obi ] [ config ]" ; echo ;
@@ -24,7 +28,6 @@ does_config_exist()
 {
 	file_exist_check "$HOME/.obiconfig"
 	fileexistreturn=$?
-
 	case "$fileexistreturn" in
 		9 )
 			case "$localprojectdirectory" in
@@ -534,58 +537,65 @@ toggle_environment_settings()
 
 main_menu()
 {
+
 	# Get the server settings
 	get_server_settings
 
+	# Menu Variables
+	logo="\033[36m Obi"
+
 	aprompt="1. Change project working directory"
 	bprompt="2. Toggle local server settings. $localsettingsare"
-	cprompt="3. Change local database host currentluy set to \033[33m$localhost\033[0m"
-	dprompt="4. Change local database user currentluy set to \033[33m$localuser\033[0m"
-	eprompt="5. Change local database password currentluy set to \033[33m******\033[0m"
+	cprompt="3. Change local database host currently set to \033[33m$localhost\033[0m"
+	dprompt="4. Change local database user currently set to \033[33m$localuser\033[0m"
+	eprompt="5. Change local database password currently set to \033[33m${localpassword//[a-z]/*}\033[0m"
 	fprompt="6. Toggle staging server settings. $stagingsettingsare"
-	gprompt="7. Change staging database domain"
-	hprompt="8. Change staging database host"
-	iprompt="9. Change staging database user"
-	jprompt="10. Toggle staging database password"
+	gprompt="7. Change staging database domain currently set to \033[33m$stagingdomain\033[0m"
+	hprompt="8. Change staging database host currently set to \033[33m$staginghost\033[0m"
+	iprompt="9. Change staging database user currently set to \033[33m$staginguser\033[0m"
+	jprompt="10. Toggle staging database passwordcurrently set to \033[33m${stagingpassword//[a-z/*}\033[0m"
 	kprompt="11. Change production server settings. $prodsettingsare"
-	lprompt="12. Change production database domain"
-	mprompt="13. Change production database host"
-	nprompt="14. Change production database user"
-	oprompt="15. Change production database password"
+	lprompt="12. Change production database domain currentluy set to \033[33m$productiondomain\033[0m"
+	mprompt="13. Change production database host currently set to \033[33m$productionhost\033[0m"
+	nprompt="14. Change production database user currently set to \033[33m$productionuser\033[0m"
+	oprompt="15. Change production database password currently set to \033[33m${productionpassword//[a-z]/*}\033[0m"
 
+	MSG="Your project working directory is currently set to:\n     \033[32m$localprojectdirectory\033[0m"
+
+	# Menu Output
 	clear
-	echo "`date`"
+	echo "\t\t     `date`"
 	echo
-	echo "\t\t\t\t\t" $logo
+	echo "\t\t\t\t $logo"
 	echo
-	echo "\t\t""\033[36m A Jedi's Workflow designed for the 21rst century"
+	echo "\t033[36m A Jedi's Workflow designed for the 21rst century"
 	echo "\033[0m"
-	echo "\t\t\t" "\033[4;37mLocal Enviornment \033[0m"
+	echo "\t" "\033[4;37mLocal Enviornment \033[0m"
 	echo
-	echo "\t\t\t""$aprompt"
-	echo "\t\t\t""$bprompt"
-	echo "\t\t\t""$cprompt"
-	echo "\t\t\t""$dprompt"
-	echo "\t\t\t""$eprompt"
+	echo "\t""$aprompt"
+	echo "\t""$bprompt"
+	echo "\t""$cprompt"
+	echo "\t""$dprompt"
+	echo "\t""$eprompt"
 	echo
-	echo "\t\t\t" "\033[4;37mStaging Enviornment \033[0m"
+	echo "\t" "\033[4;37mStaging Enviornment \033[0m"
 	echo
-	echo "\t\t\t""$fprompt"
-	echo "\t\t\t""$gprompt"
-	echo "\t\t\t""$hprompt"
-	echo "\t\t\t""$iprompt"
-	echo "\t\t\t""$jprompt"
+	echo "\t""$fprompt"
+	echo "\t""$gprompt"
+	echo "\t""$hprompt"
+	echo "\t""$iprompt"
+	echo "\t""$jprompt"
 	echo
-	echo "\t\t\t" "\033[4;37mProduction Enviornment \033[0m"
+	echo "\t" "\033[4;37mProduction Enviornment \033[0m"
 	echo
-	echo "\t\t\t""$kprompt"
-	echo "\t\t\t""$lprompt"
-	echo "\t\t\t""$mprompt"
-	echo "\t\t\t""$nprompt"
-	echo "\t\t\t""$oprompt"
+	echo "\t""$kprompt"
+	echo "\t""$lprompt"
+	echo "\t""$mprompt"
+	echo "\t""$nprompt"
+	echo "\t""$oprompt"
 	echo
+	echo "\tx. Exit and return back to the terminal"
 	echo
-	echo "\t\t\tx. Exit and return back to the terminal"
 	echo
 	echo "obi: $MSG"
 	echo "\033[0m"
@@ -610,8 +620,6 @@ nchoice() { set_environment production user 16 ; }
 ochoice() { set_environment production password 17 ; }
 invalidchoice () { MSG="\033[33m Invalid Selection ... Please Try Again" ; }
 
-logo="\033[36m Obi"
-MSG="Your project working directory is currently set to:\n     \033[32m$localprojectdirectory\033[0m"
 
 # -----------------------------------------------#
 ## Main Logic
@@ -619,9 +627,9 @@ MSG="Your project working directory is currently set to:\n     \033[32m$localpro
 
 case $ACTION in
 	config )
-		create_obiconfig
 		while true
 		do
+			create_obiconfig
 			# Source the config file
 			. $HOME/.obiconfig
 
