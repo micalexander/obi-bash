@@ -555,7 +555,7 @@ main_menu()
 	iprompt="9. Change staging database user currently set to \033[33m$staginguser\033[0m"
 	jprompt="10. Toggle staging database passwordcurrently set to \033[33m${stagingpassword//[a-z/*}\033[0m"
 	kprompt="11. Change production server settings. $prodsettingsare"
-	lprompt="12. Change production database domain currentluy set to \033[33m$productiondomain\033[0m"
+	lprompt="12. Change production database domain currently set to \033[33m$productiondomain\033[0m"
 	mprompt="13. Change production database host currently set to \033[33m$productionhost\033[0m"
 	nprompt="14. Change production database user currently set to \033[33m$productionuser\033[0m"
 	oprompt="15. Change production database password currently set to \033[33m${productionpassword//[a-z]/*}\033[0m"
@@ -620,6 +620,7 @@ lchoice() { set_environment production domain 14 ; }
 mchoice() { set_environment production host 15 ; }
 nchoice() { set_environment production user 16 ; }
 ochoice() { set_environment production password 17 ; }
+
 invalidchoice () { MSG="\033[33m Invalid Selection ... Please Try Again" ; }
 
 
