@@ -2,13 +2,18 @@
 # -----------------------------------------------#
 ## Obi config
 ## ----------------------------------------------#
-config="$HOME/.obiconfig"
 
-if [ -f "$config" ]
-then
-	. $HOME/.obiconfig
-fi
+create_obiconfig()
+{
+	config="$HOME/.obiconfig"
 
+	if [ -f "$config" ]
+	then
+		. $HOME/.obiconfig
+	else
+		echo "localprojectdirectory='0'\nlocalsettings='enabled'\nlocalhost='localhost'\nlocaluser='root'\nlocalpassword='root'\n\nstagingsettings='disabled'\nstagingdomain='0'\nstaginghost='0'\nstaginguser='0'\nstagingpassword='0'\n\nproductionsettings='disabled'\nproductiondomain='0'\nproductionhost='0'\nproductionuser='0'\nproductionpassword='0'" > $HOME/.obiconfig
+	fi
+}
 configerror()
 {
 	clear ; echo ; echo "obi: You must first set your local project directory to use that command" ; echo "obi: You can set it by running [ obi ] [ config ]" ; echo ;
@@ -24,19 +29,23 @@ does_config_exist()
 		9 )
 			case "$localprojectdirectory" in
 				0 )
-					configerror
-					exit
+					case $ACTION in
+						config )
+							;;
+							*)
+								configerror
+								exit
+							;;
+					esac
 					;;
 			esac
 			;;
 		10 )
-			echo "localprojectdirectory='0'\nlocalsettings='enabled'\nlocalhost='localhost'\nlocaluser='root'\nlocalpassword='root'\n\nstagingsettings='disabled'\nstagingdomain='0'\nstaginghost='0'\nstaginguser='0'\nstagingpassword='0'\n\nproductionsettings='disabled'\nproductiondomain='0'\nproductionhost='0'\nproductionuser='0'\nproductionpassword='0'" > $HOME/.obiconfig
+			create_obiconfig
 			configerror
 			exit
 			;;
-
 	esac
-
 }
 
 # -----------------------------------------------#
@@ -76,18 +85,11 @@ CUT_NAME=`echo $PROJ_FOLDER_NAME | cut -c1-3`
 ## Functions
 ## ----------------------------------------------#
 
-salts()
-{
-perl -i -pe '
-  BEGIN {
-    $keysalts = qx(curl -sS https://api.wordpress.org/secret-key/1.1/salt)
-  }
-  s/\/\/ Insert_Salts_Below/$keysalts/g
-' wp-config.php
+#
+# Mysql functions
+#
 
-}
-
-database_credentials()
+mysql_credentials()
 {
 	server=$1
 	wp_config_check
@@ -101,7 +103,7 @@ database_credentials()
 					host="$localhost"
 					user="$localuser"
 					pass="$localpassword"
-					name="$CUT_NAME"_"$server"_db
+					name="$PROJ_FOLDER_NAME"_"$server"_wp
 					serversettings="\033[32menabled\033[0m"
 					;;
 				wp-enabled )
@@ -125,7 +127,7 @@ database_credentials()
 					host="$staginghost"
 					user="$staginguser"
 					pass="$stagingpassword"
-					name="$CUT_NAME"_"$server"_db
+					name="$PROJ_FOLDER_NAME"_"$server"_wp
 					serversettings="\033[32menabled\033[0m"
 					;;
 				wp-enabled )
@@ -150,14 +152,14 @@ database_credentials()
 					host="$productionhost"
 					user="$productionuser"
 					pass="$productionpassword"
-					name="$CUT_NAME"_"$server"_db
+					name="$PROJ_FOLDER_NAME"_"$server"_wp
 					serversettings="\033[32menabled\033[0m"
 					;;
 				wp-enabled )
-					host=`awk -F\' '/prod_db_host/ {print $4}' "$wpconfiglocation"`
-					user=`awk -F\' '/prod_db_user/ {print $4}' "$wpconfiglocation"`
-					pass=`awk -F\' '/prod_db_password/ {print $4}' "$wpconfiglocation"`
-					name=`awk -F\' '/prod_db_name/ {print $4}' "$wpconfiglocation"`
+					host=`awk -F\' '/production_db_host/ {print $4}' "$wpconfiglocation"`
+					user=`awk -F\' '/production_db_user/ {print $4}' "$wpconfiglocation"`
+					pass=`awk -F\' '/production_db_password/ {print $4}' "$wpconfiglocation"`
+					name=`awk -F\' '/production_db_name/ {print $4}' "$wpconfiglocation"`
 					serversettings="\033[32mwp-enabled\033[0m"
 					;;
 				* )
@@ -171,40 +173,12 @@ database_credentials()
 	echo ; echo "obi: Your \033[36m$server\033[0m server settings are set to $serversettings. To change this run: \033[33mobi config\033[0m" ; echo
 }
 
-wp_config_check()
+mysql_timestamp()
 {
-
-	wpconfiglocation="site/wp-config.php"
-	file_exist_check "site/wp-config.php"
-	ret10=$?
-
-	if [ "$ret10" == "10" ]
-	then
-		wpconfiglocation="wp-config.php"
-		file_exist_check "wp-config.php"
-		ret10=$?
-
-		if [ "$ret10" == "10" ]
-		then
-			clear
-			echo
-			echo "obi: The file [ $file ] does not exist"
-			echo
-			exit 0
-		fi
-	fi
-}
-wp_config_evironment() {
-
-	environment=$1
-	database_credentials "$environment"
-
-	name="define('DB_NAME', '$name'); // local_db_name"
-	user="define('DB_USER', '$user'); // local_db_user"
-	pass="define('DB_PASSWORD', '$pass'); // local_db_password"
-	host="define('DB_HOST', '$host'); // local_db_host"
-
-	sed -i '' -e  "s|.*local_db_name.*|        $name|" -e "s|.*local_db_user.*|        $user|" -e "s|.*local_db_password.*|        '${pass}|" -e "s|.*local_db_host.*|        $host|" wp-config.php
+	# Mysql variables
+	THE_DATE="$(date +%A-%m-%d-%Y)"
+	THE_DB_NAME=$db
+	THE_FILE_NAME=$THE_DATE-$THE_DB_NAME
 }
 
 mysql_dump()
@@ -222,8 +196,8 @@ mysql_dump()
 
 	wp_config_check
 
-	#looks for database username, database password and database name in the wp-config file
-	database_credentials $database
+	# Looks for database username, database password and database name in the wp-config file
+	mysql_credentials $database
 
 	/Applications/MAMP/Library/bin/mysqldump --net_buffer_length=50000 -h"$host" -u"$user" -p"$pass" "$name" > "dumps/$database/$THE_FILE_NAME.sql"
 }
@@ -244,8 +218,8 @@ mysql_import()
 
 	wp_config_check
 
-	#looks for database username, database password and database name in the wp-config file
-	database_credentials $database
+	# Looks for database username, database password and database name in the wp-config file
+	mysql_credentials $database
 
 	/Applications/MAMP/Library/bin/mysql -h"$host" -u"$user" -p"$pass" "$name" < "dumps/$from/$THE_FILE_NAME.sql"
 }
@@ -264,9 +238,61 @@ mysql_sync()
 
 }
 
+#
+# Wp_config functions
+#
+
+wp_config_check()
+{
+	wpconfiglocation="site/wp-config.php"
+	file_exist_check "site/wp-config.php"
+	ret10=$?
+
+	if [ "$ret10" == "10" ]
+	then
+		wpconfiglocation="wp-config.php"
+		file_exist_check "wp-config.php"
+		ret10=$?
+
+		if [ "$ret10" == "10" ]
+		then
+			clear
+			echo
+			echo "obi: The file [ $file ] does not exist"
+			echo
+			exit 0
+		fi
+	fi
+}
+wp_config_evironment()
+{
+	environment=$1
+	mysql_credentials "$environment"
+
+	name="define('DB_NAME', '$name'); // local_db_name"
+	user="define('DB_USER', '$user'); // local_db_user"
+	pass="define('DB_PASSWORD', '$pass'); // local_db_password"
+	host="define('DB_HOST', '$host'); // local_db_host"
+
+	sed -i '' -e  "s|.*local_db_name.*|        $name|" -e "s|.*local_db_user.*|        $user|" -e "s|.*local_db_password.*|        '${pass}|" -e "s|.*local_db_host.*|        $host|" wp-config.php
+}
+
+add_salts()
+{
+	perl -i -pe '
+		BEGIN {
+		$keysalts = qx(curl -sS https://api.wordpress.org/secret-key/1.1/salt)
+		}
+		s/\/\/ Insert_Salts_Below/$keysalts/g
+	' wp-config.php
+}
+
+#
+# Find and replace functions
+#
+
 find_and_replace_wp_url()
 {
-
 	find_url=$1
 	replace_url=$2
 	folder=$3
@@ -285,9 +311,9 @@ find_and_replace_wp_url()
 	echo "obi: Replaceing \033[31m$find\033[0m with \033[32m$replace\033[0m"
 	sed -i '' -e "s,$find,$replace,g" "$PROJ_PATH$PROJ_FOLDER_NAME/dumps/$folder/$THE_FILE_NAME.sql"
 }
+
 empty_second_string_check()
 {
-
 	string=$1
 
 	if  [ -z "$string" ]
@@ -295,10 +321,14 @@ empty_second_string_check()
 		return 6
 	fi
 }
+
+#
+# Directory functions
+#
+
 # Check to see if the directory given is writable to not overwrite it
 project_exist_check()
 {
-
 	project=$1
 
 	if [  -d "$project" -a -w "$project" ]
@@ -310,10 +340,10 @@ project_exist_check()
 		exit 0
 	fi
 }
+
 # Check to see if the directory given is writable to not overwrite it
 directory_exist_check()
 {
-
 	writable="$1"
 
 	if [ ! -d "$writable" ]
@@ -332,17 +362,15 @@ file_exist_check ()
 		return 9
 	fi
 }
-mysql_timestamp()
-{
 
-	#mysql variables
-	THE_DATE="$(date +%A-%m-%d-%Y)"
-	THE_DB_NAME=$db
-	THE_FILE_NAME=$THE_DATE-$THE_DB_NAME
-
-}
 create_directories()
 {
+	does_config_exist
+	empty_second_string_check "$PROJ_FOLDER_NAME"
+	strcheckret=$?
+	project_exist_check "$PROJ"
+	dircheckret=$?
+	check_returns
 	clear
 	cd "$PROJ_PATH"
 	mkdir $PROJ_FOLDER_NAME
@@ -350,9 +378,9 @@ create_directories()
 	mkdir -p architecture/estimates architecture assets/ai assets/content assets/images/gif assets/images/jpg assets/images/png assets/images assets/pdf assets/psd assets dumps/local dumps/production dumps/staging dumps emails fonts mock-ups site
 	cd site
 }
+
 check_returns()
 {
-
 	case "$strcheckret" in
 		6 ) clear ; echo ; echo "obi: \033[33m Your input was empty please try again\033[0m" ; echo ;
 			exit
@@ -365,9 +393,9 @@ check_returns()
 			;;
 	esac
 }
+
 set_project_dir()
 {
-
 	MSG="\033[36m Please enter your desired project working directory without the trailing slash or \n     simply drag and drop the desired folder into this window and press ENTER"
 
 	clear
@@ -397,9 +425,12 @@ set_project_dir()
 
 }
 
+#
+# Server settings functions
+#
+
 set_environment()
 {
-
 	environment=$1
 	environmentvalue=$2
 	linenumber=$3
@@ -417,11 +448,9 @@ set_environment()
 	fi ;
 
 }
-#server settings
 
 server_toggle_settings()
 {
-
 	switch=$1
 
 	case "$switch" in
@@ -434,6 +463,7 @@ server_toggle_settings()
 	esac
 
 }
+
 get_server_settings()
 {
 	server_toggle_settings "$localsettings"
@@ -473,7 +503,6 @@ get_server_settings()
 	esac
 }
 
-
 toggle_environment_settings()
 {
 
@@ -505,7 +534,7 @@ toggle_environment_settings()
 
 main_menu()
 {
-	# get the server settings
+	# Get the server settings
 	get_server_settings
 
 	aprompt="1. Change project working directory"
@@ -561,18 +590,9 @@ main_menu()
 	echo "obi: $MSG"
 	echo "\033[0m"
 	echo "Select by pressing the letter and then ENTER" ;
-
 }
 
-
-MSG="Your project working directory is currently set to:\n     \033[32m$localprojectdirectory\033[0m"
-
-invalidchoice () { MSG="\033[33m Invalid Selection ... Please Try Again" ; }
-logo="\033[36m Obi"
-
-#
 # Menu Choices
-#
 achoice() {	set_project_dir ; }
 bchoice() { toggle_environment_settings local "$localsettings" 2 ; }
 cchoice() { set_environment local host 3 ; }
@@ -588,6 +608,10 @@ lchoice() { set_environment production domain 14 ; }
 mchoice() { set_environment production host 15 ; }
 nchoice() { set_environment production user 16 ; }
 ochoice() { set_environment production password 17 ; }
+invalidchoice () { MSG="\033[33m Invalid Selection ... Please Try Again" ; }
+
+logo="\033[36m Obi"
+MSG="Your project working directory is currently set to:\n     \033[32m$localprojectdirectory\033[0m"
 
 # -----------------------------------------------#
 ## Main Logic
@@ -595,21 +619,22 @@ ochoice() { set_environment production password 17 ; }
 
 case $ACTION in
 	config )
+		create_obiconfig
 		while true
 		do
-			#source the config file
+			# Source the config file
 			. $HOME/.obiconfig
 
-			#call the main_menu function
+			# Call the main_menu function
 			main_menu
 
-			#clear out the MSG variable
+			# Clear out the MSG variable
 			MSG=
 
-			#read the users input
+			#Read the users input
 			read answer
 
-			#call the coresponding function based on the user input
+			# Call the coresponding function based on the user input
 			#if the user input is not one of the available choices then call
 			#the invalidchoice function
 			case $answer
@@ -634,48 +659,36 @@ case $ACTION in
 			esac
 
 		done
-		 ;;
+		;;
 	-e )
 		does_config_exist
-		empty_second_string_check "$PROJ_FOLDER_NAME"
-		strcheckret=$?
-		project_exist_check "$PROJ"
-		dircheckret=$?
-		check_returns
-
+		# Create the folder structure
 		create_directories
-		echo
-		echo "obi: Your project is located at" `pwd`
-		echo
+
+		# List directory contents and their location
+		ls -laO
+		echo ; echo "obi: Your project is located at" `pwd` ; echo
 		;;
 	-g )
-		does_config_exist
-		empty_second_string_check "$PROJ_FOLDER_NAME"
-		strcheckret=$?
-		project_exist_check "$PROJ"
-		dircheckret=$?
-		check_returns
-
+		# Create the folder structure
 		create_directories
-		cd site
+
+		# Setup git
 		git init
 		echo ".DS_Store" > .gitignore
+
+		# List directory contents and their location
 		ls -laO
-		echo
-		echo "obi: Your project is located at" `pwd`
-		echo
+		echo ; echo "obi: Your project is located at" `pwd` ; echo
 		;;
 	-w )
 		does_config_exist
-		empty_second_string_check "$PROJ_FOLDER_NAME"
-		strcheckret=$?
-		project_exist_check "$PROJ"
-		dircheckret=$?
-		check_returns
-
+		# Create the folder structure
 		create_directories
-		cd site
+
+		# Setup git
 		git init
+
 		# Get latest version of wordpress
 		curl -OL http://wordpress.org/latest.zip
 		tar --strip-components=1 -zxvf latest.zip
@@ -695,28 +708,31 @@ case $ACTION in
 		sed -i '' "s,klas,${PROJ_FOLDER_NAME},g" wp-content/themes/$PROJ_FOLDER_NAME/sass/ie.scss
 
 		# Load the local database credentials
-
 		wp_config_evironment local
 
+		# Replace escape the dot in the staging domain name
+		stagingdomain="${stagingdomain//\./\\\.}"
+
+		# Add the necessary variables to the wp-config
 		staging_tld="} elseif (preg_match('/$stagingdomain/', $_SERVER['HTTP_HOST'])) { // staging_server_domain"
 		sed -i '' -e  "s|.*staging_server_domain.*|$staging_tld|" wp-config.php
+		grep -rl wp_ wp-config.php | xargs sed -i '' "s/wp_/${CUT_NAME}_/"
+		grep -rl \".dev\" wp-config.php | xargs sed -i '' "s/\".dev\"/\"http:\/\/${PROJ_FOLDER_NAME}.dev\"/"
 
-		grep -rl wp_ wp-config.php | xargs sed -i.bak "s/wp_/${CUT_NAME}_/"
-		grep -rl \".dev\" wp-config.php | xargs sed -i.bak "s/\".dev\"/\"http:\/\/${PROJ_FOLDER_NAME}.dev\"/"
-		# add stalts
-		salts
-		# clean up
-		rm wp-config.php.bak
+		# add wp salts
+		add_salts
+
 		# Build project's .gitignore
 		echo ".DS_Store \n.sass-cache/" > .gitignore
 
-		database_credentials local
-		# Create project's databse
+		#load the database local credentials
+		mysql_credentials local
+		# Create project's database
 		/Applications/MAMP/Library/bin/mysql -u"$user" -h"$host" -p"$pass" -Bse "CREATE DATABASE ${name};"
+
+		# List directory contents and their location
 		ls -laO
-		echo
-		echo "obi: Your project is located at" `pwd`
-		echo
+		echo ; echo "obi: Your project is located at" `pwd` ; echo
 		;;
 	-b )
 		does_config_exist
@@ -781,6 +797,7 @@ case $ACTION in
 			esac
 		;;
 	mysql )
+		does_config_exist
 		empty_second_string_check "$2"
 		strcheckret=$?
 		check_returns
@@ -831,9 +848,8 @@ case $ACTION in
 		;;
 	* )
 		clear
-		echo
-		echo "obi: Please enter a valid selection"
-		echo
-	;;
+		does_config_exist
+		echo ; echo "obi: Please enter a valid selection or run \033[33mobi help\033[0m" ; echo
+		;;
 
 esac
