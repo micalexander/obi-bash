@@ -2,9 +2,11 @@
 # -----------------------------------------------#
 ## Obi config
 ## ----------------------------------------------#
-config="$HOME/.obiconfig"
+
 create_obiconfig()
 {
+	config="$HOME/.obiconfig"
+
 	if [ -f "$config" ]
 	then
 		. $HOME/.obiconfig
@@ -20,8 +22,6 @@ configerror()
 
 does_config_exist()
 {
-
-
 	file_exist_check "$HOME/.obiconfig"
 	fileexistreturn=$?
 
@@ -37,7 +37,6 @@ does_config_exist()
 								exit
 							;;
 					esac
-
 					;;
 			esac
 			;;
@@ -46,9 +45,7 @@ does_config_exist()
 			configerror
 			exit
 			;;
-
 	esac
-
 }
 
 # -----------------------------------------------#
@@ -852,7 +849,7 @@ case $ACTION in
 	* )
 		clear
 		does_config_exist
-		echo ; echo "obi: Please enter a valid selection " ; echo
+		echo ; echo "obi: Please enter a valid selection or run \033[33mobi help\033[0m" ; echo
 		;;
 
 esac
