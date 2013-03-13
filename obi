@@ -4,10 +4,6 @@
 ## ----------------------------------------------#
 config="$HOME/.obiconfig"
 
-if [ -f "$config" ]
-then
-	. $HOME/.obiconfig
-fi
 
 configerror()
 {
@@ -17,6 +13,15 @@ configerror()
 
 does_config_exist()
 {
+	if [ -f "$config" ]
+	then
+		. $HOME/.obiconfig
+	else
+		echo "localprojectdirectory='0'\nlocalsettings='enabled'\nlocalhost='localhost'\nlocaluser='root'\nlocalpassword='root'\n\nstagingsettings='disabled'\nstagingdomain='0'\nstaginghost='0'\nstaginguser='0'\nstagingpassword='0'\n\nproductionsettings='disabled'\nproductiondomain='0'\nproductionhost='0'\nproductionuser='0'\nproductionpassword='0'" > $HOME/.obiconfig
+		configerror
+		exit
+	fi
+
 	file_exist_check "$HOME/.obiconfig"
 	fileexistreturn=$?
 
@@ -617,10 +622,9 @@ MSG=
 
 case $ACTION in
 	config )
-		does_config_exist
 		while true
 		do
-
+			does_config_exist
 			# Source the config file
 			. $HOME/.obiconfig
 
@@ -660,6 +664,7 @@ case $ACTION in
 		done
 		;;
 	-e )
+		does_config_exist
 		# Create the folder structure
 		create_directories
 
@@ -680,6 +685,7 @@ case $ACTION in
 		echo ; echo "obi: Your project is located at" `pwd` ; echo
 		;;
 	-w )
+		does_config_exist
 		# Create the folder structure
 		create_directories
 
@@ -794,6 +800,7 @@ case $ACTION in
 			esac
 		;;
 	mysql )
+		does_config_exist
 		empty_second_string_check "$2"
 		strcheckret=$?
 		check_returns
@@ -843,9 +850,9 @@ case $ACTION in
 		exit
 		;;
 	* )
-		does_config_exist
 		clear
-		echo ; echo "obi: Please enter a valid selection" ; echo
+		does_config_exist
+		echo ; echo "obi: Please enter a valid selection " ; echo
 		;;
 
 esac
