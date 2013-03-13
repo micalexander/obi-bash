@@ -49,7 +49,7 @@ does_config_exist()
 	esac
 }
 
-
+create_obiconfig
 
 # -----------------------------------------------#
 ## Variables
@@ -560,7 +560,6 @@ main_menu()
 	nprompt="14. Change production database user currently set to \033[33m$productionuser\033[0m"
 	oprompt="15. Change production database password currently set to \033[33m${productionpassword//[a-z]/*}\033[0m"
 
-	MSG="Your project working directory is currently set to:\n     \033[32m$localprojectdirectory\033[0m"
 
 	# Menu Output
 	clear
@@ -573,6 +572,7 @@ main_menu()
 	echo "\t" "\033[4;37mLocal Enviornment \033[0m"
 	echo
 	echo "\t""$aprompt"
+	echo
 	echo "\t""$bprompt"
 	echo "\t""$cprompt"
 	echo "\t""$dprompt"
@@ -602,6 +602,8 @@ main_menu()
 	echo "Select by pressing the letter and then ENTER" ;
 }
 
+MSG="Your project working directory is currently set to:\n     \033[32m$localprojectdirectory\033[0m"
+
 # Menu Choices
 achoice() {	set_project_dir ; }
 bchoice() { toggle_environment_settings local "$localsettings" 2 ; }
@@ -630,8 +632,6 @@ case $ACTION in
 		while true
 		do
 			create_obiconfig
-			# Source the config file
-			. $HOME/.obiconfig
 
 			# Call the main_menu function
 			main_menu
