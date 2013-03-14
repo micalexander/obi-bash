@@ -567,7 +567,7 @@ main_menu()
 	echo
 	echo "\t\t\t\t $logo"
 	echo
-	echo "\t033[36m A Jedi's Workflow designed for the 21rst century"
+	echo "\t\033[36m A Jedi's Workflow designed for the 21rst century"
 	echo "\033[0m"
 	echo "\t" "\033[4;37mLocal Enviornment \033[0m"
 	echo
@@ -827,14 +827,14 @@ case $ACTION in
 		echo
 		echo "\tArguments:"
 		echo
-		echo "\t   config: configure obi."
-		echo "\t   help: prints usage to the terminal."
-		echo "\t   mysql: login local mysql database."
+		echo "\t   config: configure obi"
+		echo "\t   help: prints usage to the terminal"
+		echo "\t   mysql: login local mysql database"
 		echo
-		echo "\t   -e: Create an empty working directory."
-		echo "\t   -g: Create a git repository working directory."
-		echo "\t   -w: Create a wordpress enabled git repository working directory."
-		echo "\t   -b: Backup mysql database. [environment(s)] expected."
+		echo "\t   -e: Create an empty working directory"
+		echo "\t   -g: Create a git repository working directory"
+		echo "\t   -w: Create a wordpress enabled git repository working directory"
+		echo "\t   -b: Backup mysql database."
 		echo
 		echo "\tProject name: Name of the folder that contains your project."
 		echo

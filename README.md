@@ -10,7 +10,7 @@ or
 
 `obi` `[argument]` `[project_name]` `[environment(s)]`
 
-## Arguments:
+### Arguments:
 
 `config`: configure obi
 
@@ -18,13 +18,13 @@ or
 
 `mysql`: login local mysql database
 
-`-e`: Create an empty working directory. (Followed by the `[project_name]`)
+`-e`: Create an empty working directory *(Followed by the `[project_name]`)*
 
-`-g`: Create a git repository working directory. (Followed by the `[project_name]`)
+`-g`: Create a git repository working directory *(Followed by the `[project_name]`)*
 
-`-w`: Create a wordpress enabled git working directory. (Followed by the `[project_name]`)
+`-w`: Create a wordpress enabled git working directory *(Followed by the `[project_name]`)*
 
-`-b`: Backup mysql database. (Followed by the `[project_name]` and then the `[environment(s)]`)
+`-b`: Backup mysql database *(Followed by the `[project_name]` and then the `[environment(s)]`)*
 
 ### Project name:
 
