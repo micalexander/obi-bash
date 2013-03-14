@@ -3,7 +3,7 @@
 Work in progess, soon to be combined into one jedi master script: `obi`.
 
 ## obi
-Lightsaber Swiss Army Knife for wordpress development workflows. It shall become more powerful than you can possibly imagine.
+Swiss Army Lightsaber for wordpress development workflows. It shall become more powerful than you can possibly imagine.
 
 Obi is a unified tool to setup project structures for multi-environment wordpress development, and database sync management.
 
@@ -14,15 +14,16 @@ Obi is a unified tool to setup project structures for multi-environment wordpres
 Currently only deploys folders to the server via rsync
 
 # Useage:
-`obi [$1] [$2] [$3]`
+Usage: `obi [argument]`
+   or: `obi [argument] [project_name] [environment(s)]`
 
 ## Examples:
 
-`obi setup /User/obi-wan/Sites` - Setup config file with project containing directory root. **No trailing slash**.
+`obi config /User/obi-wan/Sites` - Setup config file with project containing directory root. **No trailing slash**.
 
 `obi -w deathstar_v3_project` - Setup folder structure and vanilla wordpress install in /User/obi-wan/Sites/deathstar_v3_project.
 
-`obi -s deathstar_v3_project -ltp` - Migrate local database (with find/replace) to production.
+`obi -b deathstar_v3_project -ltp` - Backup local database (with find/replace) to production.
 
 ## Setup Obi: Commands to Run Once
 $1 Params for setup (run once)
@@ -34,11 +35,13 @@ $2 Params for setup (run once)
 ## Using Obi: Project Setup Commands
 $1 Params for projects:
 
-`-f`: create empty folder structure, no repo, no wordpress
+`-e`: Create an empty working directory.
 
-`-g`: create empty folder structure with git repo in ./site/ dir
+`-g`: Create a git repository working directory in ./site/ dir
 
-`-w`: create folder structure with git repo and latest wordpress install including KLAS framework in ./site/ dir
+`-w`:Create a wordpress enabled git repository working directory.
+
+
 
 $2 Params for projects:
 `%foldername%`: project name, typically the site's domain without .tld. This name is used throughout the script for the following:
@@ -52,9 +55,7 @@ $2 Params for projects:
 ## Using Obi: Database Management Commands
 $1 Params for databases:
 
-`-d`: database dump to ./dumps/ dir
-
-`-s`: sync databases between two environments
+`-b`: Backup mysql database. [environment(s)] expected.
 
 $2 Params for databases:
 `%foldername%`: project name, typically the site's domain without .tld.
