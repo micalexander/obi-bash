@@ -1,87 +1,56 @@
 # Obi
 
-Work in progess, soon to be combined into one jedi master script: `obi`.
+Obi is a unified tool to setup and manage projects for multi-environments, wordpress development, and database sync management.
 
-## obi
-Swiss Army Lightsaber for wordpress development workflows. It shall become more powerful than you can possibly imagine.
+## Useage:
 
-Obi is a unified tool to setup project structures for multi-environment wordpress development, and database sync management.
+`obi` `[argument]`
 
-## wicket
-*Depricated, use `obi`*
+or
 
-## deploy
-Currently only deploys folders to the server via rsync
+`obi` `[argument]` `[project_name]` `[environment(s)]`
 
-# Useage:
-Usage: `obi [argument]`
-   or: `obi [argument] [project_name] [environment(s)]`
+## Arguments:
 
-## Examples:
+`config`: configure obi
 
-`obi config /User/obi-wan/Sites` - Setup config file with project containing directory root. **No trailing slash**.
+`help`: prints usage to the terminal
 
-`obi -w deathstar_v3_project` - Setup folder structure and vanilla wordpress install in /User/obi-wan/Sites/deathstar_v3_project.
+`mysql`: login local mysql database
 
-`obi -b deathstar_v3_project -ltp` - Backup local database (with find/replace) to production.
+`-e`: Create an empty working directory. (Followed by the `[project_name]`)
 
-## Setup Obi: Commands to Run Once
-$1 Params for setup (run once)
-`setup`: sets up .newconfig file in ~/. dir. Can be run again to overwrite .newconfig file.
+`-g`: Create a git repository working directory. (Followed by the `[project_name]`)
 
-$2 Params for setup (run once)
-`%directory%`: path to root directory containing all project folders. (Can drag/drop desired folder here from Finder). **No trailing slash**.
+`-w`: Create a wordpress enabled git working directory. (Followed by the `[project_name]`)
 
-## Using Obi: Project Setup Commands
-$1 Params for projects:
+`-b`: Backup mysql database. (Followed by the `[project_name]` and then the `[environment(s)]`)
 
-`-e`: Create an empty working directory.
+### Project name:
 
-`-g`: Create a git repository working directory in ./site/ dir
+Name of the folder that contains your project.
 
-`-w`:Create a wordpress enabled git repository working directory.
+### Environments:
 
+`-l`: local
 
+`-s`: staging
 
-$2 Params for projects:
-`%foldername%`: project name, typically the site's domain without .tld. This name is used throughout the script for the following:
+`-p`: production
 
-- Root directory name
-- KLAS theme folder name
-- Development environment WP siteurl and home variables in wp-config.php
-- Development environment database name %foldername%_local_db
-- Sets a git remote "beanstalk"
+`-lts`: local to staging
 
-## Using Obi: Database Management Commands
-$1 Params for databases:
+`-ltp`: local to production
 
-`-b`: Backup mysql database. [environment(s)] expected.
+`-stl`: staging to local
 
-$2 Params for databases:
-`%foldername%`: project name, typically the site's domain without .tld.
+`-stp`: staging to production
 
-$3 Params for databases (only for use with $1 = `-s`):
-Provides "From:To" database sync as follows:
+`-ptl`: production to local
 
-1. Dump of first letter's environment database into ./dumps/ dir, using db credentials from the specified project's (`$2`) wp-config.php.
-2. Run `sed` (find & replace) over the dump, replacing the "from" environment's base URL with the "to" environment's base URL, using URLs from the specified project's (`$2`) wp-config.php.
-3. Import the find & replaced dump from step 2. into the "to" environment's database, using db credentials from the specified project's (`$2`) wp-config.php.
+`-pts`: production to staging
 
-`-lts`: Local to Staging
+### Dependencies
 
-`-ltp`: Local to Production
-
-`-stl`: Staging to Local
-
-`-stp`: Staging to Production
-
-`-ptl`: Production to Local
-
-`-pts`: Production to Staging
-
-**Note:** Database dumps are saved according to environment and the date of the dump. Multiple dumps from the same environment on the same day will overwrite eachother, but dumps on different days will not.
-
-# Dependencies
 - Git (duh)
-- System must have wget installed (via [macports](http://www.macports.org/ports.php?by=library&substr=wget))
-- Includes the [KLAS Wordpress Theme Framework](https://github.com/kylelarkin/klas) - A SASS based starter theme for WordPress.
+- Uses the [KLAS Wordpress Theme Framework](https://github.com/kylelarkin/klas) - A SASS based starter theme for WordPress.
