@@ -277,7 +277,7 @@ wp_config_evironment()
 	pass="define('DB_PASSWORD', '$pass'); // local_db_password"
 	host="define('DB_HOST', '$host'); // local_db_host"
 
-	sed -i '' -e  "s|.*local_db_name.*|        $name|" -e "s|.*local_db_user.*|        $user|" -e "s|.*local_db_password.*|        '${pass}|" -e "s|.*local_db_host.*|        $host|" wp-config.php
+	sed -i '' -e  "s|.*local_db_name.*|        $name|" -e "s|.*local_db_user.*|        $user|" -e "s|.*local_db_password.*|        ${pass}|" -e "s|.*local_db_host.*|        $host|" wp-config.php
 }
 
 add_salts()

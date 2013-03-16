@@ -122,8 +122,11 @@ The directory structure below is automatically generated when using the `-e`, `-
 
 ## Database Backups
 
+With Obi there are two ways to back up a MySQL database. One is just a straight backup to a .sql file. The second is to backup a MySQL database and import it into another database. The latter of the two will also perform a find and replace on the URLs that are stored in the .sql file before it's imported to the respected database.
 
+By default Obi will look in the wp-config.php for the URLs to find and replace
 
+Obi relies on a special [wp-config.php](https://github.com/kylelarkin/klas/blob/master/wp-config.php) file to to it s find and replace. This file is included in the [KLAS Wordpress Theme Framework](https://github.com/kylelarkin/klas) when running the `-w` argument.
 
 ## Examples:
 
