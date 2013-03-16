@@ -733,7 +733,7 @@ case $ACTION in
 		echo ".DS_Store \n.sass-cache/" > .gitignore
 
 		#load the database local credentials
-		mysql_credentials local
+		host="$localhost" ; user="$localuser" ; pass="$localpassword" ; name="$PROJ_FOLDER_NAME"_"$server"_wp
 		# Create project's database
 		/Applications/MAMP/Library/bin/mysql -u"$user" -h"$host" -p"$pass" -Bse "CREATE DATABASE ${name};"
 
