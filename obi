@@ -269,7 +269,7 @@ wp_config_check()
 }
 wp_config_evironment()
 {
-	environment=$1
+	server=$1
 
 	host="$localhost" ; user="$localuser" ; pass="$localpassword" ; name="$PROJ_FOLDER_NAME"_"$server"_wp
 	name="define('DB_NAME', '$name'); // local_db_name"
