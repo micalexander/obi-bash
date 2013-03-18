@@ -721,7 +721,7 @@ case $ACTION in
 		stagingdomain="${stagingdomain//\./\\\.}"
 
 		# Add the necessary variables to the wp-config
-		staging_tld="} elseif (preg_match('/$stagingdomain/', $_SERVER['HTTP_HOST'])) { // staging_server_domain"
+		staging_tld="} elseif (preg_match('/$stagingdomain/', \$_SERVER['HTTP_HOST'])) { // staging_server_domain"
 		sed -i '' -e  "s|.*staging_server_domain.*|$staging_tld|" wp-config.php
 		grep -rl wp_ wp-config.php | xargs sed -i '' "s/wp_/${CUT_NAME}_/"
 		grep -rl \".dev\" wp-config.php | xargs sed -i '' "s/\".dev\"/\"http:\/\/${PROJ_FOLDER_NAME}.dev\"/"
