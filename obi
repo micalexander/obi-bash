@@ -270,8 +270,8 @@ wp_config_check()
 wp_config_evironment()
 {
 	environment=$1
-	mysql_credentials "$environment"
 
+	host="$localhost" ; user="$localuser" ; pass="$localpassword" ; name="$PROJ_FOLDER_NAME"_"$server"_wp
 	name="define('DB_NAME', '$name'); // local_db_name"
 	user="define('DB_USER', '$user'); // local_db_user"
 	pass="define('DB_PASSWORD', '$pass'); // local_db_password"
@@ -733,7 +733,7 @@ case $ACTION in
 		echo ".DS_Store \n.sass-cache/" > .gitignore
 
 		#load the database local credentials
-		host="$localhost" ; user="$localuser" ; pass="$localpassword" ; name="$PROJ_FOLDER_NAME"_"$server"_wp
+		host="$localhost" ; user="$localuser" ; pass="$localpassword" ; name="$PROJ_FOLDER_NAME"_local_wp
 		# Create project's database
 		/Applications/MAMP/Library/bin/mysql -u"$user" -h"$host" -p"$pass" -Bse "CREATE DATABASE ${name};"
 
