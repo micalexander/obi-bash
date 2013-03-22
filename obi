@@ -194,7 +194,7 @@ mysql_dump()
 
 	if [ ! -d "dumps" ]
 	then
-	mkdir dumps
+	mkdir -p dumps/local dumps/staging dumps/production
 	fi
 
 	wp_config_check
@@ -202,7 +202,7 @@ mysql_dump()
 	# Looks for database username, database password and database name in the wp-config file
 	mysql_credentials $database
 
-	/Applications/MAMP/Library/bin/mysqldump --net_buffer_length=50000 -h"$host" -u"$user" -p"$pass" "$name" > "dumps/$database/$THE_FILE_NAME.sql"
+	/Applications/MAMP/Library/bin/mysqldump --net_buffer_length=50000 --verbose -h"$host" -u"$user" -p"$pass" "$name" > "dumps/$database/$THE_FILE_NAME.sql"
 }
 
 mysql_import()
