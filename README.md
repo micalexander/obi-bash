@@ -2,6 +2,18 @@
 
 Obi is a all-in-one tool designed to make project management, WordPress development, MySQL database backups and syncing MySQL databases between multi-environments a breeze.
 
+## Installation:
+
+If you haven't already, create a folder named "bin" and a file named ".bash_profile" with the following text on it `export PATH=$HOME/bin/Obi:$PATH`, and place them **separately** in your home directory root folder. Assuming you already have Git installed run this command from your terminal:
+
+`cd $HOME/bin/ ; git clone https://github.com/micalexander/obi.git`
+
+Run:
+
+`obi config`
+
+Enter your setting and thats it.
+
 ## Useage:
 
 `obi` `[argument]`
@@ -17,6 +29,8 @@ or
 `help`: prints usage to the terminal
 
 `mysql`: login mysql database  *(Followed by the `[environment(s)]`)*
+
+`kill`: Remove a working directory completely *(Followed by the `[project_name]`)*
 
 `-e`: Create an empty working directory *(Followed by the `[project_name]`)*
 

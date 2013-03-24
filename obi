@@ -827,7 +827,7 @@ case $ACTION in
 		dircheckret=$?
 		check_returns
 
-		mysql_dump local ; mv -i "$PROJ" ~/.Trash ; /Applications/MAMP/Library/bin/mysql -u"$user" -h"$host" -p"$pass" -Bse "DROP database $name"
+		mysql_dump local ; mv "$PROJ" ~/.Trash ; /Applications/MAMP/Library/bin/mysql -u"$user" -h"$host" -p"$pass" -Bse "DROP database $name"
 
 		;;
 	help )
