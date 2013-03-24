@@ -4,7 +4,7 @@ Obi is a all-in-one tool designed to make project management, WordPress developm
 
 ## Installation:
 
-If you haven't already, create a folder named "bin" and a file named ".bash_profile" with the following text on it `export PATH=$HOME/bin/Obi:$PATH`, and place them **separately** in your home directory root folder. Assuming you already have Git installed run this command from your terminal:
+If you haven't already, create a folder named "bin" and a file named ".bash_profile" with the following text on it `export PATH=$HOME/bin/obi:$PATH`, and place them **separately** in your home directory root folder. Assuming you already have Git installed run this command from your terminal:
 
 `cd $HOME/bin/ ; git clone https://github.com/micalexander/obi.git`
 
