@@ -725,6 +725,7 @@ case $ACTION in
 		sed -i '' -e  "s|.*staging_server_domain.*|$staging_tld|" wp-config.php
 		grep -rl wp_ wp-config.php | xargs sed -i '' "s/wp_/${CUT_NAME}_/"
 		grep -rl \".dev\" wp-config.php | xargs sed -i '' "s/\".dev\"/\"http:\/\/${PROJ_FOLDER_NAME}.dev\"/"
+		sed -i '' "s/klas/${PROJ_FOLDER_NAME}/" wp-config.php
 
 		# add wp salts
 		add_salts
@@ -827,7 +828,7 @@ case $ACTION in
 		dircheckret=$?
 		check_returns
 
-		mysql_dump local ; mv "$PROJ" ~/.Trash ; /Applications/MAMP/Library/bin/mysql -u"$user" -h"$host" -p"$pass" -Bse "DROP database $name"
+		mysql_dump local ; cp -r "$PROJ" ~/.Trash ; rm -rf "$PROJ" ; /Applications/MAMP/Library/bin/mysql -u"$user" -h"$host" -p"$pass" -Bse "DROP database $name"
 
 		;;
 	help )
