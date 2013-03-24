@@ -819,6 +819,17 @@ case $ACTION in
 		esac
 		/Applications/MAMP/Library/bin/mysql -u"$user" -h"$host" -p"$pass"
 		;;
+	kill )
+		does_config_exist
+		empty_second_string_check "$PROJ_FOLDER_NAME"
+		strcheckret=$?
+		directory_exist_check "$PROJ"
+		dircheckret=$?
+		check_returns
+
+		mysql_dump local ; mv -i "$PROJ" ~/.Trash ; /Applications/MAMP/Library/bin/mysql -u"$user" -h"$host" -p"$pass" -Bse "DROP database $name"
+
+		;;
 	help )
 		clear
 		echo
