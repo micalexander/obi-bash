@@ -59,7 +59,29 @@ create_obiconfig
 ACTION=$1
 
 # Store the name of the new project which will double as the project folder name
-PROJ_FOLDER_NAME="$2"
+case "$2" in
+	. ) path=`pwd`
+		input=`echo ${path//\// } | awk  ' { print ( $(NF-0) ) }'`;
+		check=$localprojectdirectory$input
+		case $1 in
+			-e|-g|-w|mysql|help|config )
+				clear ; echo ;echo "obi: The . subsitute only works with -b " ; echo ;exit
+				;;
+			* )
+				case "$input" in
+					site ) PROJ_FOLDER_NAME=`echo ${path//\// } | awk  ' { print ( $(NF-1) ) }'`
+						;;
+					* )	PROJ_FOLDER_NAME=`echo ${input//\// } | awk  ' { print ( $(NF-0) ) }'`
+						;;
+				esac
+				;;
+		esac
+		;;
+	* )
+		PROJ_FOLDER_NAME="$2";
+		;;
+
+esac
 
 # If third parameter (project path) is left empty,
 case $3 in
