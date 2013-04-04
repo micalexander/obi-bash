@@ -62,7 +62,6 @@ ACTION=$1
 case "$2" in
 	. ) path=`pwd`
 		input=`echo ${path//\// } | awk  ' { print ( $(NF-0) ) }'`;
-		check=$localprojectdirectory$input
 		case $1 in
 			-e|-g|-w|mysql|help|config )
 				clear ; echo ;echo "obi: The . subsitute only works with -b " ; echo ;exit
