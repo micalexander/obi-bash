@@ -200,9 +200,7 @@ mysql_credentials()
 mysql_timestamp()
 {
 	# Mysql variables
-	THE_DATE="$(date +%A-%m-%d-%Y)"
-	THE_DB_NAME=$db
-	THE_FILE_NAME=$THE_DATE-$THE_DB_NAME
+	THE_DATE="$(date +%A-%m-%d-%Y)-"
 }
 
 mysql_dump()
@@ -223,7 +221,7 @@ mysql_dump()
 	# Looks for database username, database password and database name in the wp-config file
 	mysql_credentials $database
 
-	/Applications/MAMP/Library/bin/mysqldump --net_buffer_length=50000 --verbose -h"$host" -u"$user" -p"$pass" "$name" > "dumps/$database/$THE_FILE_NAME.sql"
+	/Applications/MAMP/Library/bin/mysqldump --net_buffer_length=50000 --verbose -h"$host" -u"$user" -p"$pass" "$name" > "dumps/$database/$THE_DATE$database.sql"
 }
 
 mysql_import()
