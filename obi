@@ -213,7 +213,7 @@ mysql_dump()
 
 	if [ ! -d "dumps" ]
 	then
-	mkdir -p dumps/local dumps/staging dumps/production
+	mkdir -p dumps/local dumps/staging dumps/production dumps/temp
 	fi
 
 	wp_config_check
