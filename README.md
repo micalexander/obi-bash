@@ -127,10 +127,10 @@ There are two directories that are essential to obi's functionality. These direc
 			|-- local
 			|-- production
 			|-- staging
+			|-- temp
 		estimates
 		emails
 		fonts
-		mock-ups
 		site
 
 

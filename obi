@@ -243,7 +243,7 @@ mysql_import()
 	# Looks for database username, database password and database name in the wp-config file
 	mysql_credentials $database
 
-	/Applications/MAMP/Library/bin/mysql -h"$host" -u"$user" -p"$pass" "$name" < "dumps/$from/$THE_FILE_NAME.sql"
+	/Applications/MAMP/Library/bin/mysql -h"$host" -u"$user" -p"$pass" "$name" < "$from"
 }
 
 mysql_sync()
@@ -253,10 +253,14 @@ mysql_sync()
 	find=$3
 	replace=$4
 
+	mysql_timestamp
+
+	temp_location="dumps/temp/$THE_DATE$dump.sql"
+
 	mysql_dump $import
 	mysql_dump $dump
 	find_and_replace_wp_url $find $replace $dump
-	mysql_import $import $dump
+	mysql_import $import $temp_location
 
 }
 
@@ -321,6 +325,8 @@ find_and_replace_wp_url()
 
 	cd "$PROJ"
 
+	cp "dumps/$database/$THE_DATE$database.sql" "dumps/temp/$THE_DATE$database.sql"
+
 	if [ ! -d "dumps" ]
 	then
 	mkdir dumps
@@ -330,8 +336,8 @@ find_and_replace_wp_url()
 
 	find=`awk -F'"' -v  find="$find_url" '$0 ~ find {print $2}' "$wpconfiglocation" | awk -F: '{print $2}' | cut -c 3-`
 	replace=`awk -F'"' -v  replace="$replace_url" '$0 ~ replace {print $2}' "$wpconfiglocation" | awk -F: '{print $2}' | cut -c 3-`
-	echo "obi: Replaceing \033[31m$find\033[0m with \033[32m$replace\033[0m"
-	sed -i '' -e "s,$find,$replace,g" "$PROJ_PATH$PROJ_FOLDER_NAME/dumps/$folder/$THE_FILE_NAME.sql"
+	echo ; echo "obi: Replaceing \033[31m$find\033[0m with \033[32m$replace\033[0m"
+	sed -i '' -e "s,$find,$replace,g" "$PROJ_PATH$PROJ_FOLDER_NAME/dumps/temp/$THE_DATE$database.sql"
 }
 
 empty_second_string_check()
@@ -397,7 +403,7 @@ create_directories()
 	cd "$PROJ_PATH"
 	mkdir $PROJ_FOLDER_NAME
 	cd $PROJ_FOLDER_NAME
-	mkdir -p architecture/estimates architecture assets/ai assets/content assets/images/gif assets/images/jpg assets/images/png assets/images assets/pdf assets/psd assets dumps/local dumps/production dumps/staging dumps emails fonts mock-ups site
+	mkdir -p architecture/estimates assets/ai assets/content assets/images/gif assets/images/jpg assets/images/png assets/images assets/pdf assets/psd assets/fonts dumps/local dumps/production dumps/staging dumps/temp emails site
 	cd site
 }
 
@@ -570,7 +576,7 @@ main_menu()
 	eprompt="5. Change local database password currently set to \033[33m${localpassword//[a-z]/*}\033[0m"
 	fprompt="6. Toggle staging server settings. $stagingsettingsare"
 	gprompt="7. Change staging database domain currently set to \033[33m$stagingdomain\033[0m"
-	hprompt="8. Change staging database host currently set to \033[33m$staginghost\033[0m"
+	hprompt="8. Change staging host currently set to \033[33m$staginghost\033[0m"
 	iprompt="9. Change staging database user currently set to \033[33m$staginguser\033[0m"
 	jprompt="10. Toggle staging database passwordcurrently set to \033[33m${stagingpassword//[a-z/*}\033[0m"
 	kprompt="11. Change production server settings. $prodsettingsare"
