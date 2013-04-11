@@ -114,9 +114,11 @@ There are two directories that are essential to obi's functionality. These direc
 	project-name
 		|--
 		architecture
+			|--	estimates
 		assets
 			|-- ai
 			|-- content
+			|-- fonts
 			|-- images
 				|-- gif
 				|-- jpg
@@ -128,9 +130,7 @@ There are two directories that are essential to obi's functionality. These direc
 			|-- production
 			|-- staging
 			|-- temp
-		estimates
 		emails
-		fonts
 		site
 
 
