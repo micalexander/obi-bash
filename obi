@@ -737,7 +737,7 @@ case $ACTION in
 		mv wp-content/themes/$PROJ_FOLDER_NAME/.htaccess . ; mv wp-content/themes/$PROJ_FOLDER_NAME/wp-config.php .
 
 		# Find and replace the klas name with the project name
-		sed -i '' "s,klas,${PROJ_FOLDER_NAME},g" wp-content/themes/$PROJ_FOLDER_NAME/sass/ie.scss
+		sed -i '' "s,themes/klas,themes/${PROJ_FOLDER_NAME},g" wp-content/themes/$PROJ_FOLDER_NAME/sass/ie.scss
 
 		# Load the local database credentials
 		wp_config_evironment local
