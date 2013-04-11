@@ -216,7 +216,7 @@ mysql_dump()
 
 	cd "$PROJ"
 
-	if [ ! -d "dumps" ]
+	if [ ! -d "dumps/local" ] || [ ! -d "dumps/staging" ] || [ ! -d "dumps/production" ] || [ ! -d "dumps/temp" ]
 	then
 	mkdir -p dumps/local dumps/staging dumps/production dumps/temp
 	fi
