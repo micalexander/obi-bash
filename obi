@@ -67,7 +67,12 @@ case "$2" in
 				clear ; echo ;echo "obi: The . subsitute only works with -b " ; echo ;exit
 				;;
 			* )
-				case "$input" in
+				#  Chech input to see if it contains the word site
+				if [[ "$input" =~ .*site ]]
+				then
+					input_contains=site
+				fi
+				case "$input_contains" in
 					site ) PROJ_FOLDER_NAME=`echo ${path//\// } | awk  ' { print ( $(NF-1) ) }'`
 						;;
 					* )	PROJ_FOLDER_NAME=`echo ${input//\// } | awk  ' { print ( $(NF-0) ) }'`
@@ -270,8 +275,8 @@ mysql_sync()
 
 wp_config_check()
 {
-	wpconfiglocation="site/wp-config.php"
-	file_exist_check "site/wp-config.php"
+	wpconfiglocation="$PROJ_FOLDER_NAME""-site/wp-config.php"
+	file_exist_check "$PROJ_FOLDER_NAME""-site/wp-config.php"
 	ret10=$?
 
 	if [ "$ret10" == "10" ]
@@ -403,8 +408,8 @@ create_directories()
 	cd "$PROJ_PATH"
 	mkdir $PROJ_FOLDER_NAME
 	cd $PROJ_FOLDER_NAME
-	mkdir -p architecture/estimates assets/ai assets/content assets/images/gif assets/images/jpg assets/images/png assets/images assets/pdf assets/psd assets/fonts dumps/local dumps/production dumps/staging dumps/temp emails site
-	cd site
+	mkdir -p architecture/estimates assets/ai assets/content assets/images/gif assets/images/jpg assets/images/png assets/images assets/pdf assets/psd assets/fonts dumps/local dumps/production dumps/staging dumps/temp emails "$PROJ_FOLDER_NAME"-site
+	cd "$PROJ_FOLDER_NAME"-site
 }
 
 check_returns()

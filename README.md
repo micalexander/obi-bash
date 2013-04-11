@@ -131,7 +131,7 @@ There are two directories that are essential to obi's functionality. These direc
 			|-- staging
 			|-- temp
 		emails
-		site
+		project-name-site
 
 
 ## Database Backups
