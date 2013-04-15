@@ -65,7 +65,7 @@ case "$2" in
 		case $1 in
 			-e|-g|-w|mysql|help|config )
 				clear ; echo ;echo "obi: The . subsitute only works with -b " ; echo ;exit
-				;;
+			;;
 			* )
 				#  Chech input to see if it contains the word site
 				if [[ "$input" =~ .*site ]]
@@ -76,42 +76,41 @@ case "$2" in
 					site ) PROJ_FOLDER_NAME=`echo ${path//\// } | awk  ' { print ( $(NF-1) ) }'`
 						;;
 					* )	PROJ_FOLDER_NAME=`echo ${input//\// } | awk  ' { print ( $(NF-0) ) }'`
-						;;
+					;;
 				esac
-				;;
+			;;
 		esac
-		;;
+	;;
 	* )
 		PROJ_FOLDER_NAME="$2";
-		;;
-
+	;;
 esac
 
-# If third parameter (project path) is left empty,
 case $3 in
 	-lts|-ltp|-stl|-stp|-ptl|-pts|-l|-s|-p) PROJ_PATH="$localprojectdirectory"
-		;;
-		* )
-			if [ -z "$3" ]
-
+	;;
+	* )
+		# If third parameter (project path) is left empty when using -e -w -g,
+		if [ -z "$3" ]
+		then
 			# Then use the default project folder
-			then
-				PROJ_PATH="$localprojectdirectory"
-			else
-				# Else store the given directory as the project folder as the third variable
-				PROJ_PATH=$3/
-			fi
+			PROJ_PATH="$localprojectdirectory"
+		else
+			# Else store the given directory as the project folder as the third variable
+			PROJ_PATH=$3/
+		fi
+;;
 esac
 
 
 # Store the project path and the project name as a single string
 PROJ=$PROJ_PATH$PROJ_FOLDER_NAME
 
-CUT_NAME=`echo $PROJ_FOLDER_NAME | cut -c1-3`
+UT_NAME=`echo $PROJ_FOLDER_NAME | cut -c1-3`
 
 
 # -----------------------------------------------#
-## Functions
+# Functions
 ## ----------------------------------------------#
 
 #
@@ -134,18 +133,18 @@ mysql_credentials()
 					pass="$localpassword"
 					name="$PROJ_FOLDER_NAME"_"$server"_wp
 					serversettings="\033[32menabled\033[0m"
-					;;
+				;;
 				wp-enabled )
 					host=`awk -F\' '/local_db_host/ {print $4}' "$wpconfiglocation"`
 					user=`awk -F\' '/local_db_user/ {print $4}' "$wpconfiglocation"`
 					pass=`awk -F\' '/local_db_password/ {print $4}' "$wpconfiglocation"`
 					name=`awk -F\' '/local_db_name/ {print $4}' "$wpconfiglocation"`
 					serversettings="\033[32mwp-enabled\033[0m"
-					;;
+				;;
 				* )
 					serversettings="\033[31mdisabled\033[0m"
 					echo ; echo "obi: Your \033[36m$server\033[0m server settings are set to $serversettings. To change this run: \033[33mobi config\033[0m" ; echo ; exit
-					;;
+				;;
 			esac
 		;;
 		staging )
@@ -165,12 +164,12 @@ mysql_credentials()
 					pass=`awk -F\' '/staging_db_password/ {print $4}' "$wpconfiglocation"`
 					name=`awk -F\' '/staging_db_name/ {print $4}' "$wpconfiglocation"`
 					serversettings="\033[32mwp-enabled\033[0m"
-					;;
+				;;
 				* )
 		 			# Setup local database values in wp-config.php
 					serversettings="\033[31mdisabled\033[0m"
 					echo ; echo "obi: Your \033[36m$server\033[0m server settings are set to $serversettings. To change this run: \033[33mobi config\033[0m" ; echo ; exit
-					;;
+				;;
 			esac
 		;;
 		production )
@@ -183,21 +182,21 @@ mysql_credentials()
 					pass="$productionpassword"
 					name="$PROJ_FOLDER_NAME"_"$server"_wp
 					serversettings="\033[32menabled\033[0m"
-					;;
+				;;
 				wp-enabled )
 					host=`awk -F\' '/production_db_host/ {print $4}' "$wpconfiglocation"`
 					user=`awk -F\' '/production_db_user/ {print $4}' "$wpconfiglocation"`
 					pass=`awk -F\' '/production_db_password/ {print $4}' "$wpconfiglocation"`
 					name=`awk -F\' '/production_db_name/ {print $4}' "$wpconfiglocation"`
 					serversettings="\033[32mwp-enabled\033[0m"
-					;;
+				;;
 				* )
 					# Setup local database values in wp-config.php
 					serversettings="\033[31mdisabled\033[0m"
 					echo ; echo "obi: Your \033[36m$server\033[0m server settings are set to $serversettings. To change this run: \033[33mobi config\033[0m" ; echo ; exit
-					;;
+				;;
 			esac
-		;;
+	;;
 	esac
 	echo ; echo "obi: Your \033[36m$server\033[0m server settings are set to $serversettings. To change this run: \033[33mobi config\033[0m" ; echo
 }
@@ -238,9 +237,9 @@ mysql_import()
 
 	cd "$PROJ"
 
-	if [ ! -d "dumps" ]
+	if [ ! -d "dumps/local" ] || [ ! -d "dumps/staging" ] || [ ! -d "dumps/production" ] || [ ! -d "dumps/temp" ]
 	then
-	mkdir dumps
+	mkdir -p dumps/local dumps/staging dumps/production dumps/temp
 	fi
 
 	wp_config_check
@@ -249,6 +248,28 @@ mysql_import()
 	mysql_credentials $database
 
 	/Applications/MAMP/Library/bin/mysql -h"$host" -u"$user" -p"$pass" "$name" < "$from"
+}
+
+mysql_sed_import()
+{
+	dump=$1
+	import=$2
+	find=$3
+	replace=$4
+
+	mysql_timestamp
+
+	cd "$PROJ/dumps/$dump/"
+
+	# Get the last modified file
+	last_modified_output=`find . -type f -exec stat -f "%m %N" {} \; | sort -n | tail -1`
+	last_modified_file="${last_modified_output/[0-9]* \.\//}"
+
+	# Location fo the last modified file
+	temp_location="$PROJ/dumps/$dump/$last_modified_file"
+	mysql_dump $import
+	find_and_replace_wp_url $find $replace $dump $last_modified_file
+	mysql_import $dump "$temp_location"
 }
 
 mysql_sync()
@@ -264,9 +285,37 @@ mysql_sync()
 
 	mysql_dump $import
 	mysql_dump $dump
-	find_and_replace_wp_url $find $replace $dump
-	mysql_import $import $temp_location
+	find_and_replace_wp_url $find $replace $dump "$THE_DATE$dump.sql"
+	mysql_import $import "$temp_location"
+}
 
+#
+# Find and replace functions
+#
+
+find_and_replace_wp_url()
+{
+	find_url=$1
+	replace_url=$2
+	folder=$3
+	temp_file=$4
+
+	cd "$PROJ"
+
+	cp "dumps/$folder/$temp_file" "dumps/temp/$temp_file"
+
+	if [ ! -d "dumps/local" ] || [ ! -d "dumps/staging" ] || [ ! -d "dumps/production" ] || [ ! -d "dumps/temp" ]
+	then
+	mkdir -p dumps/local dumps/staging dumps/production dumps/temp
+	fi
+
+	wp_config_check
+
+	find=`awk -F'"' -v  find="$find_url" '$0 ~ find {print $2}' "$wpconfiglocation" | awk -F: '{print $2}' | cut -c 3-`
+	replace=`awk -F'"' -v  replace="$replace_url" '$0 ~ replace {print $2}' "$wpconfiglocation" | awk -F: '{print $2}' | cut -c 3-`
+	# echo "$temp_file"; exit
+	echo ; echo "obi: Replaceing \033[31m$find\033[0m with \033[32m$replace\033[0m"
+	sed -i '' -e "s,$find,$replace,g" "$PROJ/dumps/temp/$temp_file"
 }
 
 #
@@ -295,6 +344,8 @@ wp_config_check()
 		fi
 	fi
 }
+
+
 wp_config_evironment()
 {
 	server=$1
@@ -318,32 +369,6 @@ add_salts()
 	' wp-config.php
 }
 
-#
-# Find and replace functions
-#
-
-find_and_replace_wp_url()
-{
-	find_url=$1
-	replace_url=$2
-	folder=$3
-
-	cd "$PROJ"
-
-	cp "dumps/$database/$THE_DATE$database.sql" "dumps/temp/$THE_DATE$database.sql"
-
-	if [ ! -d "dumps" ]
-	then
-	mkdir dumps
-	fi
-
-	wp_config_check
-
-	find=`awk -F'"' -v  find="$find_url" '$0 ~ find {print $2}' "$wpconfiglocation" | awk -F: '{print $2}' | cut -c 3-`
-	replace=`awk -F'"' -v  replace="$replace_url" '$0 ~ replace {print $2}' "$wpconfiglocation" | awk -F: '{print $2}' | cut -c 3-`
-	echo ; echo "obi: Replaceing \033[31m$find\033[0m with \033[32m$replace\033[0m"
-	sed -i '' -e "s,$find,$replace,g" "$PROJ_PATH$PROJ_FOLDER_NAME/dumps/temp/$THE_DATE$database.sql"
-}
 
 empty_second_string_check()
 {
@@ -417,19 +442,17 @@ check_returns()
 	case "$strcheckret" in
 		6 ) clear ; echo ; echo "obi: \033[33m Your input was empty please try again\033[0m" ; echo ;
 			exit
-			;;
+		;;
 	esac
 
 	case "$dircheckret" in
 		5 ) clear ; echo ; echo "obi: The project \033[33m$PROJ\033[0m" entered does not exist ; echo ;
 			exit
-			;;
+	;;
 	esac
 }
-
 set_project_dir()
-{
-	MSG="\033[36m Please enter your desired project working directory without the trailing slash or \n     simply drag and drop the desired folder into this window and press ENTER"
+{	MSG="\033[36m Please enter your desired project working directory without the trailing slash or \n     simply drag and drop the desired folder into this window and press ENTER"
 
 	clear
 
@@ -488,11 +511,11 @@ server_toggle_settings()
 
 	case "$switch" in
 		enabled ) return 1
-			;;
+		;;
 		wp-enabled ) return 2
-			;;
+		;;
 		* ) return 0
-			;;
+		;;
 	esac
 
 }
@@ -504,11 +527,11 @@ get_server_settings()
 
 	case "$localsettingreturn" in
 		0 ) localsettingsare="\033[31mdisabled\033[0m"
-			;;
+		;;
 		1 ) localsettingsare="\033[32menabled\033[0m"
-			;;
+		;;
 		2 ) localsettingsare="\033[32mwp-enabled\033[0m"
-			;;
+		;;
 	esac
 
 	server_toggle_settings "$stagingsettings"
@@ -516,11 +539,11 @@ get_server_settings()
 
 	case "$stagesettingreturn" in
 		0 ) stagingsettingsare="\033[31mdisabled\033[0m"
-			;;
+		;;
 		1 ) stagingsettingsare="\033[32menabled\033[0m"
-			;;
+		;;
 		2 ) stagingsettingsare="\033[32mwp-enabled\033[0m"
-			;;
+		;;
 	esac
 
 	server_toggle_settings "$productionsettings"
@@ -528,11 +551,11 @@ get_server_settings()
 
 	case "$prodsettingreturn" in
 		0 ) prodsettingsare="\033[31mdisabled\033[0m"
-			;;
+		;;
 		1 ) prodsettingsare="\033[32menabled\033[0m"
-			;;
+		;;
 		2 ) prodsettingsare="\033[32mwp-enabled\033[0m"
-			;;
+		;;
 	esac
 }
 
@@ -547,13 +570,13 @@ toggle_environment_settings()
 
 	case "$environmentvalue" in
 		enabled ) switchsettings="wp-enabled"
-			;;
+		;;
 		wp-enabled ) switchsettings="disabled"
-			;;
+		;;
 		disabled ) switchsettings="enabled"
-			;;
+		;;
 		* ) switchsettings="disabled"
-			;;
+		;;
 	esac
 
 	sed -i '' "${linenumber}s,$setting=.*,$setting='$switchsettings'," $HOME/.obiconfig
@@ -698,7 +721,7 @@ case $ACTION in
 			esac
 
 		done
-		;;
+	;;
 	-e )
 		# Create the folder structure
 		create_directories
@@ -706,7 +729,7 @@ case $ACTION in
 		# List directory contents and their location
 		ls -laO
 		echo ; echo "obi: Your project is located at" `pwd` ; echo
-		;;
+	;;
 	-g )
 		# Create the folder structure
 		create_directories
@@ -718,7 +741,7 @@ case $ACTION in
 		# List directory contents and their location
 		ls -laO
 		echo ; echo "obi: Your project is located at" `pwd` ; echo
-		;;
+	;;
 	-w )
 		# Create the folder structure
 		create_directories
@@ -771,7 +794,7 @@ case $ACTION in
 		# List directory contents and their location
 		ls -laO
 		echo ; echo "obi: Your project is located at" `pwd` ; echo
-		;;
+	;;
 	-b )
 		does_config_exist
 		empty_second_string_check "$PROJ_FOLDER_NAME"
@@ -784,45 +807,102 @@ case $ACTION in
 			-l )
 				clear
 				mysql_dump local
-				;;
+			;;
 			-s )
 				clear
 				mysql_dump staging
-				;;
+			;;
 			-p )
 				clear
 				mysql_dump production
-				;;
+			;;
 		    -lts )
 				clear
-				backup_folder=staging
 				mysql_sync local staging local_site_url staging_site_url
-		        ;;
+		    ;;
 		    -ltp )
 				clear
-				backup_folder=production
 				mysql_sync local production local_site_url production_site_url
-		        ;;
+		    ;;
 		    -stl )
 				clear
-				backup_folder=local
 				mysql_sync staging local staging_site_url local_site_url
-		        ;;
+		    ;;
 		    -stp )
 				clear
-				backup_folder=production
 				mysql_sync staging production staging_site_url production_site_url
-		        ;;
+		    ;;
 		    -ptl )
 				clear
-				backup_folder=local
 				mysql_sync production local production_site_url local_site_url
-		        ;;
+		    ;;
 		    -pts )
 				clear
-				backup_folder=staging
 				mysql_sync production staging production_site_url staging_site_url
-		        ;;
+		    ;;
+		    *)
+				clear
+				echo
+				echo "obi: Please specify database sync order"
+				echo
+				echo "obi: Usage: obi [-b] [project_name] [location]"
+				echo
+				exit 0
+				;;
+			esac
+		;;
+	-i )
+		does_config_exist
+		empty_second_string_check "$PROJ_FOLDER_NAME"
+		strcheckret=$?
+		directory_exist_check "$PROJ"
+		dircheckret=$?
+		check_returns
+
+		case $3 in
+			-l )
+				sql_path=$4
+				clear
+				mysql_dump local
+				mysql_import local "$sql_path"
+			;;
+			-s )
+				sql_path=$4
+				clear
+				mysql_dump staging
+				mysql_import staging "$sql_path"
+			;;
+			-p )
+				sql_path=$4
+				clear
+				mysql_dump production
+				mysql_import production "$sql_path"
+			;;
+		    -lts )
+				clear
+				mysql_dump staging
+				mysql_sync local staging local_site_url staging_site_url
+			;;
+		    -ltp )
+				clear
+				mysql_sync local production local_site_url production_site_url
+			;;
+		    -stl )
+				clear
+				mysql_sed_import staging local staging_site_url local_site_url
+			;;
+		    -stp )
+				clear
+				mysql_sync staging production staging_site_url production_site_url
+			;;
+		    -ptl )
+				clear
+				mysql_sync production local production_site_url local_site_url
+			;;
+		    -pts )
+				clear
+				mysql_sync production staging production_site_url staging_site_url
+			;;
 		    *)
 				clear
 				echo
@@ -842,11 +922,11 @@ case $ACTION in
 
 		case $2 in
 			-l ) user="$localuser" ; host="$localhost" ; pass="$localpassword"
-				;;
+			;;
 			-s ) user="$staginguser" ; host="$staginghost" ; pass="$stagingpassword"
-				;;
+			;;
 			-p ) user="$productionuser" ; host="$productionhost" ; pass="$productionpassword"
-				;;
+			;;
 		esac
 		/Applications/MAMP/Library/bin/mysql -u"$user" -h"$host" -p"$pass"
 		;;
@@ -894,11 +974,10 @@ case $ACTION in
 		echo
 		echo
 		exit
-		;;
+	;;
 	* )
 		clear
 		does_config_exist
 		echo ; echo "obi: Please enter a valid selection or run \033[33mobi help\033[0m" ; echo
-		;;
-
+	;;
 esac
