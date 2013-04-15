@@ -880,12 +880,11 @@ case $ACTION in
 			;;
 		    -lts )
 				clear
-				mysql_dump staging
-				mysql_sync local staging local_site_url staging_site_url
+				mysql_sed_import local staging local_site_url staging_site_url
 			;;
 		    -ltp )
 				clear
-				mysql_sync local production local_site_url production_site_url
+				mysql_sed_import local production local_site_url production_site_url
 			;;
 		    -stl )
 				clear
@@ -893,15 +892,15 @@ case $ACTION in
 			;;
 		    -stp )
 				clear
-				mysql_sync staging production staging_site_url production_site_url
+				mysql_sed_import staging production staging_site_url production_site_url
 			;;
 		    -ptl )
 				clear
-				mysql_sync production local production_site_url local_site_url
+				mysql_sed_import production local production_site_url local_site_url
 			;;
 		    -pts )
 				clear
-				mysql_sync production staging production_site_url staging_site_url
+				mysql_sed_import production staging production_site_url staging_site_url
 			;;
 		    *)
 				clear
