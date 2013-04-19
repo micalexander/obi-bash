@@ -652,7 +652,7 @@ main_menu()
 	echo
 	echo "obi: $MSG"
 	echo "\033[0m"
-	echo "Select by pressing the letter and then ENTER" ;
+	echo "Select by pressing the number and then ENTER" ;
 }
 
 MSG="Your project working directory is currently set to:\n     \033[32m$localprojectdirectory\033[0m"
