@@ -314,7 +314,7 @@ find_and_replace_wp_url()
 	find=`awk -F'"' -v  find="$find_url" '$0 ~ find {print $2}' "$wpconfiglocation" | awk -F: '{print $2}' | cut -c 3-`
 	replace=`awk -F'"' -v  replace="$replace_url" '$0 ~ replace {print $2}' "$wpconfiglocation" | awk -F: '{print $2}' | cut -c 3-`
 	# echo "$temp_file"; exit
-	echo ; echo "obi: Replaceing \033[31m$find\033[0m with \033[32m$replace\033[0m"
+	echo ; echo "obi: Replacing \033[31m$find\033[0m with \033[32m$replace\033[0m"
 	sed -i '' -e "s,$find,$replace,g" "$PROJ/dumps/temp/$temp_file"
 }
 
@@ -606,8 +606,8 @@ main_menu()
 	gprompt="7. Change staging database domain currently set to \033[33m$stagingdomain\033[0m"
 	hprompt="8. Change staging host currently set to \033[33m$staginghost\033[0m"
 	iprompt="9. Change staging database user currently set to \033[33m$staginguser\033[0m"
-	jprompt="10. Toggle staging database passwordcurrently set to \033[33m${stagingpassword//[a-z/*}\033[0m"
-	kprompt="11. Change production server settings. $prodsettingsare"
+	jprompt="10. Change staging database password currently set to \033[33m${stagingpassword//[a-z/*}\033[0m"
+	kprompt="11. Toggle production server settings. $prodsettingsare"
 	lprompt="12. Change production database domain currently set to \033[33m$productiondomain\033[0m"
 	mprompt="13. Change production database host currently set to \033[33m$productionhost\033[0m"
 	nprompt="14. Change production database user currently set to \033[33m$productionuser\033[0m"
