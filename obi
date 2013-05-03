@@ -106,7 +106,11 @@ esac
 # Store the project path and the project name as a single string
 PROJ=$PROJ_PATH$PROJ_FOLDER_NAME
 
-UT_NAME=`echo $PROJ_FOLDER_NAME | cut -c1-3`
+CUT_NAME=`echo $PROJ_FOLDER_NAME | cut -c1-3`
+
+
+UPPER_CASE_PROJ_FOLDER_NAME=$(tr '[a-z]' '[A-Z]'<<<"${PROJ_FOLDER_NAME:0:1}")
+
 
 
 # -----------------------------------------------#
@@ -768,8 +772,12 @@ case $ACTION in
 		mv wp-content/themes/$PROJ_FOLDER_NAME/klas-specific-plugin wp-content/plugins/$PROJ_FOLDER_NAME-specific-plugin
 		mv wp-content/plugins/$PROJ_FOLDER_NAME-specific-plugin/klas-plugin.php wp-content/plugins/$PROJ_FOLDER_NAME-specific-plugin/$PROJ_FOLDER_NAME-plugin.php
 
+		# rename wp login logo to the project name
+		mv wp-content/themes/$PROJ_FOLDER_NAME/img/wp-login-logo-klas.png wp-content/themes/$PROJ_FOLDER_NAME/img/wp-login-logo-$PROJ_FOLDER_NAME.png
+
 		# Find and replace the klas name with the project name
-		sed -i '' "s,klas,${PROJ_FOLDER_NAME},g" wp-content/plugins/$PROJ_FOLDER_NAME-specific-plugin/$PROJ_FOLDER_NAME-plugin.php
+		sed -i '' "s,klas,${UPPER_CASE_PROJ_FOLDER_NAME}${PROJ_FOLDER_NAME:1},g" wp-content/plugins/$PROJ_FOLDER_NAME-specific-plugin/$PROJ_FOLDER_NAME-plugin.php
+		sed -i '' "s,klas,${PROJ_FOLDER_NAME},g" wp-content/themes/$PROJ_FOLDER_NAME/functions.php
 		sed -i '' "s,themes/klas,themes/${PROJ_FOLDER_NAME},g" wp-content/themes/$PROJ_FOLDER_NAME/sass/ie.scss
 
 		# Load the local database credentials
