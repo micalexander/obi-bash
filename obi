@@ -758,13 +758,18 @@ case $ACTION in
 		rm -Rf wp-content/themes/twentyeleven/ ; rm -Rf wp-content/themes/twentytwelve/ ; rm -Rf wp-content/plugins/akismet/ ; rm wp-content/plugins/hello.php ; rm wp-config-sample.php ;
 
 		# Get latest version of klas starter theme
-		git clone https://github.com/kylelarkin/klas.git wp-content/themes/$PROJ_FOLDER_NAME
+		git clone https://github.com/micalexander/klas.git wp-content/themes/$PROJ_FOLDER_NAME
 		rm -Rf wp-content/themes/$PROJ_FOLDER_NAME/.git ; rm wp-content/themes/$PROJ_FOLDER_NAME/.gitignore ;
 
 		# Move the wp-config and the .htaccess file to the site root
 		mv wp-content/themes/$PROJ_FOLDER_NAME/.htaccess . ; mv wp-content/themes/$PROJ_FOLDER_NAME/wp-config.php .
 
+		# Move site specific plugin to the plugins folder
+		mv wp-content/themes/$PROJ_FOLDER_NAME/klas-specific-plugin wp-content/plugins/$PROJ_FOLDER_NAME-specific-plugin
+		mv wp-content/plugins/$PROJ_FOLDER_NAME-specific-plugin/klas-plugin.php wp-content/plugins/$PROJ_FOLDER_NAME-specific-plugin/$PROJ_FOLDER_NAME-plugin.php
+
 		# Find and replace the klas name with the project name
+		sed -i '' "s,klas,${PROJ_FOLDER_NAME},g" wp-content/plugins/$PROJ_FOLDER_NAME-specific-plugin/$PROJ_FOLDER_NAME-plugin.php
 		sed -i '' "s,themes/klas,themes/${PROJ_FOLDER_NAME},g" wp-content/themes/$PROJ_FOLDER_NAME/sass/ie.scss
 
 		# Load the local database credentials
