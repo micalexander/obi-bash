@@ -207,7 +207,7 @@ mysql_credentials()
 mysql_timestamp()
 {
 	# Mysql variables
-	THE_DATE="$(date +"%Y-%m-%d-%H-%M")-"
+	THE_DATE="$(date +"%Y-%m-%d-%H-%M")"
 }
 
 mysql_dump()
@@ -228,7 +228,7 @@ mysql_dump()
 	# Looks for database username, database password and database name in the wp-config file
 	mysql_credentials $database
 
-	/Applications/MAMP/Library/bin/mysqldump --net_buffer_length=50000 --verbose -h"$host" -u"$user" -p"$pass" "$name" > "dumps/$database/$THE_DATE$database.sql"
+	/Applications/MAMP/Library/bin/mysqldump --net_buffer_length=50000 --verbose -h"$host" -u"$user" -p"$pass" "$name" > "dumps/$database/$THE_DATE-$database.sql"
 }
 
 mysql_import()
@@ -284,11 +284,17 @@ mysql_sync()
 
 	mysql_timestamp
 
-	temp_location="dumps/temp/$THE_DATE$dump.sql"
+	cd "$PROJ/dumps/temp/"
+
+	# Get the last modified file
+	last_modified_output=`find . -type f -exec stat -f "%m %N" {} \; | sort -n | tail -1`
+	last_modified_file="${last_modified_output/[0-9]* \.\//}"
+
+	temp_location="dumps/temp/$last_modified_file"
 
 	mysql_dump $import
 	mysql_dump $dump
-	find_and_replace_wp_url $find $replace $dump "$THE_DATE$dump.sql"
+	find_and_replace_wp_url $find $replace $dump "$last_modified_file"
 	mysql_import $import "$temp_location"
 }
 
@@ -301,11 +307,18 @@ find_and_replace_wp_url()
 	find_url=$1
 	replace_url=$2
 	folder=$3
-	temp_file=$4
+	# temp_file=$4
+
+
+	cd "$PROJ/dumps/$dump/"
+
+	# Get the last modified file
+	last_modified_output=`find . -type f -exec stat -f "%m %N" {} \; | sort -n | tail -1`
+	last_modified_file="${last_modified_output/[0-9]* \.\//}"
 
 	cd "$PROJ"
 
-	cp "dumps/$folder/$temp_file" "dumps/temp/$temp_file"
+	cp "dumps/$folder/$last_modified_file" "dumps/temp/$last_modified_file"
 
 	if [ ! -d "dumps/local" ] || [ ! -d "dumps/staging" ] || [ ! -d "dumps/production" ] || [ ! -d "dumps/temp" ]
 	then
@@ -316,9 +329,9 @@ find_and_replace_wp_url()
 
 	find=`awk -F'"' -v  find="$find_url" '$0 ~ find {print $2}' "$wpconfiglocation" | awk -F: '{print $2}' | cut -c 3-`
 	replace=`awk -F'"' -v  replace="$replace_url" '$0 ~ replace {print $2}' "$wpconfiglocation" | awk -F: '{print $2}' | cut -c 3-`
-	# echo "$temp_file"; exit
+
 	echo ; echo "obi: Replacing \033[31m$find\033[0m with \033[32m$replace\033[0m"
-	sed -i '' -e "s,$find,$replace,g" "$PROJ/dumps/temp/$temp_file"
+	sed -i '' -e "s,$find,$replace,g" "$PROJ/dumps/temp/$last_modified_file"
 }
 
 #
