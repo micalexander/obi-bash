@@ -606,13 +606,15 @@ zip_to_s3() {
 
 	mysql_timestamp
 	file_count=`ls -1 dumps/* | wc -l`
-	if [ $file_count -gt 10 ];
+	if [ $file_count -gt 30 ];
 	then
-		find dumps/ -mtime +7 | xargs tar -czvPf $THE_DATE-$PROJ_FOLDER_NAME.tar.gz;
+		find dumps/* -type f -name ".DS_Store" -exec rm -f {} \;
+		# Find files that are more than 7 days old and gzip then
+		find dumps/* -mtime +7 | xargs tar -s /dumps/$THE_DATE-$PROJ_FOLDER_NAME/ -czvPf $THE_DATE-$PROJ_FOLDER_NAME.tar.gz;
+		# Send the to s3
 		$php -f ~/obi/s3/interface.php $THE_DATE-$PROJ_FOLDER_NAME.tar.gz;
-
 	fi
-	exit;
+	exit
 }
 
 # -----------------------------------------------#
