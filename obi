@@ -55,6 +55,9 @@ create_obiconfig
 ## Variables
 ## ----------------------------------------------#
 php=`which php`
+mysql=`which mysql`
+mysqldump=`which mysqldump`
+
 # Store the type of project to create
 ACTION=$1
 
@@ -228,7 +231,7 @@ mysql_dump()
 	# Looks for database username, database password and database name in the wp-config file
 	mysql_credentials $database
 
-	/Applications/MAMP/Library/bin/mysqldump --net_buffer_length=50000 --verbose -h"$host" -u"$user" -p"$pass" "$name" > "dumps/$database/$THE_DATE-$database.sql"
+	$mysqldump --net_buffer_length=50000 --verbose -h"$host" -u"$user" -p"$pass" "$name" > "dumps/$database/$THE_DATE-$database.sql"
 }
 
 mysql_import()
@@ -250,7 +253,7 @@ mysql_import()
 	# Looks for database username, database password and database name in the wp-config file
 	mysql_credentials $database
 
-	/Applications/MAMP/Library/bin/mysql -h"$host" -u"$user" -p"$pass" "$name" < "$from"
+	$mysql -h"$host" -u"$user" -p"$pass" "$name" < "$from"
 }
 
 mysql_sed_import()
@@ -606,13 +609,18 @@ zip_to_s3() {
 
 	mysql_timestamp
 	file_count=`ls -1 dumps/* | wc -l`
-	if [ $file_count -gt 30 ];
+	old_files=`find dumps/* -mtime +7`
+
+	if [ $file_count -gt 30 ] && [ ! -z "$old_files" ];
 	then
 		find dumps/* -type f -name ".DS_Store" -exec rm -f {} \;
 		# Find files that are more than 7 days old and gzip then
 		find dumps/* -mtime +7 | xargs tar -s /dumps/$THE_DATE-$PROJ_FOLDER_NAME/ -czvPf $THE_DATE-$PROJ_FOLDER_NAME.tar.gz;
 		# Send the to s3
 		$php -f ~/obi/s3/interface.php $THE_DATE-$PROJ_FOLDER_NAME.tar.gz;
+		files_set_to_s3=`find dumps/* -mtime +7`
+		mv $files_set_to_s3 ~/.Trash
+		mv $THE_DATE-$PROJ_FOLDER_NAME.tar.gz ~/.Trash
 	fi
 	exit
 }
@@ -831,7 +839,7 @@ case $ACTION in
 		#load the database local credentials
 		host="$localhost" ; user="$localuser" ; pass="$localpassword" ; name="$PROJ_FOLDER_NAME"_local_wp
 		# Create project's database
-		/Applications/MAMP/Library/bin/mysql -u"$user" -h"$host" -p"$pass" -Bse "CREATE DATABASE ${name};"
+		$mysql -u"$user" -h"$host" -p"$pass" -Bse "CREATE DATABASE ${name};"
 
 		# List directory contents and their location
 		ls -laO
@@ -970,7 +978,7 @@ case $ACTION in
 			-p ) user="$productionuser" ; host="$productionhost" ; pass="$productionpassword"
 			;;
 		esac
-		/Applications/MAMP/Library/bin/mysql -u"$user" -h"$host" -p"$pass"
+		$mysql -u"$user" -h"$host" -p"$pass"
 		;;
 	kill )
 		does_config_exist
@@ -980,7 +988,7 @@ case $ACTION in
 		dircheckret=$?
 		check_returns
 
-		mysql_dump local ; cp -r "$PROJ" ~/.Trash ; rm -rf "$PROJ" ; /Applications/MAMP/Library/bin/mysql -u"$user" -h"$host" -p"$pass" -Bse "DROP database $name"
+		mysql_dump local ; cp -r "$PROJ" ~/.Trash ; rm -rf "$PROJ" ; $mysql -u"$user" -h"$host" -p"$pass" -Bse "DROP database $name"
 
 		;;
 	help )
