@@ -836,7 +836,7 @@ case $ACTION in
 
 		# Setup git
 		git init
-		echo ".DS_Store" > .gitignore
+		echo ".DS_Store\n.sass-cache/\nobi/" > .gitignore
 
 		# List directory contents and their location
 		ls -laO
