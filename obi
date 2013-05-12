@@ -60,7 +60,7 @@ create_project_config()
 	fi
 }
 
-configerror()
+project_configerror()
 {
 	clear ; echo ; echo "obi: You must first set your local project directory to use that command" ; echo "obi: You can set it by running \033[33mobi config\033[0m" ; echo ;
 	exit
@@ -78,7 +78,7 @@ does_project_config_exist()
 						config )
 							;;
 							*)
-								configerror
+								project_configerror
 								exit
 							;;
 					esac
@@ -87,7 +87,7 @@ does_project_config_exist()
 			;;
 		10 )
 			create_project_config
-			configerror
+			project_configerror
 			exit
 			;;
 	esac
@@ -497,8 +497,8 @@ create_directories()
 	cd "$PROJ_PATH"
 	mkdir $PROJ_FOLDER_NAME
 	cd $PROJ_FOLDER_NAME
-	mkdir -p architecture/estimates assets/ai assets/content assets/images/gif assets/images/jpg assets/images/png assets/images assets/pdf assets/psd assets/fonts dumps/local dumps/production dumps/staging dumps/temp emails "$PROJ_FOLDER_NAME"-site
-	cd "$PROJ_FOLDER_NAME"-site
+	mkdir -p obi/architecture/estimates obi/assets/ai obi/assets/content obi/assets/images/gif obi/assets/images/jpg obi/assets/images/png obi/assets/images obi/assets/pdf obi/assets/psd obi/assets/fonts obi/dumps/local obi/dumps/production obi/dumps/staging obi/dumps/temp obi/emails
+
 }
 
 check_returns()
@@ -893,7 +893,7 @@ case $ACTION in
 		add_salts
 
 		# Build project's .gitignore
-		echo ".DS_Store \n.sass-cache/" > .gitignore
+		echo ".DS_Store\n.sass-cache/\nobi/" > .gitignore
 
 		#load the database local credentials
 		host="$localhost" ; user="$localuser" ; pass="$localpassword" ; name="$PROJ_FOLDER_NAME"_local_wp
