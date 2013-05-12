@@ -114,29 +114,29 @@ There are two directories that are essential to obi's functionality. These direc
 project-name
     |
     |--_obi
-        |
-        |-- architecture
-        |    |-- estimates
-        |
-        |-- assets
-        |    |-- ai
-        |    |-- content
-        |    |-- fonts
-        |    |-- images
-        |    |   |-- gif
-        |    |   |-- jpg
-        |    |   |-- png
-        |    |
-        |    |-- pdf
-        |    |-- psd
-        |
-        |-- dumps
-        |    |-- local
-        |    |-- production
-        |    |-- staging
-        |    |-- temp
-        |
-        |-- emails
+    |    |
+    |    |-- architecture
+    |    |    |-- estimates
+    |    |
+    |    |-- assets
+    |    |    |-- ai
+    |    |    |-- content
+    |    |    |-- fonts
+    |    |    |-- images
+    |    |    |   |-- gif
+    |    |    |   |-- jpg
+    |    |    |   |-- png
+    |    |    |
+    |    |    |-- pdf
+    |    |    |-- psd
+    |    |
+    |    |-- dumps
+    |    |    |-- local
+    |    |    |-- production
+    |    |    |-- staging
+    |    |    |-- temp
+    |    |
+    |    |-- emails
     |
     site-root
 
