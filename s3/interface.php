@@ -2,12 +2,12 @@
 
 require 'S3.php';
 
-$s3 =  new S3('AKIAJ4QBS5NE4YCFHKUA', '9I2qKuq022dm/bNlqvekdMx02+23Pg8AhT4Kg99H');
+$s3 =  new S3( $argv[1], $argv[2]);
 
 S3::putObject(
-	$s3->inputFile($argv[1], false),
+	$s3->inputFile($argv[3], false),
 	'micalexander',
-	$argv[1],
+	$argv[3],
 	S3::ACL_PUBLIC_READ,
 	array(),
 	array(),
