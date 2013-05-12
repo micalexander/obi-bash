@@ -48,8 +48,53 @@ does_config_exist()
 			;;
 	esac
 }
+create_project_config()
+{
+	project_config="$PROJ/.obi/config"
+
+	if [ -f "$project_config" ]
+	then
+		. $PROJ/.obi/config
+	else
+		echo "ssh='0'\nremoteprojectroot='/'" > $PROJ/.obi/config
+	fi
+}
+
+configerror()
+{
+	clear ; echo ; echo "obi: You must first set your local project directory to use that command" ; echo "obi: You can set it by running \033[33mobi config\033[0m" ; echo ;
+	exit
+}
+does_project_config_exist()
+{
+	file_exist_check "$PROJ/.obi/config"
+	fileexistreturn=$?
+	case "$fileexistreturn" in
+		9 )
+			create_project_config
+			case "$ssh" in
+				0 )
+					case $ACTION in
+						config )
+							;;
+							*)
+								configerror
+								exit
+							;;
+					esac
+					;;
+			esac
+			;;
+		10 )
+			create_project_config
+			configerror
+			exit
+			;;
+	esac
+}
 
 create_obiconfig
+create_project_config
 
 # -----------------------------------------------#
 ## Variables
@@ -622,7 +667,21 @@ zip_to_s3() {
 		mv $files_set_to_s3 ~/.Trash
 		mv $THE_DATE-$PROJ_FOLDER_NAME.tar.gz ~/.Trash
 	fi
-	exit
+}
+
+# -----------------------------------------------#
+## Rsync Directories
+## ----------------------------------------------#
+
+rsyn_dir() {
+
+	ORIGIN=$1
+	DESTINATION=$2
+
+	if [[ ! -z "$DESTINATION" ]];
+	then
+		rsync -rvuz --exclude-from=.rsyncignore "$ORIGIN" "$DESTINATION"
+	fi
 }
 
 # -----------------------------------------------#
@@ -963,6 +1022,18 @@ case $ACTION in
 				exit 0
 				;;
 			esac
+		;;
+	-r )
+		does_config_exist
+		does_project_config_exist
+		empty_second_string_check "$PROJ_FOLDER_NAME"
+		strcheckret=$?
+		directory_exist_check "$PROJ"
+		dircheckret=$?
+		check_returns
+
+		rsyn_dir
+
 		;;
 	mysql )
 		does_config_exist
