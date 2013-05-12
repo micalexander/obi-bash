@@ -498,7 +498,8 @@ create_directories()
 	mkdir $PROJ_FOLDER_NAME
 	cd $PROJ_FOLDER_NAME
 	mkdir -p obi/architecture/estimates obi/assets/ai obi/assets/content obi/assets/images/gif obi/assets/images/jpg obi/assets/images/png obi/assets/images obi/assets/pdf obi/assets/psd obi/assets/fonts obi/dumps/local obi/dumps/production obi/dumps/staging obi/dumps/temp obi/emails
-
+	echo "ssh='0'\nremoteprojectroot='0'" > obi/config
+	echo ".git\n.gitignore\n.htaccess\nsftp-config.json\n.DS_Store" > .rsyncignore
 }
 
 check_returns()
