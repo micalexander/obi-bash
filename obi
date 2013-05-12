@@ -797,7 +797,7 @@ case $ACTION in
 		add_salts
 
 		# Build project's .gitignore
-		echo ".DS_Store \n.sass-cache/" > .gitignore
+		echo ".DS_Store\n.sass-cache/" > .gitignore
 
 		#load the database local credentials
 		host="$localhost" ; user="$localuser" ; pass="$localpassword" ; name="$PROJ_FOLDER_NAME"_local_wp
@@ -993,3 +993,4 @@ case $ACTION in
 		echo ; echo "obi: Please enter a valid selection or run \033[33mobi help\033[0m" ; echo
 	;;
 esac
+
