@@ -907,6 +907,7 @@ case $ACTION in
 		add_salts
 
 		# Build project's .gitignore
+
 		echo ".DS_Store\n.sass-cache/\n_obi/" > .gitignore
 
 		#load the database local credentials
