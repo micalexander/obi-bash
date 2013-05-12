@@ -111,27 +111,34 @@ The directory structure below is automatically generated when using the `-e`, `-
 
 There are two directories that are essential to obi's functionality. These directories are the dumps and site directories. The dumps directory is used when backing up MySQL databases with the argument `-b`, followed by the `project-name` and then the `[environment(s)]`. Which is then placed its environment folder respectively. The site directory is where WordPress is installed when using the argument `-w` followed by the `project-name`.
 
-	project-name
-		|--
-		architecture
-			|--	estimates
-		assets
-			|-- ai
-			|-- content
-			|-- fonts
-			|-- images
-				|-- gif
-				|-- jpg
-				|-- png
-			|-- pdf
-			|-- psd
-		dumps
-			|-- local
-			|-- production
-			|-- staging
-			|-- temp
-		emails
-		project-name-site
+project-name
+    |
+    |--_obi
+        |
+        |-- architecture
+        |    |-- estimates
+        |
+        |-- assets
+        |    |-- ai
+        |    |-- content
+        |    |-- fonts
+        |    |-- images
+        |    |   |-- gif
+        |    |   |-- jpg
+        |    |   |-- png
+        |    |
+        |    |-- pdf
+        |    |-- psd
+        |
+        |-- dumps
+        |    |-- local
+        |    |-- production
+        |    |-- staging
+        |    |-- temp
+        |
+        |-- emails
+    |
+    site-root
 
 
 ## Database Backups
