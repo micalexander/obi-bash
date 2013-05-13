@@ -69,7 +69,7 @@ case "$2" in
 		input=`echo ${path//\// } | awk  ' { print ( $(NF-0) ) }'`;
 		case $1 in
 			-e|-g|-w|mysql|help|config )
-				clear ; echo ;echo "obi: The . subsitute only works with -b " ; echo ;exit
+				clear ; echo ;echo "obi: The . subsitution does not work with this command" ; echo ;exit
 			;;
 			* )
 				#  Chech input to see if it contains the word site
@@ -457,6 +457,22 @@ create_directories()
 	empty_second_string_check "$PROJ_FOLDER_NAME"
 	strcheckret=$?
 	project_exist_check "$PROJ"
+	dircheckret=$?
+	check_returns
+	clear
+	cd "$PROJ_PATH"
+	mkdir $PROJ_FOLDER_NAME
+	cd $PROJ_FOLDER_NAME
+	mkdir -p _resources/architecture/estimates _resources/assets/ai _resources/assets/content _resources/assets/images/gif _resources/assets/images/jpg _resources/assets/images/png _resources/assets/images _resources/assets/pdf _resources/assets/psd _resources/assets/fonts _resources/assets/emails _resources/dumps/local _resources/dumps/production _resources/dumps/staging _resources/dumps/temp .obi
+	echo "#\n# Production ssh settings\n#\nenableproductionssh='0'\nproductionssh='0'\nproductionremoteprojectroot='0'\nenableproductionsshmysql='0'\n\n#\n# Staging ssh settings\n#\nenablestagingssh='0'\nstagingtssh='0'\nstagingremoteprojectroot='0'\nenablestagingsshmysql='0'\n\n#\n# S3 settings\n#\nenableS3='0'\npublickey='0'\nsecretkey='0'" > .obi/config
+	echo ".git\n.gitignore\n.htaccess\nsftp-config.json\n.DS_Store\n_resources\n.obi" > .obiignore
+}
+
+obi_init()
+{
+	empty_second_string_check "$PROJ_FOLDER_NAME"
+	strcheckret=$?
+	directory_exist_check "$PROJ"
 	dircheckret=$?
 	check_returns
 	clear
@@ -1148,6 +1164,13 @@ case $ACTION in
 		esac
 		$mysql -u"$user" -h"$host" -p"$pass"
 		;;
+	init )
+		obi_init
+
+		# List directory contents and their location
+		ls -laO
+		echo ; echo "obi: Your project is located at" `pwd` ; echo
+	;;
 	kill )
 		does_config_exist
 		empty_second_string_check "$PROJ_FOLDER_NAME"

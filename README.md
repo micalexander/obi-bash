@@ -113,7 +113,7 @@ There are two directories that are essential to obi's functionality. These direc
 
 project-name
     |
-    |--_obi
+    |--_resources
     |    |
     |    |-- architecture
     |    |    |-- estimates
@@ -121,6 +121,7 @@ project-name
     |    |-- assets
     |    |    |-- ai
     |    |    |-- content
+    |	 |	  |-- emails
     |    |    |-- fonts
     |    |    |-- images
     |    |    |   |-- gif
@@ -131,12 +132,12 @@ project-name
     |    |    |-- psd
     |    |
     |    |-- dumps
-    |    |    |-- local
-    |    |    |-- production
-    |    |    |-- staging
-    |    |    |-- temp
-    |    |
-    |    |-- emails
+    |		  |-- local
+    |		  |-- production
+    |		  |-- staging
+    |		  |-- temp
+    |
+    |--.obi
     |
     site-root
 
