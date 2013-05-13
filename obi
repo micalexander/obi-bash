@@ -482,8 +482,10 @@ check_returns()
 	;;
 	esac
 }
+
 set_project_dir()
-{	MSG="\033[36m Please enter your desired project working directory without the trailing slash or \n     simply drag and drop the desired folder into this window and press ENTER"
+{
+	MSG="\033[36m Please enter your desired project working directory without the trailing slash or \n     simply drag and drop the desired folder into this window and press ENTER"
 
 	clear
 
@@ -661,8 +663,8 @@ does_project_config_exist()
 # -----------------------------------------------#
 ## S3
 ## ----------------------------------------------#
-zip_to_s3() {
-
+zip_to_s3()
+{
 	if [ "$enableS3" == "1" ];
 	then
 		cd "$PROJ";
@@ -691,7 +693,8 @@ zip_to_s3() {
 ## Rsync Directories
 ## ----------------------------------------------#
 
-rsync_dir() {
+rsync_dir()
+{
 
 	ORIGIN=$1
 	DESTINATION=$2
