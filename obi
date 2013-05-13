@@ -684,7 +684,7 @@ zip_to_s3()
 			mv $THE_DATE-$PROJ_FOLDER_NAME.tar.gz ~/.Trash
 		fi
 	else
-		clear; echo; echo "obi: You must first enable S3 for this project by editing the \033[33m_obi/config\033[0m file"; echo;
+		clear; echo; echo "obi: You must first enable S3 for this project by editing the \033[33m_obi/config\033[0m file in your project directory"; echo;
 		sleep 5
 	fi
 }
