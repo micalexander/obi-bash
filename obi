@@ -464,7 +464,7 @@ create_directories()
 	mkdir $PROJ_FOLDER_NAME
 	cd $PROJ_FOLDER_NAME
 	mkdir -p _obi/architecture/estimates _obi/assets/ai _obi/assets/content _obi/assets/images/gif _obi/assets/images/jpg _obi/assets/images/png _obi/assets/images _obi/assets/pdf _obi/assets/psd _obi/assets/fonts _obi/dumps/local _obi/dumps/production _obi/dumps/staging _obi/dumps/temp _obi/emails
-	echo "productionssh='0'\nproductionremoteprojectroot='0'\nenableproductionsshmysql='0'\n\nstagingtssh='0'\nstagingremoteprojectroot='0'\nenablestagingsshmysql='0'" > _obi/config
+	echo "#\n# Production ssh settings\n#\nenableproductionssh='0'\nproductionssh='0'\nproductionremoteprojectroot='0'\nenableproductionsshmysql='0'\n\n#\n# Staging ssh settings\n#\nenablestagingssh='0'\nstagingtssh='0'\nstagingremoteprojectroot='0'\nenablestagingsshmysql='0'\n\n#\n# S3 settings\n#\nenableS3='0'\npublickey='0'\nsecretkey='0'" > _obi/config
 	echo ".git\n.gitignore\n.htaccess\nsftp-config.json\n.DS_Store" > .rsyncignore
 }
 
@@ -624,7 +624,7 @@ create_project_config()
 	else
 		cd "$PROJ"
 		mkdir -p _obi/architecture/estimates _obi/assets/ai _obi/assets/content _obi/assets/images/gif _obi/assets/images/jpg _obi/assets/images/png _obi/assets/images _obi/assets/pdf _obi/assets/psd _obi/assets/fonts _obi/dumps/local _obi/dumps/production _obi/dumps/staging _obi/dumps/temp _obi/emails
-		echo "#\n# Production ssh settings\n#\nproductionssh='0'\nproductionremoteprojectroot='0'\nenableproductionsshmysql='0'\n\n#\n# Staging ssh settings\n#\nstagingtssh='0'\nstagingremoteprojectroot='0'\nenablestagingsshmysql='0'#\n# S3settings\n#\npublickey='0'\nsecretkey='0'" > _obi/config
+		echo "#\n# Production ssh settings\n#\nenableproductionssh='0'\nproductionssh='0'\nproductionremoteprojectroot='0'\nenableproductionsshmysql='0'\n\n#\n# Staging ssh settings\n#\nenablestagingssh='0'\nstagingtssh='0'\nstagingremoteprojectroot='0'\nenablestagingsshmysql='0'\n\n#\n# S3 settings\n#\nenableS3='0'\npublickey='0'\nsecretkey='0'" > _obi/config
 		echo ".git\n.gitignore\n.htaccess\nsftp-config.json\n.DS_Store\n_obi" > .rsyncignore
 		. "$PROJ/_obi/config"
 	fi
@@ -663,21 +663,27 @@ does_project_config_exist()
 ## ----------------------------------------------#
 zip_to_s3() {
 
-	cd "$PROJ";
-	mysql_timestamp
-	file_count=`ls -1 _obi/dumps/* | wc -l`
-	old_files=`find _obi/dumps/* -mtime +7`
-
-	if [ $file_count -gt 30 ] && [ ! -z "$old_files" ];
+	if [ "$enableS3" == "1" ];
 	then
-		find _obi/dumps/* -type f -name ".DS_Store" -exec rm -f {} \;
-		# Find files that are more than 7 days old and gzip then
-		find _obi/dumps/* -mtime +7 | xargs tar -s /dumps/$THE_DATE-$PROJ_FOLDER_NAME/ -czvPf $THE_DATE-$PROJ_FOLDER_NAME.tar.gz;
-		# Send the to s3
-		$php -f ~/obi/s3/interface.php $publickey $secretkey  $THE_DATE-$PROJ_FOLDER_NAME.tar.gz;
-		files_set_to_s3=`find _obi/dumps/* -mtime +7`
-		mv $files_set_to_s3 ~/.Trash
-		mv $THE_DATE-$PROJ_FOLDER_NAME.tar.gz ~/.Trash
+		cd "$PROJ";
+		mysql_timestamp
+		file_count=`ls -1 _obi/dumps/* | wc -l`
+		old_files=`find _obi/dumps/* -mtime +7`
+
+		if [ $file_count -gt 30 ] && [ ! -z "$old_files" ];
+		then
+			find _obi/dumps/* -type f -name ".DS_Store" -exec rm -f {} \;
+			# Find files that are more than 7 days old and gzip then
+			find _obi/dumps/* -mtime +7 | xargs tar -s /dumps/$THE_DATE-$PROJ_FOLDER_NAME/ -czvPf $THE_DATE-$PROJ_FOLDER_NAME.tar.gz;
+			# Send the to s3
+			$php -f ~/obi/s3/interface.php $publickey $secretkey  $THE_DATE-$PROJ_FOLDER_NAME.tar.gz;
+			files_set_to_s3=`find _obi/dumps/* -mtime +7`
+			mv $files_set_to_s3 ~/.Trash
+			mv $THE_DATE-$PROJ_FOLDER_NAME.tar.gz ~/.Trash
+		fi
+	else
+		clear; echo; echo "obi: You must first enable S3 for this project by editing the \033[33m_obi/config\033[0m file"; echo;
+		sleep 5
 	fi
 }
 
