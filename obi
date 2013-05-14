@@ -159,6 +159,8 @@ mysql_credentials()
 		staging )
 			serversettings="$stagingsettings"
 			mysqlssh="$enablestagingsshmysql"
+			myssh="$stagingssh"
+
 
 			case $serversettings in
 				enabled )
@@ -185,6 +187,7 @@ mysql_credentials()
 		production )
 			serversettings="$productionsettings"
 			mysqlssh="$enableproductionsshmysql"
+			myssh="$productionssh"
 
 			case "$serversettings" in
 				enabled )
@@ -235,13 +238,24 @@ mysql_dump()
 
 	# Looks for database username, database password and database name in the wp-config file
 	mysql_credentials $database
+
+	mysql_special_characters=('*' '?' '[' '<' '>' '&' ';' '!' '|' '$')
+
+	for mysql_special_characters in "${mysql_special_characters[@]}"
+	do
+		if [[ $pass =~ "$mysql_special_characters" ]];
+		then
+			pass=${pass//"$mysql_special_characters"/\\"$mysql_special_characters"}
+		fi
+	done
+
 	if [ "$mysqlssh" == "1" ] && [ $database != "local" ]
 	then
-		ssh -C sgs mysqldump --net_buffer_length=50000 --verbose -h"$host" -u"$user" -p"$pass" "$name" > "_resources/dumps/$database/$THE_DATE-$database.sql"
+		ssh -C $myssh mysqldump --net_buffer_length=75000 --verbose -u"$user" -p"$pass" "$name" > "_resources/dumps/$database/$THE_DATE-$database.sql"
 
 	elif [ "$mysqlssh" == "0" ] || [ $database == "local" ]
 	then
-		$mysqldump --net_buffer_length=50000 --verbose -h"$host" -u"$user" -p"$pass" "$name" > "_resources/dumps/$database/$THE_DATE-$database.sql"
+		$mysqldump --net_buffer_length=75000 --verbose -h"$host" -u"$user" -p"$pass" "$name" > "_resources/dumps/$database/$THE_DATE-$database.sql"
 	fi
 }
 
@@ -264,7 +278,23 @@ mysql_import()
 	# Looks for database username, database password and database name in the wp-config file
 	mysql_credentials $database
 
-	$mysql -h"$host" -u"$user" -p"$pass" "$name" < "$from"
+	mysql_special_characters=('*' '?' '[' '<' '>' '&' ';' '!' '|' '$')
+
+	for mysql_special_characters in "${mysql_special_characters[@]}"
+	do
+		if [[ $pass =~ "$mysql_special_characters" ]];
+		then
+			pass=${pass//"$mysql_special_characters"/\\"$mysql_special_characters"}
+		fi
+	done
+	if [ "$mysqlssh" == "1" ] && [ $database != "local" ]
+	then
+		ssh -C $myssh mysql -u"$user" -p"$pass" "$name" < "$from"
+
+	elif [ "$mysqlssh" == "0" ] || [ $database == "local" ]
+	then
+		$mysql -h"$host" -u"$user" -p"$pass" "$name" < "$from"
+	fi
 }
 
 mysql_sed_import()
@@ -700,7 +730,7 @@ zip_to_s3()
 			mv $THE_DATE-$PROJ_FOLDER_NAME.tar.gz ~/.Trash
 		fi
 	else
-		clear; echo; echo "obi: You must first enable S3 for this project by editing the \033[33m.obi/config\033[0m file in your project directory"; echo;
+		clear; echo; echo "obi: In order to backup to s3 it must first be enabled this project by editing the \033[33m.obi/config\033[0m file in your project directory"; echo;
 		sleep 5
 	fi
 }
