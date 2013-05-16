@@ -239,18 +239,18 @@ mysql_dump()
 	# Looks for database username, database password and database name in the wp-config file
 	mysql_credentials $database
 
-	mysql_special_characters=('*' '?' '[' '<' '>' '&' ';' '!' '|' '$')
-
-	for mysql_special_characters in "${mysql_special_characters[@]}"
-	do
-		if [[ $pass =~ "$mysql_special_characters" ]];
-		then
-			pass=${pass//"$mysql_special_characters"/\\"$mysql_special_characters"}
-		fi
-	done
 
 	if [ "$mysqlssh" == "1" ] && [ $database != "local" ]
 	then
+		mysql_special_characters=('*' '?' '[' '<' '>' '&' ';' '!' '|' '$')
+
+		for mysql_special_characters in "${mysql_special_characters[@]}"
+		do
+			if [[ $pass =~ "$mysql_special_characters" ]];
+			then
+				pass=${pass//"$mysql_special_characters"/\\"$mysql_special_characters"}
+			fi
+		done
 		ssh -C $myssh mysqldump --net_buffer_length=75000 --verbose -u"$user" -p"$pass" "$name" > "_resources/dumps/$database/$THE_DATE-$database.sql"
 
 	elif [ "$mysqlssh" == "0" ] || [ $database == "local" ]
@@ -280,15 +280,15 @@ mysql_import()
 
 	mysql_special_characters=('*' '?' '[' '<' '>' '&' ';' '!' '|' '$')
 
-	for mysql_special_characters in "${mysql_special_characters[@]}"
-	do
-		if [[ $pass =~ "$mysql_special_characters" ]];
-		then
-			pass=${pass//"$mysql_special_characters"/\\"$mysql_special_characters"}
-		fi
-	done
 	if [ "$mysqlssh" == "1" ] && [ $database != "local" ]
 	then
+		for mysql_special_characters in "${mysql_special_characters[@]}"
+		do
+			if [[ $pass =~ "$mysql_special_characters" ]];
+			then
+				pass=${pass//"$mysql_special_characters"/\\"$mysql_special_characters"}
+			fi
+		done
 		ssh -C $myssh mysql -u"$user" -p"$pass" "$name" < "$from"
 
 	elif [ "$mysqlssh" == "0" ] || [ $database == "local" ]
@@ -430,7 +430,7 @@ add_salts()
 }
 
 
-empty_second_string_check()
+empty_string_check()
 {
 	string=$1
 
@@ -484,7 +484,7 @@ file_exist_check ()
 create_directories()
 {
 	does_config_exist
-	empty_second_string_check "$PROJ_FOLDER_NAME"
+	empty_string_check "$PROJ_FOLDER_NAME"
 	strcheckret=$?
 	project_exist_check "$PROJ"
 	dircheckret=$?
@@ -494,13 +494,13 @@ create_directories()
 	mkdir $PROJ_FOLDER_NAME
 	cd $PROJ_FOLDER_NAME
 	mkdir -p _resources/architecture/estimates _resources/assets/ai _resources/assets/content _resources/assets/images/gif _resources/assets/images/jpg _resources/assets/images/png _resources/assets/images _resources/assets/pdf _resources/assets/psd _resources/assets/fonts _resources/assets/emails _resources/dumps/local _resources/dumps/production _resources/dumps/staging _resources/dumps/temp .obi
-	echo "#\n# Production ssh settings\n#\nenableproductionssh='0'\nproductionssh='0'\nproductionremoteprojectroot='0'\nenableproductionsshmysql='0'\n\n#\n# Staging ssh settings\n#\nenablestagingssh='0'\nstagingtssh='0'\nstagingremoteprojectroot='0'\nenablestagingsshmysql='0'\n\n#\n# S3 settings\n#\nenableS3='0'\npublickey='0'\nsecretkey='0'" > .obi/config
+	echo "#\n# Production ssh settings\n#\nenableproductionssh='0'\nproductionssh='0'\nproductionremoteprojectroot='0'\nenableproductionsshmysql='0'\n\n#\n# Staging ssh settings\n#\nenablestagingssh='0'\nstagingssh='0'\nstagingremoteprojectroot='0'\nenablestagingsshmysql='0'\n\n#\n# S3 settings\n#\nenableS3='0'\npublickey='0'\nsecretkey='0'" > .obi/config
 	echo ".git\n.gitignore\n.htaccess\nsftp-config.json\n.DS_Store\n_resources\n.obi" > .obiignore
 }
 
 obi_init()
 {
-	empty_second_string_check "$PROJ_FOLDER_NAME"
+	empty_string_check "$PROJ_FOLDER_NAME"
 	strcheckret=$?
 	directory_exist_check "$PROJ"
 	dircheckret=$?
@@ -510,7 +510,7 @@ obi_init()
 	mkdir $PROJ_FOLDER_NAME
 	cd $PROJ_FOLDER_NAME
 	mkdir -p _resources/architecture/estimates _resources/assets/ai _resources/assets/content _resources/assets/images/gif _resources/assets/images/jpg _resources/assets/images/png _resources/assets/images _resources/assets/pdf _resources/assets/psd _resources/assets/fonts _resources/assets/emails _resources/dumps/local _resources/dumps/production _resources/dumps/staging _resources/dumps/temp .obi
-	echo "#\n# Production ssh settings\n#\nenableproductionssh='0'\nproductionssh='0'\nproductionremoteprojectroot='0'\nenableproductionsshmysql='0'\n\n#\n# Staging ssh settings\n#\nenablestagingssh='0'\nstagingtssh='0'\nstagingremoteprojectroot='0'\nenablestagingsshmysql='0'\n\n#\n# S3 settings\n#\nenableS3='0'\npublickey='0'\nsecretkey='0'" > .obi/config
+	echo "#\n# Production ssh settings\n#\nenableproductionssh='0'\nproductionssh='0'\nproductionremoteprojectroot='0'\nenableproductionsshmysql='0'\n\n#\n# Staging ssh settings\n#\nenablestagingssh='0'\nstagingssh='0'\nstagingremoteprojectroot='0'\nenablestagingsshmysql='0'\n\n#\n# S3 settings\n#\nenableS3='0'\npublickey='0'\nsecretkey='0'" > .obi/config
 	echo ".git\n.gitignore\n.htaccess\nsftp-config.json\n.DS_Store\n_resources\n.obi" > .obiignore
 }
 
@@ -539,7 +539,7 @@ set_project_dir()
 
 	read DIRECTORY
 
-	empty_second_string_check "$DIRECTORY"
+	empty_string_check "$DIRECTORY"
 	ret6=$?
 	directory_exist_check "$DIRECTORY"
 	ret5=$?
@@ -573,7 +573,7 @@ set_environment()
 	clear
 	main_menu
 	read environmentanswer
-	empty_second_string_check "$environmentanswer"
+	empty_string_check "$environmentanswer"
 	if [ "$ret6" == "6" ]
 	then
 		MSG="\033[33m Your input was empty please try again"
@@ -672,7 +672,7 @@ create_project_config()
 	else
 		cd "$PROJ"
 		mkdir -p _resources/architecture/estimates _resources/assets/ai _resources/assets/content _resources/assets/images/gif _resources/assets/images/jpg _resources/assets/images/png _resources/assets/images _resources/assets/pdf _resources/assets/psd _resources/assets/fonts _resources/assets/emails _resources/dumps/local _resources/dumps/production _resources/dumps/staging _resources/dumps/temp .obi
-		echo "#\n# Production ssh settings\n#\nenableproductionssh='0'\nproductionssh='0'\nproductionremoteprojectroot='0'\nenableproductionsshmysql='0'\n\n#\n# Staging ssh settings\n#\nenablestagingssh='0'\nstagingtssh='0'\nstagingremoteprojectroot='0'\nenablestagingsshmysql='0'\n\n#\n# S3 settings\n#\nenableS3='0'\npublickey='0'\nsecretkey='0'" > .obi/config
+		echo "#\n# Production ssh settings\n#\nenableproductionssh='0'\nproductionssh='0'\nproductionremoteprojectroot='0'\nenableproductionsshmysql='0'\n\n#\n# Staging ssh settings\n#\nenablestagingssh='0'\nstagingssh='0'\nstagingremoteprojectroot='0'\nenablestagingsshmysql='0'\n\n#\n# S3 settings\n#\nenableS3='0'\npublickey='0'\nsecretkey='0'" > .obi/config
 		echo ".git\n.gitignore\n.htaccess\nsftp-config.json\n.DS_Store\n_resources\n.obi" > .obiignore
 		. "$PROJ/.obi/config"
 	fi
@@ -741,14 +741,28 @@ zip_to_s3()
 
 rsync_dir()
 {
-
 	ORIGIN=$1
 	DESTINATION=$2
+	empty_string_check $4
+	strcheckret=$?
+	case "$strcheckret" in
+		6 )
+			for rsync_dirs in "${rsync_dirs[@]}"
+			do
+				rsync -rvuz --exclude-from="$PROJ/.obiignore" "$ORIGIN$rsync_dirs" "$DESTINATION$rsync_dirs"
+			done
+		;;
+		* )
+			rsync -rvuz --exclude-from="$PROJ/.obiignore" "$ORIGIN" "$DESTINATION"
+		;;
+	esac
+	exit
+	empty_string_check $ORIGIN
+	strcheckret=$?
 
-	if [[ ! -z "$DESTINATION" ]];
-	then
-		rsync -rvuz --exclude-from="$PROJ/.obiignore" "$ORIGIN" "$DESTINATION"
-	fi
+
+
+
 }
 
 # -----------------------------------------------#
@@ -980,7 +994,7 @@ case $ACTION in
 	;;
 	-b )
 		does_config_exist
-		empty_second_string_check "$PROJ_FOLDER_NAME"
+		empty_string_check "$PROJ_FOLDER_NAME"
 		strcheckret=$?
 		directory_exist_check "$PROJ"
 		dircheckret=$?
@@ -1038,7 +1052,7 @@ case $ACTION in
 		;;
 	-i )
 		does_config_exist
-		empty_second_string_check "$PROJ_FOLDER_NAME"
+		empty_string_check "$PROJ_FOLDER_NAME"
 		strcheckret=$?
 		directory_exist_check "$PROJ"
 		dircheckret=$?
@@ -1101,7 +1115,7 @@ case $ACTION in
 		;;
 	-r )
 		does_config_exist
-		empty_second_string_check "$PROJ_FOLDER_NAME"
+		empty_string_check "$PROJ_FOLDER_NAME"
 		strcheckret=$?
 		directory_exist_check "$PROJ"
 		dircheckret=$?
@@ -1112,9 +1126,6 @@ case $ACTION in
 		    -lts )
 				clear
 				does_project_config_exist $productionssh
-				empty_second_string_check $4
-				strcheckret=$?
-				check_returns
 
 				rsync_dir "$PROJ$4" "$stagingssh:$stagingremoteprojectroot$4"
 			;;
@@ -1122,18 +1133,12 @@ case $ACTION in
 
 				clear
 				does_project_config_exist $productionssh
-				empty_second_string_check $4
-				strcheckret=$?
-				check_returns
 
 				rsync_dir "$PROJ$4" "$productionssh:$productionremoteprojectroot$4"
 			;;
 		    -stl )
 				clear
 				does_project_config_exist $productionssh
-				empty_second_string_check $4
-				strcheckret=$?
-				check_returns
 
 				rsync_dir "$stagingssh:$stagingremoteprojectroot$4" "$PROJ$4"
 			;;
@@ -1141,9 +1146,6 @@ case $ACTION in
 				clear
 				does_project_config_exist $stagingssh
 				does_project_config_exist $productionssh
-				empty_second_string_check $4
-				strcheckret=$?
-				check_returns
 
 				rsync_dir "$stagingssh:$stagingremoteprojectroot$4" "$productionssh:$productionremoteprojectroot$4"
 			;;
@@ -1151,9 +1153,6 @@ case $ACTION in
 
 				clear
 				does_project_config_exist $productionssh
-				empty_second_string_check $4
-				strcheckret=$?
-				check_returns
 
 				rsync_dir "$productionssh:$productionremoteprojectroot$4" "$PROJ$4"
 			;;
@@ -1161,9 +1160,6 @@ case $ACTION in
 				clear
 				does_project_config_exist $productionssh
 				does_project_config_exist $stagingssh
-				empty_second_string_check $4
-				strcheckret=$?
-				check_returns
 
 				rsync_dir "$productionssh:$productionremoteprojectroot$4" "$stagingssh:$stagingremoteprojectroot$4"
 			;;
@@ -1180,7 +1176,7 @@ case $ACTION in
 		;;
 	mysql )
 		does_config_exist
-		empty_second_string_check "$2"
+		empty_string_check "$2"
 		strcheckret=$?
 		check_returns
 
@@ -1203,7 +1199,7 @@ case $ACTION in
 	;;
 	kill )
 		does_config_exist
-		empty_second_string_check "$PROJ_FOLDER_NAME"
+		empty_string_check "$PROJ_FOLDER_NAME"
 		strcheckret=$?
 		directory_exist_check "$PROJ"
 		dircheckret=$?
