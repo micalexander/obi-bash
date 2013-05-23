@@ -158,8 +158,8 @@ mysql_credentials()
 		;;
 		staging )
 			serversettings="$stagingsettings"
-			mysqlssh="$enablestagingsshmysql"
-			myssh="$stagingssh"
+			mysqlssh="$enable_staging_sshmysql"
+			myssh="$staging_ssh"
 
 
 			case $serversettings in
@@ -186,8 +186,8 @@ mysql_credentials()
 		;;
 		production )
 			serversettings="$productionsettings"
-			mysqlssh="$enableproductionsshmysql"
-			myssh="$productionssh"
+			mysqlssh="$enable_production_sshmysql"
+			myssh="$production_ssh"
 
 			case "$serversettings" in
 				enabled )
@@ -494,7 +494,7 @@ create_directories()
 	mkdir $PROJ_FOLDER_NAME
 	cd $PROJ_FOLDER_NAME
 	mkdir -p _resources/architecture/estimates _resources/assets/ai _resources/assets/content _resources/assets/images/gif _resources/assets/images/jpg _resources/assets/images/png _resources/assets/images _resources/assets/pdf _resources/assets/psd _resources/assets/fonts _resources/assets/emails _resources/dumps/local _resources/dumps/production _resources/dumps/staging _resources/dumps/temp .obi
-	echo "#\n# Production ssh settings\n#\nenableproductionssh='0'\nproductionssh='0'\nproductionremoteprojectroot='0'\nenableproductionsshmysql='0'\n\n#\n# Staging ssh settings\n#\nenablestagingssh='0'\nstagingssh='0'\nstagingremoteprojectroot='0'\nenablestagingsshmysql='0'\n\n#\n# S3 settings\n#\nenableS3='0'\npublickey='0'\nsecretkey='0'" > .obi/config
+	echo "#\n# Production ssh settings\n#\nenable_production_ssh='0'\nproduction_ssh='0'\nproduction_remote_project_root='0'\nenable_production_sshmysql='0'\n\n#\n# Staging ssh settings\n#\nenable_staging_ssh='0'\nstaging_ssh='0'\nstaging_remote_project_root='0'\nenable_staging_sshmysql='0'\n\n#\n# S3 settings\n#\nenable_S3='0'\npublic_key='0'\nsecret_key='0'" > .obi/config
 	echo ".git\n.gitignore\n.htaccess\nsftp-config.json\n.DS_Store\n_resources\n.obi" > .obiignore
 }
 
@@ -510,7 +510,7 @@ obi_init()
 	mkdir $PROJ_FOLDER_NAME
 	cd $PROJ_FOLDER_NAME
 	mkdir -p _resources/architecture/estimates _resources/assets/ai _resources/assets/content _resources/assets/images/gif _resources/assets/images/jpg _resources/assets/images/png _resources/assets/images _resources/assets/pdf _resources/assets/psd _resources/assets/fonts _resources/assets/emails _resources/dumps/local _resources/dumps/production _resources/dumps/staging _resources/dumps/temp .obi
-	echo "#\n# Production ssh settings\n#\nenableproductionssh='0'\nproductionssh='0'\nproductionremoteprojectroot='0'\nenableproductionsshmysql='0'\n\n#\n# Staging ssh settings\n#\nenablestagingssh='0'\nstagingssh='0'\nstagingremoteprojectroot='0'\nenablestagingsshmysql='0'\n\n#\n# S3 settings\n#\nenableS3='0'\npublickey='0'\nsecretkey='0'" > .obi/config
+	echo "#\n# Production ssh settings\n#\nenable_production_ssh='0'\nproduction_ssh='0'\nproduction_remote_project_root='0'\nenable_production_sshmysql='0'\n\n#\n# Staging ssh settings\n#\nenable_staging_ssh='0'\nstaging_ssh='0'\nstaging_remote_project_root='0'\nenable_staging_sshmysql='0'\n\n#\n# S3 settings\n#\nenable_S3='0'\npublic_key='0'\nsecret_key='0'" > .obi/config
 	echo ".git\n.gitignore\n.htaccess\nsftp-config.json\n.DS_Store\n_resources\n.obi" > .obiignore
 }
 
@@ -672,7 +672,7 @@ create_project_config()
 	else
 		cd "$PROJ"
 		mkdir -p _resources/architecture/estimates _resources/assets/ai _resources/assets/content _resources/assets/images/gif _resources/assets/images/jpg _resources/assets/images/png _resources/assets/images _resources/assets/pdf _resources/assets/psd _resources/assets/fonts _resources/assets/emails _resources/dumps/local _resources/dumps/production _resources/dumps/staging _resources/dumps/temp .obi
-		echo "#\n# Production ssh settings\n#\nenableproductionssh='0'\nproductionssh='0'\nproductionremoteprojectroot='0'\nenableproductionsshmysql='0'\n\n#\n# Staging ssh settings\n#\nenablestagingssh='0'\nstagingssh='0'\nstagingremoteprojectroot='0'\nenablestagingsshmysql='0'\n\n#\n# S3 settings\n#\nenableS3='0'\npublickey='0'\nsecretkey='0'" > .obi/config
+		echo "#\n# Production ssh settings\n#\nenable_production_ssh='0'\nproduction_ssh='0'\nproduction_remote_project_root='0'\nenable_production_sshmysql='0'\n\n#\n# Staging ssh settings\n#\nenable_staging_ssh='0'\nstaging_ssh='0'\nstaging_remote_project_root='0'\nenable_staging_sshmysql='0'\n\n#\n# S3 settings\n#\nenable_S3='0'\npublic_key='0'\nsecret_key='0'" > .obi/config
 		echo ".git\n.gitignore\n.htaccess\nsftp-config.json\n.DS_Store\n_resources\n.obi" > .obiignore
 		. "$PROJ/.obi/config"
 	fi
@@ -711,7 +711,7 @@ does_project_config_exist()
 ## ----------------------------------------------#
 zip_to_s3()
 {
-	if [ "$enableS3" == "1" ];
+	if [ "$enable_S3" == "1" ];
 	then
 		cd "$PROJ";
 		mysql_timestamp
@@ -724,7 +724,7 @@ zip_to_s3()
 			# Find files that are more than 7 days old and gzip then
 			find _resources/dumps/* -mtime +7 | xargs tar -s /dumps/$THE_DATE-$PROJ_FOLDER_NAME/ -czvPf $THE_DATE-$PROJ_FOLDER_NAME.tar.gz;
 			# Send the to s3
-			$php -f ~/obi/libs/s3/interface.php $publickey $secretkey  $THE_DATE-$PROJ_FOLDER_NAME.tar.gz;
+			$php -f ~/obi/libs/s3/interface.php $public_key $secret_key  $THE_DATE-$PROJ_FOLDER_NAME.tar.gz;
 			files_set_to_s3=`find _resources/dumps/* -mtime +7`
 			mv $files_set_to_s3 ~/.Trash
 			mv $THE_DATE-$PROJ_FOLDER_NAME.tar.gz ~/.Trash
@@ -747,9 +747,9 @@ rsync_dir()
 	strcheckret=$?
 	case "$strcheckret" in
 		6 )
-			for rsync_dirs in "${rsync_dirs[@]}"
+			for production_rsync_dirs in "${production_rsync_dirs[@]}"
 			do
-				rsync -rvuz --exclude-from="$PROJ/.obiignore" "$ORIGIN$rsync_dirs" "$DESTINATION$rsync_dirs"
+				rsync -rvuz --exclude-from="$PROJ/.obiignore" "$ORIGIN$production_rsync_dirs" "$DESTINATION$production_rsync_dirs"
 			done
 		;;
 		* )
@@ -759,10 +759,43 @@ rsync_dir()
 	exit
 	empty_string_check $ORIGIN
 	strcheckret=$?
+}
+# -----------------------------------------------#
+## Help
+## ----------------------------------------------#
 
+help() {
+cat<<EOF
+Usage: obi [argument]
+   or: obi [argument] [project_name | . ] [environment(s)]
 
+Arguments:
 
+   config: configure obi
+   help: prints usage to the terminal
+   mysql: login local mysql database
 
+   -e: Create an empty working directory
+   -g: Create a git repository working directory
+   -w: Create a wordpress enabled git repository working directory
+   -b: Backup mysql database.
+   -r: rsync remote directories to and from local
+
+Project name: Name of the folder that contains your project.
+
+Environments:
+
+   -l: local
+   -s: staging
+   -p: production
+   -lts: local to staging
+   -ltp: local to production
+   -stl: staging to local
+   -stp: staging to production
+   -ptl: production to local
+   -pts: production to staging
+
+EOF
 }
 
 # -----------------------------------------------#
@@ -1125,43 +1158,43 @@ case $ACTION in
 		case $3 in
 		    -lts )
 				clear
-				does_project_config_exist $productionssh
+				does_project_config_exist $production_ssh
 
-				rsync_dir "$PROJ$4" "$stagingssh:$stagingremoteprojectroot$4"
+				rsync_dir "$PROJ$4" "$staging_ssh:$staging_remote_project_root$4"
 			;;
 		    -ltp )
 
 				clear
-				does_project_config_exist $productionssh
+				does_project_config_exist $production_ssh
 
-				rsync_dir "$PROJ$4" "$productionssh:$productionremoteprojectroot$4"
+				rsync_dir "$PROJ$4" "$production_ssh:$production_remote_project_root$4"
 			;;
 		    -stl )
 				clear
-				does_project_config_exist $productionssh
+				does_project_config_exist $production_ssh
 
-				rsync_dir "$stagingssh:$stagingremoteprojectroot$4" "$PROJ$4"
+				rsync_dir "$staging_ssh:$staging_remote_project_root$4" "$PROJ$4"
 			;;
 		    -stp )
 				clear
-				does_project_config_exist $stagingssh
-				does_project_config_exist $productionssh
+				does_project_config_exist $staging_ssh
+				does_project_config_exist $production_ssh
 
-				rsync_dir "$stagingssh:$stagingremoteprojectroot$4" "$productionssh:$productionremoteprojectroot$4"
+				rsync_dir "$staging_ssh:$staging_remote_project_root$4" "$production_ssh:$production_remote_project_root$4"
 			;;
 		    -ptl )
 
 				clear
-				does_project_config_exist $productionssh
+				does_project_config_exist $production_ssh
 
-				rsync_dir "$productionssh:$productionremoteprojectroot$4" "$PROJ$4"
+				rsync_dir "$production_ssh:$production_remote_project_root$4" "$PROJ$4"
 			;;
 		    -pts )
 				clear
-				does_project_config_exist $productionssh
-				does_project_config_exist $stagingssh
+				does_project_config_exist $production_ssh
+				does_project_config_exist $staging_ssh
 
-				rsync_dir "$productionssh:$productionremoteprojectroot$4" "$stagingssh:$stagingremoteprojectroot$4"
+				rsync_dir "$production_ssh:$production_remote_project_root$4" "$staging_ssh:$staging_remote_project_root$4"
 			;;
 		    *)
 				clear
@@ -1210,36 +1243,8 @@ case $ACTION in
 		;;
 	help )
 		clear
-		echo
-		echo "\tUsage: obi [argument]"
-		echo "\t   or: obi [argument] [project_name] [environment(s)]"
-		echo
-		echo "\tArguments:"
-		echo
-		echo "\t   config: configure obi"
-		echo "\t   help: prints usage to the terminal"
-		echo "\t   mysql: login local mysql database"
-		echo
-		echo "\t   -e: Create an empty working directory"
-		echo "\t   -g: Create a git repository working directory"
-		echo "\t   -w: Create a wordpress enabled git repository working directory"
-		echo "\t   -b: Backup mysql database."
-		echo
-		echo "\tProject name: Name of the folder that contains your project."
-		echo
-		echo "\tEnvironments:"
-		echo
-		echo "\t   -l: local"
-		echo "\t   -s: staging"
-		echo "\t   -p: production"
-		echo "\t   -lts: local to staging"
-		echo "\t   -ltp: local to production"
-		echo "\t   -stl: staging to local"
-		echo "\t   -stp: staging to production"
-		echo "\t   -ptl: production to local"
-		echo "\t   -pts: production to staging"
-		echo
-		echo
+		help
+
 		exit
 	;;
 	* )
