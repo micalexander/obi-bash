@@ -160,6 +160,7 @@ mysql_credentials()
 			serversettings="$stagingsettings"
 			mysqlssh="$enable_staging_sshmysql"
 			myssh="$staging_ssh"
+			rsync_dirs="$staging_rsync_dirs"
 
 
 			case $serversettings in
@@ -188,6 +189,7 @@ mysql_credentials()
 			serversettings="$productionsettings"
 			mysqlssh="$enable_production_sshmysql"
 			myssh="$production_ssh"
+			rsync_dirs="$production_rsync_dirs"
 
 			case "$serversettings" in
 				enabled )
@@ -747,9 +749,9 @@ rsync_dir()
 	strcheckret=$?
 	case "$strcheckret" in
 		6 )
-			for production_rsync_dirs in "${production_rsync_dirs[@]}"
+			for rsync_dirs in "${rsync_dirs[@]}"
 			do
-				rsync -rvuz --exclude-from="$PROJ/.obiignore" "$ORIGIN$production_rsync_dirs" "$DESTINATION$production_rsync_dirs"
+				rsync -rvuz --exclude-from="$PROJ/.obiignore" "$ORIGIN$rsync_dirs" "$DESTINATION$rsync_dirs"
 			done
 		;;
 		* )
