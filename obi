@@ -495,7 +495,7 @@ create_directories()
 	cd "$PROJ_PATH"
 	mkdir $PROJ_FOLDER_NAME
 	cd $PROJ_FOLDER_NAME
-	mkdir -p _resources/architecture/estimates _resources/assets/ai _resources/assets/content _resources/assets/images/gif _resources/assets/images/jpg _resources/assets/images/png _resources/assets/images _resources/assets/pdf _resources/assets/psd _resources/assets/fonts _resources/assets/emails _resources/dumps/local _resources/dumps/production _resources/dumps/staging _resources/dumps/temp .obi
+	mkdir -p _resources/assets/architecture _resources/assets/estimates _resources/assets/ai _resources/assets/content _resources/assets/gif _resources/assets/jpg _resources/assets/png _resources/assets _resources/assets/pdf _resources/assets/psd _resources/assets/fonts _resources/assets/emails _resources/dumps/local _resources/dumps/production _resources/dumps/staging _resources/dumps/temp .obi
 	echo "#\n# Production ssh settings\n#\nenable_production_ssh='0'\nproduction_ssh='0'\nproduction_remote_project_root='0'\nenable_production_sshmysql='0'\n\n#\n# Staging ssh settings\n#\nenable_staging_ssh='0'\nstaging_ssh='0'\nstaging_remote_project_root='0'\nenable_staging_sshmysql='0'\n\n#\n# S3 settings\n#\nenable_S3='0'\npublic_key='0'\nsecret_key='0'" > .obi/config
 	echo ".git\n.gitignore\n.htaccess\nsftp-config.json\n.DS_Store\n_resources\n.obi" > .obiignore
 }
@@ -511,7 +511,7 @@ obi_init()
 	cd "$PROJ_PATH"
 	mkdir $PROJ_FOLDER_NAME
 	cd $PROJ_FOLDER_NAME
-	mkdir -p _resources/architecture/estimates _resources/assets/ai _resources/assets/content _resources/assets/images/gif _resources/assets/images/jpg _resources/assets/images/png _resources/assets/images _resources/assets/pdf _resources/assets/psd _resources/assets/fonts _resources/assets/emails _resources/dumps/local _resources/dumps/production _resources/dumps/staging _resources/dumps/temp .obi
+	mkdir -p _resources/assets/architecture _resources/assets/estimates _resources/assets/ai _resources/assets/content _resources/assets/gif _resources/assets/jpg _resources/assets/png _resources/assets _resources/assets/pdf _resources/assets/psd _resources/assets/fonts _resources/assets/emails _resources/dumps/local _resources/dumps/production _resources/dumps/staging _resources/dumps/temp .obi
 	echo "#\n# Production ssh settings\n#\nenable_production_ssh='0'\nproduction_ssh='0'\nproduction_remote_project_root='0'\nenable_production_sshmysql='0'\n\n#\n# Staging ssh settings\n#\nenable_staging_ssh='0'\nstaging_ssh='0'\nstaging_remote_project_root='0'\nenable_staging_sshmysql='0'\n\n#\n# S3 settings\n#\nenable_S3='0'\npublic_key='0'\nsecret_key='0'" > .obi/config
 	echo ".git\n.gitignore\n.htaccess\nsftp-config.json\n.DS_Store\n_resources\n.obi" > .obiignore
 }
@@ -673,7 +673,7 @@ create_project_config()
 		. "$PROJ/.obi/config"
 	else
 		cd "$PROJ"
-		mkdir -p _resources/architecture/estimates _resources/assets/ai _resources/assets/content _resources/assets/images/gif _resources/assets/images/jpg _resources/assets/images/png _resources/assets/images _resources/assets/pdf _resources/assets/psd _resources/assets/fonts _resources/assets/emails _resources/dumps/local _resources/dumps/production _resources/dumps/staging _resources/dumps/temp .obi
+		mkdir -p _resources/assets/architecture _resources/assets/estimates _resources/assets/ai _resources/assets/content _resources/assets/gif _resources/assets/jpg _resources/assets/png _resources/assets _resources/assets/pdf _resources/assets/psd _resources/assets/fonts _resources/assets/emails _resources/dumps/local _resources/dumps/production _resources/dumps/staging _resources/dumps/temp .obi
 		echo "#\n# Production ssh settings\n#\nenable_production_ssh='0'\nproduction_ssh='0'\nproduction_remote_project_root='0'\nenable_production_sshmysql='0'\n\n#\n# Staging ssh settings\n#\nenable_staging_ssh='0'\nstaging_ssh='0'\nstaging_remote_project_root='0'\nenable_staging_sshmysql='0'\n\n#\n# S3 settings\n#\nenable_S3='0'\npublic_key='0'\nsecret_key='0'" > .obi/config
 		echo ".git\n.gitignore\n.htaccess\nsftp-config.json\n.DS_Store\n_resources\n.obi" > .obiignore
 		. "$PROJ/.obi/config"
