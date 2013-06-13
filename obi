@@ -336,11 +336,14 @@ mysql_sync()
 	last_modified_output=`find . -type f -exec stat -f "%m %N" {} \; | sort -n | tail -1`
 	last_modified_file="${last_modified_output/[0-9]* \.\//}"
 
-	temp_location="_resources/dumps/temp/$last_modified_file"
 
 	mysql_dump $import
 	mysql_dump $dump
 	find_and_replace_wp_url $find $replace $dump "$last_modified_file"
+
+	recently_modified_output=`find . -type f -exec stat -f "%m %N" {} \; | sort -n | tail -1`
+	recently_modified_file="${last_modified_output/[0-9]* \.\//}"
+	temp_location="_resources/dumps/temp/$recently_modified_file"
 	mysql_import $import "$temp_location"
 }
 
@@ -355,6 +358,10 @@ find_and_replace_wp_url()
 	folder=$3
 	# temp_file=$4
 
+	if [ ! -d "_resources/dumps/local" ] || [ ! -d "_resources/dumps/staging" ] || [ ! -d "_resources/dumps/production" ] || [ ! -d "_resources/dumps/temp" ]
+	then
+	mkdir -p _resources/dumps/local _resources/dumps/staging _resources/dumps/production _resources/dumps/temp
+	fi
 
 	cd "$PROJ/_resources/dumps/$dump/"
 
@@ -366,10 +373,6 @@ find_and_replace_wp_url()
 
 	cp "_resources/dumps/$folder/$last_modified_file" "_resources/dumps/temp/$last_modified_file"
 
-	if [ ! -d "_resources/dumps/local" ] || [ ! -d "_resources/dumps/staging" ] || [ ! -d "_resources/dumps/production" ] || [ ! -d "_resources/dumps/temp" ]
-	then
-	mkdir -p _resources/dumps/local _resources/dumps/staging _resources/dumps/production _resources/dumps/temp
-	fi
 
 	wp_config_check
 
