@@ -241,7 +241,6 @@ mysql_dump()
 	# Looks for database username, database password and database name in the wp-config file
 	mysql_credentials $database
 
-
 	if [ "$mysqlssh" == "1" ] && [ $database != "local" ]
 	then
 		mysql_special_characters=('*' '?' '[' '<' '>' '&' ';' '!' '|' '$' '(' ')')
@@ -255,8 +254,7 @@ mysql_dump()
 		done
 		ssh -C $myssh mysqldump --net_buffer_length=75000 --verbose -u"$user" -p"$pass" "$name" > "_resources/dumps/$database/$THE_DATE-$database.sql"
 
-	elif [ "$mysqlssh" == "0" ] || [ $database == "local" ]
-	then
+	else
 		$mysqldump --net_buffer_length=75000 --verbose -h"$host" -u"$user" -p"$pass" "$name" > "_resources/dumps/$database/$THE_DATE-$database.sql"
 	fi
 }
