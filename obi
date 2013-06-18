@@ -2,6 +2,14 @@
 # -----------------------------------------------#
 ## Obi config
 ## ----------------------------------------------#
+obi_version()
+{
+	if [[ -z "$version" ]] || [[ "$version" < 2.0 ]];
+	then
+		echo ; echo "obi: You must update by running \033[33mobi update\033[0m before continuing" ; echo;
+		exit
+	fi
+}
 
 create_obiconfig()
 {
@@ -51,7 +59,7 @@ does_config_exist()
 
 
 create_obiconfig
-
+obi_version
 
 # -----------------------------------------------#
 ## Variables
