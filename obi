@@ -160,8 +160,6 @@ mysql_credentials()
 			serversettings="$stagingsettings"
 			mysqlssh="$enable_staging_sshmysql"
 			myssh="$staging_ssh"
-			rsync_dirs="$staging_rsync_dirs"
-
 
 			case $serversettings in
 				enabled )
@@ -189,7 +187,6 @@ mysql_credentials()
 			serversettings="$productionsettings"
 			mysqlssh="$enable_production_sshmysql"
 			myssh="$production_ssh"
-			rsync_dirs="$production_rsync_dirs"
 
 			case "$serversettings" in
 				enabled )
@@ -358,7 +355,7 @@ find_and_replace_wp_url()
 
 	if [ ! -d "_resources/dumps/local" ] || [ ! -d "_resources/dumps/staging" ] || [ ! -d "_resources/dumps/production" ] || [ ! -d "_resources/dumps/temp" ]
 	then
-	mkdir -p _resources/dumps/local _resources/dumps/staging _resources/dumps/production _resources/dumps/temp
+	mkdir -p _resources/dumps/{local,production,staging,temp}
 	fi
 
 	cd "$PROJ/_resources/dumps/$dump/"
@@ -496,8 +493,8 @@ create_directories()
 	cd "$PROJ_PATH"
 	mkdir $PROJ_FOLDER_NAME
 	cd $PROJ_FOLDER_NAME
-	mkdir -p _resources/assets/architecture _resources/assets/estimates _resources/assets/ai _resources/assets/content _resources/assets/gif _resources/assets/jpg _resources/assets/png _resources/assets _resources/assets/pdf _resources/assets/psd _resources/assets/fonts _resources/assets/emails _resources/dumps/local _resources/dumps/production _resources/dumps/staging _resources/dumps/temp .obi
-	echo "#\n# Production ssh settings\n#\nenable_production_ssh='0'\nproduction_ssh='0'\nproduction_remote_project_root='0'\nenable_production_sshmysql='0'\n\n#\n# Staging ssh settings\n#\nenable_staging_ssh='0'\nstaging_ssh='0'\nstaging_remote_project_root='0'\nenable_staging_sshmysql='0'\n\n#\n# S3 settings\n#\nenable_S3='0'\npublic_key='0'\nsecret_key='0'" > .obi/config
+	mkdir -p _resources/{assets/{ai,architecture,content,emails,estimates,fonts,gif,jpg,pdf,png,psd},dumps/{local,production,staging,temp}} .obi
+	echo "#\n# Production ssh settings\n#\nenable_production_ssh='0'\nproduction_ssh='0'\nproduction_remote_project_root='0'\nenable_production_sshmysql='0'\n\n#\n# Staging ssh settings\n#\nenable_staging_ssh='0'\nstaging_ssh='0'\nstaging_remote_project_root='0'\nenable_staging_sshmysql='0'\n\n#\n# S3 settings\n#\nenable_S3='0'\npublic_key='0'\nsecret_key='0'\n\n#\n# RSync settings\n#\nenable_rsync='0'\nrsync_dirs=('/change/this/to/first/sync/directory/' '/change/this/to/second/sync/directory/or/remove/entirely/')" > .obi/config
 	echo ".git\n.gitignore\n.htaccess\nsftp-config.json\n.DS_Store\n_resources\n.obi" > .obiignore
 }
 
@@ -512,8 +509,8 @@ obi_init()
 	cd "$PROJ_PATH"
 	mkdir $PROJ_FOLDER_NAME
 	cd $PROJ_FOLDER_NAME
-	mkdir -p _resources/assets/architecture _resources/assets/estimates _resources/assets/ai _resources/assets/content _resources/assets/gif _resources/assets/jpg _resources/assets/png _resources/assets _resources/assets/pdf _resources/assets/psd _resources/assets/fonts _resources/assets/emails _resources/dumps/local _resources/dumps/production _resources/dumps/staging _resources/dumps/temp .obi
-	echo "#\n# Production ssh settings\n#\nenable_production_ssh='0'\nproduction_ssh='0'\nproduction_remote_project_root='0'\nenable_production_sshmysql='0'\n\n#\n# Staging ssh settings\n#\nenable_staging_ssh='0'\nstaging_ssh='0'\nstaging_remote_project_root='0'\nenable_staging_sshmysql='0'\n\n#\n# S3 settings\n#\nenable_S3='0'\npublic_key='0'\nsecret_key='0'" > .obi/config
+	mkdir -p _resources/{assets/{ai,architecture,content,emails,estimates,fonts,gif,jpg,pdf,png,psd},dumps/{local,production,staging,temp}} .obi
+	echo "#\n# Production ssh settings\n#\nenable_production_ssh='0'\nproduction_ssh='0'\nproduction_remote_project_root='0'\nenable_production_sshmysql='0'\n\n#\n# Staging ssh settings\n#\nenable_staging_ssh='0'\nstaging_ssh='0'\nstaging_remote_project_root='0'\nenable_staging_sshmysql='0'\n\n#\n# S3 settings\n#\nenable_S3='0'\npublic_key='0'\nsecret_key='0'\n\n#\n# RSync settings\n#\nenable_rsync='0'\nrsync_dirs=('/change/this/to/first/sync/directory/' '/change/this/to/second/sync/directory/or/remove/entirely/')" > .obi/config
 	echo ".git\n.gitignore\n.htaccess\nsftp-config.json\n.DS_Store\n_resources\n.obi" > .obiignore
 }
 
@@ -674,8 +671,8 @@ create_project_config()
 		. "$PROJ/.obi/config"
 	else
 		cd "$PROJ"
-		mkdir -p _resources/assets/architecture _resources/assets/estimates _resources/assets/ai _resources/assets/content _resources/assets/gif _resources/assets/jpg _resources/assets/png _resources/assets _resources/assets/pdf _resources/assets/psd _resources/assets/fonts _resources/assets/emails _resources/dumps/local _resources/dumps/production _resources/dumps/staging _resources/dumps/temp .obi
-		echo "#\n# Production ssh settings\n#\nenable_production_ssh='0'\nproduction_ssh='0'\nproduction_remote_project_root='0'\nenable_production_sshmysql='0'\n\n#\n# Staging ssh settings\n#\nenable_staging_ssh='0'\nstaging_ssh='0'\nstaging_remote_project_root='0'\nenable_staging_sshmysql='0'\n\n#\n# S3 settings\n#\nenable_S3='0'\npublic_key='0'\nsecret_key='0'" > .obi/config
+		mkdir -p _resources/{assets/{ai,architecture,content,emails,estimates,fonts,gif,jpg,pdf,png,psd},dumps/{local,production,staging,temp}} .obi
+		echo "#\n# Production ssh settings\n#\nenable_production_ssh='0'\nproduction_ssh='0'\nproduction_remote_project_root='0'\nenable_production_sshmysql='0'\n\n#\n# Staging ssh settings\n#\nenable_staging_ssh='0'\nstaging_ssh='0'\nstaging_remote_project_root='0'\nenable_staging_sshmysql='0'\n\n#\n# S3 settings\n#\nenable_S3='0'\npublic_key='0'\nsecret_key='0'\n\n#\n# RSync settings\n#\nenable_rsync='0'\nrsync_dirs=('/change/this/to/first/sync/directory/' '/change/this/to/second/sync/directory/or/remove/entirely/')" > .obi/config
 		echo ".git\n.gitignore\n.htaccess\nsftp-config.json\n.DS_Store\n_resources\n.obi" > .obiignore
 		. "$PROJ/.obi/config"
 	fi
@@ -733,7 +730,7 @@ zip_to_s3()
 			mv $THE_DATE-$PROJ_FOLDER_NAME.tar.gz ~/.Trash
 		fi
 	else
-		clear; echo; echo "obi: In order to backup to s3 it must first be enabled this project by editing the \033[33m.obi/config\033[0m file in your project directory"; echo;
+		clear; echo; echo "obi: In order to backup to s3 it must first be enabled for this project by editing the \033[33m.obi/config\033[0m file in your project directory"; echo;
 		sleep 5
 	fi
 }
@@ -748,20 +745,23 @@ rsync_dir()
 	DESTINATION=$2
 	empty_string_check $4
 	strcheckret=$?
-	case "$strcheckret" in
-		6 )
-			for rsync_dirs in "${rsync_dirs[@]}"
-			do
-				rsync -rvuz --exclude-from="$PROJ/.obiignore" "$ORIGIN$rsync_dirs" "$DESTINATION$rsync_dirs"
-			done
-		;;
-		* )
-			rsync -rvuz --exclude-from="$PROJ/.obiignore" "$ORIGIN" "$DESTINATION"
-		;;
-	esac
+	if [ "$enable_rsync" == "1" ];
+	then
+		case "$strcheckret" in
+			6 )
+				for rsync_dirs in "${rsync_dirs[@]}"
+				do
+					rsync -rvuz --exclude-from="$PROJ/.obiignore" "$ORIGIN$rsync_dirs" "$DESTINATION$rsync_dirs"
+				done
+			;;
+			* )
+				rsync -rvuz --exclude-from="$PROJ/.obiignore" "$ORIGIN" "$DESTINATION"
+			;;
+		esac
+	else
+	clear; echo; echo "obi: In order to rsync directories it must first be enabled this for this project by editing the \033[33m.obi/config\033[0m file in your project directory"; echo;
 	exit
-	empty_string_check $ORIGIN
-	strcheckret=$?
+	fi
 }
 # -----------------------------------------------#
 ## Help
@@ -1161,7 +1161,7 @@ case $ACTION in
 		case $3 in
 		    -lts )
 				clear
-				does_project_config_exist $production_ssh
+				does_project_config_exist $staging_ssh
 
 				rsync_dir "$PROJ$4" "$staging_ssh:$staging_remote_project_root$4"
 			;;
@@ -1174,7 +1174,7 @@ case $ACTION in
 			;;
 		    -stl )
 				clear
-				does_project_config_exist $production_ssh
+				does_project_config_exist $staging_ssh
 
 				rsync_dir "$staging_ssh:$staging_remote_project_root$4" "$PROJ$4"
 			;;
