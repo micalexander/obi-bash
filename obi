@@ -12,7 +12,7 @@ obi_version()
 
 obi_update()
 {
-	find "$localprojectdirectory"* -name ".obi" -exec {} \;
+	find "$localprojectdirectory""update"* -name ".obi" -execdir mv {} .obi.bak \;
 
 }
 
