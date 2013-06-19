@@ -6,10 +6,17 @@ obi_version()
 {
 	if [[ -z "$version" ]] || [[ "$version" < 2.0 ]];
 	then
-		echo ; echo "obi: You must update by running \033[33mobi update\033[0m before continuing" ; echo;
-		exit
+		echo "version='2.0'" | cat - $HOME/.obiconfig > temp && mv temp $HOME/.obiconfig
 	fi
 }
+
+# obi_update()
+# {
+# 	if [[ -z "$version" ]]
+# 	then
+# 		echo "version=2.0" | cat - $HOME/.obiconfig | tee $HOME/.obiconfig
+# 	fi
+# }
 
 create_obiconfig()
 {
@@ -59,7 +66,7 @@ does_config_exist()
 
 
 create_obiconfig
-obi_version
+# obi_version
 
 # -----------------------------------------------#
 ## Variables
@@ -1234,6 +1241,11 @@ case $ACTION in
 		esac
 		$mysql -u"$user" -h"$host" -p"$pass"
 		;;
+	update )
+		clear
+			obi_version
+		exit
+	;;
 	init )
 		obi_init
 
