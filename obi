@@ -10,13 +10,11 @@ obi_version()
 	fi
 }
 
-# obi_update()
-# {
-# 	if [[ -z "$version" ]]
-# 	then
-# 		echo "version=2.0" | cat - $HOME/.obiconfig | tee $HOME/.obiconfig
-# 	fi
-# }
+obi_update()
+{
+	find "$localprojectdirectory"* -name ".obi" -exec {} \;
+
+}
 
 create_obiconfig()
 {
