@@ -6,7 +6,7 @@ obi_version()
 {
 	if [[ -z "$version" ]] || [[ "$version" < 2.0 ]];
 	then
-		echo "version='2.0'" | cat - $HOME/.obiconfig > temp && mv temp $HOME/.obiconfig
+		echo "version='2.0'" | cat - $HOME/.obiconfig > $HOME/.obiconfig.tmp && mv $HOME/.obiconfig.tmp $HOME/.obiconfig
 	fi
 }
 
@@ -66,7 +66,7 @@ does_config_exist()
 
 
 create_obiconfig
-# obi_version
+obi_version
 
 # -----------------------------------------------#
 ## Variables
@@ -1243,7 +1243,7 @@ case $ACTION in
 		;;
 	update )
 		clear
-			obi_version
+			obi_update
 		exit
 	;;
 	init )
