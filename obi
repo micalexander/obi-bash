@@ -553,6 +553,7 @@ create_directories()
 }
 recreate_folders_structure()
 {
+	mysql_timestamp
 	mkdir  $THE_DATE-$PROJ_FOLDER_NAME
 
 	if [[ -d $PROJ_FOLDER_NAME-site ]]
