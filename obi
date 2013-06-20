@@ -601,7 +601,7 @@ recreate_folders_structure()
 		echo ".git\n.gitignore\n.htaccess\nsftp-config.json\n.DS_Store\n_resources\n.obi" > .obiignore
 	fi
 
-	tar -s $THE_DATE-$PROJ_FOLDER_NAME/ -czvPf $THE_DATE-$PROJ_FOLDER_NAME.tar.gz; mv $THE_DATE-$PROJ_FOLDER_NAME.tar.gz ~/.Trash ;
+	tar -zcf $THE_DATE-$PROJ_FOLDER_NAME.tar.gz $THE_DATE-$PROJ_FOLDER_NAME ; mv $THE_DATE-$PROJ_FOLDER_NAME.tar.gz ~/.Trash ;
 }
 
 obi_init()
