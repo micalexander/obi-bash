@@ -40,8 +40,6 @@ obi_update()
 				# Cleanup
 				mv config "$HOME/.Trash/config"
 				mv config~ config
-				# If old folder stucture being use update the folder structure
-				recreate_folders_structure
 			done
 			# Unset IFS (good practice)
 			unset IFS
