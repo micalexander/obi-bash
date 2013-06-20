@@ -555,7 +555,7 @@ recreate_folders_structure()
 {
 	if [[ -d $PROJ_FOLDER_NAME-site ]]
 	then
-		mv $PROJ_FOLDER_NAME-site/* . ; cp $PROJ_FOLDER_NAME-site ~/.Trash ; rm -rf $PROJ_FOLDER_NAME-site ;
+		mv $PROJ_FOLDER_NAME-site/* . ; cp -r $PROJ_FOLDER_NAME-site ~/.Trash ; rm -rf $PROJ_FOLDER_NAME-site ;
 	fi
 
 	if [[ -d _resources ]]
@@ -566,22 +566,22 @@ recreate_folders_structure()
 	fi
 	if [[ -d architecture ]];
 	then
-		rsync -aru architecture/estimates/ _resources/assets/estimates/ ; cp architecture/estimates ~/.Trash  ; rm -rf architecture/estimates ; rsync -aru architecture/ _resources/assets/architecture/ ; cp architecture ~/.Trash ; rm -rf architecture ;
+		rsync -aru architecture/estimates/ _resources/assets/estimates/ ; cp -r architecture/estimates ~/.Trash  ; rm -rf architecture/estimates ; rsync -aru architecture/ _resources/assets/architecture/ ; cp -r architecture ~/.Trash ; rm -rf architecture ;
 	fi
 
 	if [[ -d assets ]];
 	then
-		mv assets/images/* assets/ ; cp assets/images ~/.Trash ; rm -rf assets/images ; rsync -aru assets/ _resources/assets/ ; cp assets ~/.Trash ; rm -rf assets ;
+		mv assets/images/* assets/ ; cp -r assets/images ~/.Trash ; rm -rf assets/images ; rsync -aru assets/ _resources/assets/ ; cp -r assets ~/.Trash ; rm -rf assets ;
 	fi
 
 	if [[ -d emails ]];
 	then
-		rsync -aru emails/ _resources/assets/emails/ ; cp emails ~/.Trash ; rm -rf emails ;
+		rsync -aru emails/ _resources/assets/emails/ ; cp -r emails ~/.Trash ; rm -rf emails ;
 	fi
 
 	if [[ -d dumps ]];
 	then
-		rsync -aru dumps/ _resources/dumps/ ; cp dumps ~/.Trash ; rm -rf dumps ;
+		rsync -aru dumps/ _resources/dumps/ ; cp -r dumps ~/.Trash ; rm -rf dumps ;
 	fi
 
 	if [[ -f .obi/config ]]
