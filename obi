@@ -1,44 +1,59 @@
 #!/bin/sh
+
 # -----------------------------------------------#
-## Obi config
+## Obi Version
 ## ----------------------------------------------#
+this_version=2.0
+
 obi_version()
 {
-	if [[ -z "$version" ]] || [[ "$version" < 2.0 ]];
+	if [[ -z "$version" ]] || [[ "$version" < $this_version ]];
 	then
-		echo "version='2.0'" | cat - $HOME/.obiconfig > $HOME/.obiconfig.tmp && mv $HOME/.obiconfig.tmp $HOME/.obiconfig
+		clear ; echo ; echo "obi: You must first run \033[33mobi update\033[0m in order to continue" ; echo ;
 	fi
 }
 
 obi_update()
 {
-	# Create an array of all of the project folder paths that have a .obi folder in them
-	dirs=( "$(find "$localprojectdirectory"* -name ".obi" )" )
+	if [[ -z "$version" ]] || [[ "$version" < $this_version ]];
+	then
+		echo "version='2.0'" | cat - $HOME/.obiconfig > $HOME/.obiconfig.tmp && mv $HOME/.obiconfig.tmp $HOME/.obiconfig
+		# Create an array of all of the project folder paths that have a .obi folder in them
+		dirs=( "$(find "$localprojectdirectory"* -name ".obi" )" )
 
-	# For each path that contains a .obi folder
-	for dir in "${dirs[@]}";
-	do
-		# Use IFS to break folders up by line breaks
-		IFS=$'\n'
-		lines="$dir"
+		# For each path that contains a .obi folder
+		for dir in "${dirs[@]}";
+		do
+			# Use IFS to break up folder paths by line breaks
+			IFS=$'\n'
+			lines="$dir"
 
-		for i in $lines; do
-			# cd into each directory
-			cd $i
-			. config
-			# Store each of the rsync_dirs array elements in one variable and then delimit them by single quotes
-			all_r_dirs=${rsync_dirs[@]:0}
-			str_r_dir="${all_r_dirs// /' '}"
-			# Create a temp config file with the new structure and copy old variable values over
-			echo "#\n# Production ssh settings\n#\nenable_production_ssh='$enable_production_ssh'\nproduction_ssh='$production_ssh'\nproduction_remote_project_root='$production_remote_project_root'\nenable_production_sshmysql='$enable_production_sshmysql'\n\n#\n# Staging ssh settings\n#\nenable_staging_ssh='$enable_staging_ssh'\nstaging_ssh='$staging_ssh'\nstaging_remote_project_root='$staging_remote_project_root'\nenable_staging_sshmysql='$enable_staging_sshmysql'\n\n#\n# S3 settings\n#\nenable_S3='$enable_S3'\npublic_key='$public_key'\nsecret_key='$secret_key'\n\n#\n# RSync settings\n#\nenable_rsync='$enable_rsync'\nrsync_dirs=('""$str_r_dir""')" > config~
-			# Cleanup
-			mv config "$HOME/.Trash/config"
-			mv config~ config
+			for i in $lines; do
+				# cd into each directory
+				cd $i
+				. config
+				# Store each of the rsync_dirs array elements in one variable and then delimit them by single quotes
+				all_r_dirs=${rsync_dirs[@]:0}
+				str_r_dir="${all_r_dirs// /' '}"
+				# Create a temp config file with the new structure and copy old variable values over
+				echo "#\n# Production ssh settings\n#\nenable_production_ssh='$enable_production_ssh'\nproduction_ssh='$production_ssh'\nproduction_remote_project_root='$production_remote_project_root'\nenable_production_sshmysql='$enable_production_sshmysql'\n\n#\n# Staging ssh settings\n#\nenable_staging_ssh='$enable_staging_ssh'\nstaging_ssh='$staging_ssh'\nstaging_remote_project_root='$staging_remote_project_root'\nenable_staging_sshmysql='$enable_staging_sshmysql'\n\n#\n# S3 settings\n#\nenable_S3='$enable_S3'\npublic_key='$public_key'\nsecret_key='$secret_key'\n\n#\n# RSync settings\n#\nenable_rsync='$enable_rsync'\nrsync_dirs=('""$str_r_dir""')" > config~
+				# Cleanup
+				mv config "$HOME/.Trash/config"
+				mv config~ config
+			done
+			# Unset IFS (good practice)
+			unset IFS
 		done
-		# Unset IFS (good practice)
-		unset IFS
-	done
+	else
+		clear ; echo ; echo "obi: Already up to date" ; echo ;
+	fi
 }
+
+
+# -----------------------------------------------#
+## Obi config
+## ----------------------------------------------#
+
 
 create_obiconfig()
 {
@@ -48,7 +63,7 @@ create_obiconfig()
 	then
 		. $HOME/.obiconfig
 	else
-		echo "localprojectdirectory='0'\nlocalsettings='enabled'\nlocalhost='localhost'\nlocaluser='root'\nlocalpassword='root'\n\nstagingsettings='disabled'\nstagingdomain='0'\nstaginghost='0'\nstaginguser='0'\nstagingpassword='0'\n\nproductionsettings='disabled'\nproductiondomain='0'\nproductionhost='0'\nproductionuser='0'\nproductionpassword='0'" > $HOME/.obiconfig
+		echo "version='$this_version'\nlocalprojectdirectory='0'\nlocalsettings='enabled'\nlocalhost='localhost'\nlocaluser='root'\nlocalpassword='root'\n\nstagingsettings='disabled'\nstagingdomain='0'\nstaginghost='0'\nstaginguser='0'\nstagingpassword='0'\n\nproductionsettings='disabled'\nproductiondomain='0'\nproductionhost='0'\nproductionuser='0'\nproductionpassword='0'" > $HOME/.obiconfig
 	fi
 }
 
@@ -544,11 +559,52 @@ obi_init()
 	check_returns
 	clear
 	cd "$PROJ_PATH"
-	mkdir $PROJ_FOLDER_NAME
 	cd $PROJ_FOLDER_NAME
-	mkdir -p _resources/{assets/{ai,architecture,content,emails,estimates,fonts,gif,jpg,pdf,png,psd},dumps/{local,production,staging,temp}} .obi
-	echo "#\n# Production ssh settings\n#\nenable_production_ssh='0'\nproduction_ssh='0'\nproduction_remote_project_root='0'\nenable_production_sshmysql='0'\n\n#\n# Staging ssh settings\n#\nenable_staging_ssh='0'\nstaging_ssh='0'\nstaging_remote_project_root='0'\nenable_staging_sshmysql='0'\n\n#\n# S3 settings\n#\nenable_S3='0'\npublic_key='0'\nsecret_key='0'\n\n#\n# RSync settings\n#\nenable_rsync='0'\nrsync_dirs=('/change/this/to/first/sync/directory/' '/change/this/to/second/sync/directory/or/remove/entirely/')" > .obi/config
-	echo ".git\n.gitignore\n.htaccess\nsftp-config.json\n.DS_Store\n_resources\n.obi" > .obiignore
+
+	if [[ -d $PROJ_FOLDER_NAME-site ]]
+	then
+		mv $PROJ_FOLDER_NAME-site/* .
+	fi
+
+	if [[ -d _resources ]]
+	then
+		break
+	else
+		mkdir -p _resources/{assets/{ai,architecture,content,emails,estimates,fonts,gif,jpg,pdf,png,psd},dumps/{local,production,staging,temp}} .obi
+	fi
+	if [[ -d architecture ]];
+	then
+		rsync -aru architecture/estimates/ _resources/assets/estimates/ ; mv architecture/estimates ~/.Trash  ; rsync -aru architecture/ _resources/assets/architecture/ ; mv architecture ~/.Trash  ;
+	fi
+
+	if [[ -d assets ]];
+	then
+		mv assets/images/* assets/ ; rsync -aru assets/ _resources/assets/ ; mv assets ~/.Trash
+	fi
+
+	if [[ -d emails ]];
+	then
+		rsync -aru emails/ _resources/assets/emails/ ; mv emails ~/.Trash
+	fi
+
+	if [[ -d dumps ]];
+	then
+		rsync -aru dumps/ _resources/dumps/ ; mv dumps ~/.Trash
+	fi
+
+	if [[ -f .obi/config ]]
+	then
+		break
+	else
+		echo "#\n# Production ssh settings\n#\nenable_production_ssh='0'\nproduction_ssh='0'\nproduction_remote_project_root='0'\nenable_production_sshmysql='0'\n\n#\n# Staging ssh settings\n#\nenable_staging_ssh='0'\nstaging_ssh='0'\nstaging_remote_project_root='0'\nenable_staging_sshmysql='0'\n\n#\n# S3 settings\n#\nenable_S3='0'\npublic_key='0'\nsecret_key='0'\n\n#\n# RSync settings\n#\nenable_rsync='0'\nrsync_dirs=('/change/this/to/first/sync/directory/' '/change/this/to/second/sync/directory/or/remove/entirely/')" > .obi/config
+	fi
+
+	if [[ -f .obiignore ]]
+	then
+		break
+	else
+		echo ".git\n.gitignore\n.htaccess\nsftp-config.json\n.DS_Store\n_resources\n.obi" > .obiignore
+	fi
 }
 
 check_returns()
