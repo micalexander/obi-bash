@@ -40,6 +40,8 @@ obi_update()
 				# Cleanup
 				mv config "$HOME/.Trash/config"
 				mv config~ config
+				# If old folder stucture being use update the folder structure
+				recreate_folders_structure
 			done
 			# Unset IFS (good practice)
 			unset IFS
@@ -549,18 +551,8 @@ create_directories()
 	echo "#\n# Production ssh settings\n#\nenable_production_ssh='0'\nproduction_ssh='0'\nproduction_remote_project_root='0'\nenable_production_sshmysql='0'\n\n#\n# Staging ssh settings\n#\nenable_staging_ssh='0'\nstaging_ssh='0'\nstaging_remote_project_root='0'\nenable_staging_sshmysql='0'\n\n#\n# S3 settings\n#\nenable_S3='0'\npublic_key='0'\nsecret_key='0'\n\n#\n# RSync settings\n#\nenable_rsync='0'\nrsync_dirs=('/change/this/to/first/sync/directory/' '/change/this/to/second/sync/directory/or/remove/entirely/')" > .obi/config
 	echo ".git\n.gitignore\n.htaccess\nsftp-config.json\n.DS_Store\n_resources\n.obi" > .obiignore
 }
-
-obi_init()
+recreate_folders_structure()
 {
-	empty_string_check "$PROJ_FOLDER_NAME"
-	strcheckret=$?
-	directory_exist_check "$PROJ"
-	dircheckret=$?
-	check_returns
-	clear
-	cd "$PROJ_PATH"
-	cd $PROJ_FOLDER_NAME
-
 	if [[ -d $PROJ_FOLDER_NAME-site ]]
 	then
 		mv $PROJ_FOLDER_NAME-site/* . ; cp $PROJ_FOLDER_NAME-site ~/.Trash ; rm -rf $PROJ_FOLDER_NAME-site ;
@@ -605,6 +597,20 @@ obi_init()
 	else
 		echo ".git\n.gitignore\n.htaccess\nsftp-config.json\n.DS_Store\n_resources\n.obi" > .obiignore
 	fi
+}
+
+obi_init()
+{
+	empty_string_check "$PROJ_FOLDER_NAME"
+	strcheckret=$?
+	directory_exist_check "$PROJ"
+	dircheckret=$?
+	check_returns
+	clear
+	cd "$PROJ_PATH"
+	cd $PROJ_FOLDER_NAME
+
+	recreate_folders_structure
 }
 
 check_returns()
