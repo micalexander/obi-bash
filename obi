@@ -574,22 +574,22 @@ obi_init()
 	fi
 	if [[ -d architecture ]];
 	then
-		rsync -aru architecture/estimates/ _resources/assets/estimates/ ; mv architecture/estimates ~/.Trash  ; rsync -aru architecture/ _resources/assets/architecture/ ; mv architecture ~/.Trash  ;
+		rsync -aru architecture/estimates/ _resources/assets/estimates/ ; cp architecture/estimates ~/.Trash  ; rm -rf architecture/estimates ; rsync -aru architecture/ _resources/assets/architecture/ ; cp architecture ~/.Trash ; rm -rf architecture ;
 	fi
 
 	if [[ -d assets ]];
 	then
-		mv assets/images/* assets/ ; rsync -aru assets/ _resources/assets/ ; mv assets ~/.Trash
+		mv assets/images/* assets/ ; rsync -aru assets/ _resources/assets/ ; cp assets ~/.Trash ; rm -rf assets ;
 	fi
 
 	if [[ -d emails ]];
 	then
-		rsync -aru emails/ _resources/assets/emails/ ; mv emails ~/.Trash
+		rsync -aru emails/ _resources/assets/emails/ ; cp emails ~/.Trash ; rm -rf emails ;
 	fi
 
 	if [[ -d dumps ]];
 	then
-		rsync -aru dumps/ _resources/dumps/ ; mv dumps ~/.Trash
+		rsync -aru dumps/ _resources/dumps/ ; cp dumps ~/.Trash ; rm -rf dumps ;
 	fi
 
 	if [[ -f .obi/config ]]
