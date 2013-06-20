@@ -553,9 +553,11 @@ create_directories()
 }
 recreate_folders_structure()
 {
+	mkdir  $THE_DATE-$PROJ_FOLDER_NAME
+
 	if [[ -d $PROJ_FOLDER_NAME-site ]]
 	then
-		mv $PROJ_FOLDER_NAME-site/* . ; cp -r $PROJ_FOLDER_NAME-site ~/.Trash ; rm -rf $PROJ_FOLDER_NAME-site ;
+		mv $PROJ_FOLDER_NAME-site/* . ; cp -r $PROJ_FOLDER_NAME-site $THE_DATE-$PROJ_FOLDER_NAME ; rm -rf $PROJ_FOLDER_NAME-site ;
 	fi
 
 	if [[ -d _resources ]]
@@ -566,22 +568,22 @@ recreate_folders_structure()
 	fi
 	if [[ -d architecture ]];
 	then
-		rsync -aru architecture/estimates/ _resources/assets/estimates/ ; cp -r architecture/estimates ~/.Trash  ; rm -rf architecture/estimates ; rsync -aru architecture/ _resources/assets/architecture/ ; cp -r architecture ~/.Trash ; rm -rf architecture ;
+		rsync -aru architecture/estimates/ _resources/assets/estimates/ ; cp -r architecture/estimates $THE_DATE-$PROJ_FOLDER_NAME  ; rm -rf architecture/estimates ; rsync -aru architecture/ _resources/assets/architecture/ ; cp -r architecture $THE_DATE-$PROJ_FOLDER_NAME ; rm -rf architecture ;
 	fi
 
 	if [[ -d assets ]];
 	then
-		mv assets/images/* assets/ ; cp -r assets/images ~/.Trash ; rm -rf assets/images ; rsync -aru assets/ _resources/assets/ ; cp -r assets ~/.Trash ; rm -rf assets ;
+		mv assets/images/* assets/ ; cp -r assets/images $THE_DATE-$PROJ_FOLDER_NAME ; rm -rf assets/images ; rsync -aru assets/ _resources/assets/ ; cp -r assets $THE_DATE-$PROJ_FOLDER_NAME ; rm -rf assets ;
 	fi
 
 	if [[ -d emails ]];
 	then
-		rsync -aru emails/ _resources/assets/emails/ ; cp -r emails ~/.Trash ; rm -rf emails ;
+		rsync -aru emails/ _resources/assets/emails/ ; cp -r emails $THE_DATE-$PROJ_FOLDER_NAME ; rm -rf emails ;
 	fi
 
 	if [[ -d dumps ]];
 	then
-		rsync -aru dumps/ _resources/dumps/ ; cp -r dumps ~/.Trash ; rm -rf dumps ;
+		rsync -aru dumps/ _resources/dumps/ ; cp -r dumps $THE_DATE-$PROJ_FOLDER_NAME ; rm -rf dumps ;
 	fi
 
 	if [[ -f .obi/config ]]
@@ -597,6 +599,8 @@ recreate_folders_structure()
 	else
 		echo ".git\n.gitignore\n.htaccess\nsftp-config.json\n.DS_Store\n_resources\n.obi" > .obiignore
 	fi
+
+	tar -s $THE_DATE-$PROJ_FOLDER_NAME/ -czvPf $THE_DATE-$PROJ_FOLDER_NAME.tar.gz; mv $THE_DATE-$PROJ_FOLDER_NAME.tar.gz ~/.Trash ;
 }
 
 obi_init()
