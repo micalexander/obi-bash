@@ -771,7 +771,6 @@ toggle_environment_settings()
 
 	environment=$1
 	environmentvalue=$2
-	linenumber=$3
 
 	setting="$environment""settings"
 
@@ -786,7 +785,7 @@ toggle_environment_settings()
 		;;
 	esac
 
-	sed -i '' "${linenumber}s,$setting=.*,$setting='$switchsettings'," $HOME/.obiconfig
+	sed -i '' "s,$setting=.*,$setting='$switchsettings'," $HOME/.obiconfig
 	MSG="\033[32m Your $environment server settings has been set to \n\t $switchsettings"
 
 }
@@ -1004,20 +1003,20 @@ MSG="Your project working directory is currently set to:\n     \033[32m$localpro
 
 # Menu Choices
 achoice() {	set_project_dir ; }
-bchoice() { toggle_environment_settings local "$localsettings" 2 ; }
-cchoice() { set_environment local host 3 ; }
-dchoice() { set_environment local user 4 ;}
-echoice() { set_environment local password 5 ; }
-fchoice() { toggle_environment_settings staging "$stagingsettings" 7 ; }
-gchoice() { set_environment staging domain 8 ; }
-hchoice() { set_environment staging host 9 ; }
-ichoice() { set_environment staging user 10 ; }
-jchoice() { set_environment staging password 11 ; }
-kchoice() { toggle_environment_settings production "$productionsettings" 13 ; }
-lchoice() { set_environment production domain 14 ; }
-mchoice() { set_environment production host 15 ; }
-nchoice() { set_environment production user 16 ; }
-ochoice() { set_environment production password 17 ; }
+bchoice() { toggle_environment_settings local "$localsettings" ; }
+cchoice() { set_environment local host ; }
+dchoice() { set_environment local user ; }
+echoice() { set_environment local password ; }
+fchoice() { toggle_environment_settings staging "$stagingsettings" ; }
+gchoice() { set_environment staging domain ; }
+hchoice() { set_environment staging host ; }
+ichoice() { set_environment staging user ; }
+jchoice() { set_environment staging password ; }
+kchoice() { toggle_environment_settings production "$productionsettings" ; }
+lchoice() { set_environment production domain ; }
+mchoice() { set_environment production host ; }
+nchoice() { set_environment production user ; }
+ochoice() { set_environment production password ; }
 
 invalidchoice () { MSG="\033[33m Invalid Selection ... Please Try Again" ; }
 
