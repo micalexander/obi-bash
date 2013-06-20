@@ -557,6 +557,9 @@ recreate_folders_structure()
 	if [[ -d $PROJ_FOLDER_NAME-site ]]
 	then
 		mv $PROJ_FOLDER_NAME-site/* . ; cp -r $PROJ_FOLDER_NAME-site $PROJ_FOLDER_NAME ; rm -rf $PROJ_FOLDER_NAME-site ;
+	elif  [[ -d site ]]
+	then
+		mv site/* . ; cp -r site $PROJ_FOLDER_NAME ; rm -rf site ;
 	fi
 
 	if [[ -d _resources ]]
@@ -575,9 +578,19 @@ recreate_folders_structure()
 		mv assets/images/* assets/ ; cp -r assets/images $PROJ_FOLDER_NAME ; rm -rf assets/images ; rsync -aru assets/ _resources/assets/ ; cp -r assets $PROJ_FOLDER_NAME ; rm -rf assets ;
 	fi
 
+	if [[ -d mock-ups ]];
+	then
+		mkdir -p _resources/assets/mock-ups ;rsync -aru mock-ups/ _resources/assets/mock-ups/ ; cp -r mock-ups $PROJ_FOLDER_NAME ; rm -rf mock-ups ;
+	fi
+
 	if [[ -d emails ]];
 	then
 		rsync -aru emails/ _resources/assets/emails/ ; cp -r emails $PROJ_FOLDER_NAME ; rm -rf emails ;
+	fi
+
+	if [[ -d fonts ]];
+	then
+		rsync -aru fonts/ _resources/assets/fonts/ ; cp -r fonts $PROJ_FOLDER_NAME ; rm -rf fonts ;
 	fi
 
 	if [[ -d dumps ]];
