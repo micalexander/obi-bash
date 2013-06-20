@@ -556,10 +556,10 @@ recreate_folders_structure()
 
 	if [[ -d $PROJ_FOLDER_NAME-site ]]
 	then
-		mv $PROJ_FOLDER_NAME-site/* . ; cp -r $PROJ_FOLDER_NAME-site $PROJ_FOLDER_NAME ; rm -rf $PROJ_FOLDER_NAME-site ;
+		rsync -aru$PROJ_FOLDER_NAME-site/ . ; cp -r $PROJ_FOLDER_NAME-site $PROJ_FOLDER_NAME ; rm -rf $PROJ_FOLDER_NAME-site ;
 	elif  [[ -d site ]]
 	then
-		mv site/* . ; cp -r site $PROJ_FOLDER_NAME ; rm -rf site ;
+		rsync -aru site/ . ; cp -r site $PROJ_FOLDER_NAME ; rm -rf site ;
 	fi
 
 	if [[ -d _resources ]]
@@ -575,12 +575,12 @@ recreate_folders_structure()
 
 	if [[ -d assets ]];
 	then
-		mv assets/images/* assets/ ; cp -r assets/images $PROJ_FOLDER_NAME ; rm -rf assets/images ; rsync -aru assets/ _resources/assets/ ; cp -r assets $PROJ_FOLDER_NAME ; rm -rf assets ;
+		rsync -aru assets/images/ assets/ ; cp -r assets/images $PROJ_FOLDER_NAME ; rm -rf assets/images ; rsync -aru assets/ _resources/assets/ ; cp -r assets $PROJ_FOLDER_NAME ; rm -rf assets ;
 	fi
 
 	if [[ -d mock-ups ]];
 	then
-		mkdir -p _resources/assets/mock-ups ;rsync -aru mock-ups/ _resources/assets/mock-ups/ ; cp -r mock-ups $PROJ_FOLDER_NAME ; rm -rf mock-ups ;
+		mkdir -p _resources/assets/mock-ups ; rsync -aru mock-ups/ _resources/assets/mock-ups/ ; cp -r mock-ups $PROJ_FOLDER_NAME ; rm -rf mock-ups ;
 	fi
 
 	if [[ -d emails ]];
@@ -610,6 +610,11 @@ recreate_folders_structure()
 		break
 	else
 		echo ".git\n.gitignore\n.htaccess\nsftp-config.json\n.DS_Store\n_resources\n.obi" > .obiignore
+	fi
+
+	if [[ -f .gitignore ]];
+	then
+		echo "_resources/\n.obi\n.obiignore" >> .gitignore
 	fi
 
 	if [[ -d $PROJ_FOLDER_NAME ]];
