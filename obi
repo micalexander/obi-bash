@@ -563,7 +563,7 @@ obi_init()
 
 	if [[ -d $PROJ_FOLDER_NAME-site ]]
 	then
-		mv $PROJ_FOLDER_NAME-site/* .
+		mv $PROJ_FOLDER_NAME-site/* . ; cp $PROJ_FOLDER_NAME-site ~/.Trash ; rm -rf $PROJ_FOLDER_NAME-site ;
 	fi
 
 	if [[ -d _resources ]]
@@ -579,7 +579,7 @@ obi_init()
 
 	if [[ -d assets ]];
 	then
-		mv assets/images/* assets/ ; rsync -aru assets/ _resources/assets/ ; cp assets ~/.Trash ; rm -rf assets ;
+		mv assets/images/* assets/ ; cp assets/images ~/.Trash ; rm -rf assets/images ; rsync -aru assets/ _resources/assets/ ; cp assets ~/.Trash ; rm -rf assets ;
 	fi
 
 	if [[ -d emails ]];
