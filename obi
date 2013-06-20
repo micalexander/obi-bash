@@ -554,8 +554,7 @@ create_directories()
 
 recreate_folders_structure()
 {
-	mysql_timestamp
-	mkdir  $PROJ_FOLDER_NAME
+	mkdir $PROJ_FOLDER_NAME
 
 	if [[ -d $PROJ_FOLDER_NAME-site ]]
 	then
@@ -602,12 +601,15 @@ recreate_folders_structure()
 		echo ".git\n.gitignore\n.htaccess\nsftp-config.json\n.DS_Store\n_resources\n.obi" > .obiignore
 	fi
 
-
-	tar -zcf $PROJ_FOLDER_NAME.tar.gz $PROJ_FOLDER_NAME
-	mv $PROJ_FOLDER_NAME.tar.gz $THE_DATE-$PROJ_FOLDER_NAME.tar.gz
-	rm -rf $PROJ_FOLDER_NAME
-	cp $THE_DATE-$PROJ_FOLDER_NAME.tar.gz ~/.Trash
-	rm $THE_DATE-$PROJ_FOLDER_NAME.tar.gz
+	if [[ -d $PROJ_FOLDER_NAME ]];
+	then
+		mysql_timestamp
+		tar -zcf $PROJ_FOLDER_NAME.tar.gz $PROJ_FOLDER_NAME
+		mv $PROJ_FOLDER_NAME.tar.gz $THE_DATE-$PROJ_FOLDER_NAME.tar.gz
+		rm -rf $PROJ_FOLDER_NAME
+		cp $THE_DATE-$PROJ_FOLDER_NAME.tar.gz ~/.Trash
+		rm $THE_DATE-$PROJ_FOLDER_NAME.tar.gz
+	fi
 }
 
 obi_init()
