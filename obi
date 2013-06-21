@@ -339,9 +339,7 @@ mysql_import()
 			fi
 		done
 		ssh -C $myssh mysql -u"$user" -p"$pass" "$name" < "$from"
-
-	elif [ "$mysqlssh" == "0" ] || [ $database == "local" ]
-	then
+	else
 		$mysql -h"$host" -u"$user" -p"$pass" "$name" < "$from"
 	fi
 }
