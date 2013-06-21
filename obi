@@ -17,32 +17,52 @@ obi_update()
 {
 	if [[ -z "$version" ]] || [[ "$version" < $this_version ]];
 	then
-		echo "version='2.0'" | cat - $HOME/.obiconfig > $HOME/.obiconfig.tmp && mv $HOME/.obiconfig.tmp $HOME/.obiconfig
+		echo "version='$this_version'" | cat - $HOME/.obiconfig > $HOME/.obiconfig.tmp && mv $HOME/.obiconfig.tmp $HOME/.obiconfig
+
+		IFS=$'\n'
 		# Create an array of all of the project folder paths that have a .obi folder in them
-		dirs=( "$(find "$localprojectdirectory"* -name ".obi" )" )
+		dir_arrays=( $(find "$localprojectdirectory""update"* -name ".obi" ) )
+		# Unset IFS (good practice)
+		unset IFS
 
 		# For each path that contains a .obi folder
-		for dir in "${dirs[@]}";
+		for dir_array in "${dir_arrays[@]}";
 		do
-			# Use IFS to break up folder paths by line breaks
-			IFS=$'\n'
-			lines="$dir"
+			# cd into each directory
+			cd "$dir_array"
+			. config
+			# Must give new variables a default value
+			if [[ -z "$enable_rsync" ]];
+			then
+				enable_rsync=0
+			fi
+			if [[ -z "$rsync_dirs" ]];
+			then
+				rsync_dirs="/change/this/to/first/sync/directory/ /change/this/to/second/sync/directory/or/remove/entirely/"
+			fi
+			# Store each of the rsync_dirs array elements in one variable and then delimit them by single quotes
+			all_r_dirs=${rsync_dirs[@]:0}
+			str_r_dir="${all_r_dirs// /' '}"
+			# Create a temp config file with the new structure and copy old variable values over
+			echo "#\n# Production ssh settings\n#\nenable_production_ssh='$enable_production_ssh'\nproduction_ssh='$production_ssh'\nproduction_remote_project_root='$production_remote_project_root'\nenable_production_sshmysql='$enable_production_sshmysql'\n\n#\n# Staging ssh settings\n#\nenable_staging_ssh='$enable_staging_ssh'\nstaging_ssh='$staging_ssh'\nstaging_remote_project_root='$staging_remote_project_root'\nenable_staging_sshmysql='$enable_staging_sshmysql'\n\n#\n# S3 settings\n#\nenable_S3='$enable_S3'\npublic_key='$public_key'\nsecret_key='$secret_key'\n\n#\n# RSync settings\n#\nenable_rsync='$enable_rsync'\nrsync_dirs=('""$str_r_dir""')" > config~
 
-			for i in $lines; do
-				# cd into each directory
-				cd $i
-				. config
-				# Store each of the rsync_dirs array elements in one variable and then delimit them by single quotes
-				all_r_dirs=${rsync_dirs[@]:0}
-				str_r_dir="${all_r_dirs// /' '}"
-				# Create a temp config file with the new structure and copy old variable values over
-				echo "#\n# Production ssh settings\n#\nenable_production_ssh='$enable_production_ssh'\nproduction_ssh='$production_ssh'\nproduction_remote_project_root='$production_remote_project_root'\nenable_production_sshmysql='$enable_production_sshmysql'\n\n#\n# Staging ssh settings\n#\nenable_staging_ssh='$enable_staging_ssh'\nstaging_ssh='$staging_ssh'\nstaging_remote_project_root='$staging_remote_project_root'\nenable_staging_sshmysql='$enable_staging_sshmysql'\n\n#\n# S3 settings\n#\nenable_S3='$enable_S3'\npublic_key='$public_key'\nsecret_key='$secret_key'\n\n#\n# RSync settings\n#\nenable_rsync='$enable_rsync'\nrsync_dirs=('""$str_r_dir""')" > config~
-				# Cleanup
-				mv config "$HOME/.Trash/config"
-				mv config~ config
-			done
-			# Unset IFS (good practice)
-			unset IFS
+			# Cleanup
+			mv config "$HOME/.Trash/config"
+			mv config~ config
+
+			unset enable_production_ssh
+			unset production_ssh
+			unset production_remote_project_root
+			unset enable_production_sshmysql
+			unset enable_staging_ssh
+			unset staging_ssh
+			unset staging_remote_project_root
+			unset enable_staging_sshmysql
+			unset enable_S3
+			unset public_key
+			unset secret_key
+			unset enable_rsync
+			unset rsync_dirs
 		done
 	else
 		clear ; echo ; echo "obi: Already up to date" ; echo ;
