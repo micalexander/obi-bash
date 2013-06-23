@@ -63,6 +63,8 @@ obi_update()
 			unset secret_key
 			unset enable_rsync
 			unset rsync_dirs
+
+			recreate_folders_structure
 		done
 	else
 		clear ; echo ; echo "obi: Already up to date" ; echo ;
@@ -632,6 +634,8 @@ recreate_folders_structure()
 
 	if [[ -f .gitignore ]];
 	then
+		break
+	else
 		echo "_resources/\n.obi\n.obiignore" >> .gitignore
 	fi
 
