@@ -10,6 +10,7 @@ obi_version()
 	if [[ -z "$version" ]] || [[ "$version" < $this_version ]];
 	then
 		clear ; echo ; echo "obi: You must first run \033[33mobi update\033[0m in order to continue" ; echo ;
+		exit
 	fi
 }
 
@@ -95,6 +96,12 @@ create_obiconfig()
 	if [ -f "$config" ]
 	then
 		. $HOME/.obiconfig
+		case $1 in
+			update )
+				;;
+			* ) obi_version
+				;;
+		esac
 	else
 		echo "version='$this_version'\nlocalprojectdirectory='0'\nlocalsettings='enabled'\nlocalhost='localhost'\nlocaluser='root'\nlocalpassword='root'\n\nstagingsettings='disabled'\nstagingdomain='0'\nstaginghost='0'\nstaginguser='0'\nstagingpassword='0'\n\nproductionsettings='disabled'\nproductiondomain='0'\nproductionhost='0'\nproductionuser='0'\nproductionpassword='0'" > $HOME/.obiconfig
 	fi
@@ -136,7 +143,6 @@ does_config_exist()
 
 
 create_obiconfig
-obi_version
 
 # -----------------------------------------------#
 ## Variables
@@ -661,6 +667,7 @@ recreate_folders_structure()
 
 obi_init()
 {
+	does_config_exist
 	empty_string_check "$PROJ_FOLDER_NAME"
 	strcheckret=$?
 	directory_exist_check "$PROJ"
@@ -1385,11 +1392,13 @@ case $ACTION in
 		$mysql -u"$user" -h"$host" -p"$pass"
 		;;
 	update )
+		does_config_exist
 		clear
-			obi_update
+		obi_update
 		exit
 	;;
 	init )
+		does_config_exist
 		obi_init
 
 		# List directory contents and their location
@@ -1408,6 +1417,7 @@ case $ACTION in
 
 		;;
 	help )
+		does_config_exist
 		clear
 		help
 
