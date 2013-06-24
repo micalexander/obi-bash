@@ -342,10 +342,10 @@ mysql_dump()
 				pass=${pass//"$mysql_special_characters"/\\"$mysql_special_characters"}
 			fi
 		done
-		ssh -C $myssh mysqldump --net_buffer_length=75000 --verbose -u"$user" -p"$pass" "$name" > "_resources/dumps/$database/$THE_DATE-$database.sql"
+		ssh -C $myssh mysqldump --opt --net_buffer_length=75000 --verbose -u"$user" -p"$pass" "$name" > "_resources/dumps/$database/$THE_DATE-$database.sql"
 
 	else
-		$mysqldump --net_buffer_length=75000 --verbose -h"$host" -u"$user" -p"$pass" "$name" > "_resources/dumps/$database/$THE_DATE-$database.sql"
+		$mysqldump --opt --net_buffer_length=75000 --verbose -h"$host" -u"$user" -p"$pass" "$name" > "_resources/dumps/$database/$THE_DATE-$database.sql"
 	fi
 }
 
