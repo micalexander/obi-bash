@@ -20,8 +20,20 @@ obi_update()
 		echo "version='$this_version'" | cat - $HOME/.obiconfig > $HOME/.obiconfig.tmp && mv $HOME/.obiconfig.tmp $HOME/.obiconfig
 
 		IFS=$'\n'
+		proj_dir_arrays=( $(find "$localprojectdirectory" -depth 1 -type d ) )
+		# Unset IFS (good practice)
+		unset IFS
+		for proj_dir_array in "${proj_dir_arrays[@]}";
+		do
+			PROJ_FOLDER_NAME=`echo "$proj_dir_array" | rev | cut -d/ -f1 | rev`
+			cd "$proj_dir_array"
+			recreate_folders_structure
+			# unset PROJ_FOLDER_NAME
+		done
+
+		IFS=$'\n'
 		# Create an array of all of the project folder paths that have a .obi folder in them
-		dir_arrays=( $(find "$localprojectdirectory""update"* -name ".obi" ) )
+		dir_arrays=( $(find "$localprojectdirectory"* -name ".obi" ) )
 		# Unset IFS (good practice)
 		unset IFS
 
@@ -64,7 +76,6 @@ obi_update()
 			unset enable_rsync
 			unset rsync_dirs
 
-			recreate_folders_structure
 		done
 	else
 		clear ; echo ; echo "obi: Already up to date" ; echo ;
@@ -572,81 +583,79 @@ create_directories()
 
 recreate_folders_structure()
 {
-	mkdir $PROJ_FOLDER_NAME
+	mkdir "$PROJ_FOLDER_NAME"
 
-	if [[ -d $PROJ_FOLDER_NAME-site ]]
+	if [[ -d "$PROJ_FOLDER_NAME"-site ]]
 	then
-		rsync -aru$PROJ_FOLDER_NAME-site/ . ; cp -r $PROJ_FOLDER_NAME-site $PROJ_FOLDER_NAME ; rm -rf $PROJ_FOLDER_NAME-site ;
+		rsync -aru "$PROJ_FOLDER_NAME"-site/ . ; cp -r "$PROJ_FOLDER_NAME"-site "$PROJ_FOLDER_NAME" ; rm -rf "$PROJ_FOLDER_NAME"-site ;
 	elif  [[ -d site ]]
 	then
-		rsync -aru site/ . ; cp -r site $PROJ_FOLDER_NAME ; rm -rf site ;
+		rsync -aru site/ . ; cp -r site "$PROJ_FOLDER_NAME" ; rm -rf site ;
 	fi
 
-	if [[ -d _resources ]]
+	if [[ ! -d _resources ]]
 	then
-		break
-	else
-		mkdir -p _resources/{assets/{ai,architecture,content,emails,estimates,fonts,gif,jpg,pdf,png,psd},dumps/{local,production,staging,temp}} .obi
+		mkdir -p _resources/{assets/{ai,architecture,content,emails,estimates,fonts,gif,jpg,pdf,png,psd},dumps/{local,production,staging,temp}}
 	fi
+
+	if [[ ! -d  .obi ]];
+	then
+		mkdir .obi
+	fi
+
 	if [[ -d architecture ]];
 	then
-		rsync -aru architecture/estimates/ _resources/assets/estimates/ ; cp -r architecture/estimates $PROJ_FOLDER_NAME  ; rm -rf architecture/estimates ; rsync -aru architecture/ _resources/assets/architecture/ ; cp -r architecture $PROJ_FOLDER_NAME ; rm -rf architecture ;
+		rsync -aru architecture/estimates/ _resources/assets/estimates/ ; cp -r architecture/estimates "$PROJ_FOLDER_NAME"  ; rm -rf architecture/estimates ; rsync -aru architecture/ _resources/assets/architecture/ ; cp -r architecture "$PROJ_FOLDER_NAME" ; rm -rf architecture ;
 	fi
 
 	if [[ -d assets ]];
 	then
-		rsync -aru assets/images/ assets/ ; cp -r assets/images $PROJ_FOLDER_NAME ; rm -rf assets/images ; rsync -aru assets/ _resources/assets/ ; cp -r assets $PROJ_FOLDER_NAME ; rm -rf assets ;
+		rsync -aru assets/images/ assets/ ; cp -r assets/images "$PROJ_FOLDER_NAME" ; rm -rf assets/images ; rsync -aru assets/ _resources/assets/ ; cp -r assets "$PROJ_FOLDER_NAME" ; rm -rf assets ;
 	fi
 
 	if [[ -d mock-ups ]];
 	then
-		mkdir -p _resources/assets/mock-ups ; rsync -aru mock-ups/ _resources/assets/mock-ups/ ; cp -r mock-ups $PROJ_FOLDER_NAME ; rm -rf mock-ups ;
+		mkdir -p _resources/assets/mock-ups ; rsync -aru mock-ups/ _resources/assets/mock-ups/ ; cp -r mock-ups "$PROJ_FOLDER_NAME" ; rm -rf mock-ups ;
 	fi
 
 	if [[ -d emails ]];
 	then
-		rsync -aru emails/ _resources/assets/emails/ ; cp -r emails $PROJ_FOLDER_NAME ; rm -rf emails ;
+		rsync -aru emails/ _resources/assets/emails/ ; cp -r emails "$PROJ_FOLDER_NAME" ; rm -rf emails ;
 	fi
 
 	if [[ -d fonts ]];
 	then
-		rsync -aru fonts/ _resources/assets/fonts/ ; cp -r fonts $PROJ_FOLDER_NAME ; rm -rf fonts ;
+		rsync -aru fonts/ _resources/assets/fonts/ ; cp -r fonts "$PROJ_FOLDER_NAME" ; rm -rf fonts ;
 	fi
 
 	if [[ -d dumps ]];
 	then
-		rsync -aru dumps/ _resources/dumps/ ; cp -r dumps $PROJ_FOLDER_NAME ; rm -rf dumps ;
+		rsync -aru dumps/ _resources/dumps/ ; cp -r dumps "$PROJ_FOLDER_NAME" ; rm -rf dumps ;
 	fi
 
-	if [[ -f .obi/config ]]
+	if [[ ! -f .obi/config ]]
 	then
-		break
-	else
 		echo "#\n# Production ssh settings\n#\nenable_production_ssh='0'\nproduction_ssh='0'\nproduction_remote_project_root='0'\nenable_production_sshmysql='0'\n\n#\n# Staging ssh settings\n#\nenable_staging_ssh='0'\nstaging_ssh='0'\nstaging_remote_project_root='0'\nenable_staging_sshmysql='0'\n\n#\n# S3 settings\n#\nenable_S3='0'\npublic_key='0'\nsecret_key='0'\n\n#\n# RSync settings\n#\nenable_rsync='0'\nrsync_dirs=('/change/this/to/first/sync/directory/' '/change/this/to/second/sync/directory/or/remove/entirely/')" > .obi/config
 	fi
 
-	if [[ -f .obiignore ]]
+	if [[ ! -f .obiignore ]]
 	then
-		break
-	else
 		echo ".git\n.gitignore\n.htaccess\nsftp-config.json\n.DS_Store\n_resources\n.obi" > .obiignore
 	fi
 
-	if [[ -f .gitignore ]];
+	if [[ ! -f .gitignore ]];
 	then
-		break
-	else
 		echo "_resources/\n.obi\n.obiignore" >> .gitignore
 	fi
 
-	if [[ -d $PROJ_FOLDER_NAME ]];
+	if [[ -d "$PROJ_FOLDER_NAME" ]];
 	then
 		mysql_timestamp
-		tar -zcf $PROJ_FOLDER_NAME.tar.gz $PROJ_FOLDER_NAME
-		mv $PROJ_FOLDER_NAME.tar.gz $THE_DATE-$PROJ_FOLDER_NAME.tar.gz
-		rm -rf $PROJ_FOLDER_NAME
-		cp $THE_DATE-$PROJ_FOLDER_NAME.tar.gz ~/.Trash
-		rm $THE_DATE-$PROJ_FOLDER_NAME.tar.gz
+		tar -zcf "$PROJ_FOLDER_NAME".tar.gz "$PROJ_FOLDER_NAME"
+		mv "$PROJ_FOLDER_NAME".tar.gz $THE_DATE-"$PROJ_FOLDER_NAME".tar.gz
+		rm -rf "$PROJ_FOLDER_NAME"
+		cp $THE_DATE-"$PROJ_FOLDER_NAME".tar.gz ~/.Trash
+		rm $THE_DATE-"$PROJ_FOLDER_NAME".tar.gz
 	fi
 }
 
