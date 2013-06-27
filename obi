@@ -399,12 +399,11 @@ mysql_sed_import()
 	# Get the last modified file
 	last_modified_output=`find . -type f -exec stat -f "%m %N" {} \; | sort -n | tail -1`
 	last_modified_file="${last_modified_output/[0-9]* \.\//}"
-
 	# Location fo the last modified file
-	temp_location="$PROJ/_resources/dumps/$dump/$last_modified_file"
+	temp_location="$PROJ/_resources/dumps/temp/$last_modified_file"
 	mysql_dump $import
 	find_and_replace_wp_url $find $replace $dump $last_modified_file
-	mysql_import $dump "$temp_location"
+	mysql_import $import "$temp_location"
 }
 
 mysql_sync()
@@ -416,20 +415,17 @@ mysql_sync()
 
 	mysql_timestamp
 
-	cd "$PROJ""/_resources/dumps/temp/"
+	cd "$PROJ""/_resources/dumps/$dump/"
 
 	# Get the last modified file
 	last_modified_output=`find . -type f -exec stat -f "%m %N" {} \; | sort -n | tail -1`
 	last_modified_file="${last_modified_output/[0-9]* \.\//}"
 
-
 	mysql_dump $import
 	mysql_dump $dump
 	find_and_replace_wp_url $find $replace $dump "$last_modified_file"
 
-	recently_modified_output=`find . -type f -exec stat -f "%m %N" {} \; | sort -n | tail -1`
-	recently_modified_file="${last_modified_output/[0-9]* \.\//}"
-	temp_location="_resources/dumps/temp/$recently_modified_file"
+	temp_location="_resources/dumps/temp/$last_modified_file"
 	mysql_import $import "$temp_location"
 }
 
@@ -651,7 +647,7 @@ recreate_folders_structure()
 		echo ".git\n.gitignore\n.htaccess\nsftp-config.json\n.DS_Store\n_resources\n.obi" > .obiignore
 	fi
 
-	if [[ ! -f .gitignore ]];
+	if [[ -f .gitignore ]];
 	then
 		echo "_resources/\n.obi\n.obiignore" >> .gitignore
 	fi
