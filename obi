@@ -391,19 +391,42 @@ mysql_sed_import()
 	import=$2
 	find=$3
 	replace=$4
+	explicit_path=$5
+	empty_string_check "$explicit_path"
+	strcheckret=$?
 
 	mysql_timestamp
 
-	cd "$PROJ/_resources/dumps/$dump/"
+	case $strcheckret in
+		6 )
+			cd "$PROJ/_resources/dumps/$dump/"
+			# Get the last modified file
+			last_modified_output=`find . -type f -exec stat -f "%m %N" {} \; | sort -n | tail -1`
+			last_modified_file="${last_modified_output/[0-9]* \.\//}"
+			# Location fo the last modified file
+			temp_location="$PROJ/_resources/dumps/temp/$last_modified_file"
+			mysql_dump $import
+			find_and_replace_wp_url $find $replace $dump $last_modified_file
+			mysql_import $import "$temp_location"
+			;;
+		0 )
+			file_exist_check "$explicit_path";
+			fileexistreturn=$?
+			case "$fileexistreturn" in
+				10 )
+					clear ; echo ; echo "obi: The file name you entered does not exist" ; echo ;
+					;;
+				9 )
+					find_and_replace_wp_url $find $replace $dump "$explicit_path"
+					last_modified_file="${last_modified_output/[0-9]* \.\//}"
+					# Location fo the last modified temp file
+					temp_location="$PROJ/_resources/dumps/temp/$last_modified_file"
+					mysql_import $import "$temp_location"
+					;;
+			esac
+			;;
+	esac
 
-	# Get the last modified file
-	last_modified_output=`find . -type f -exec stat -f "%m %N" {} \; | sort -n | tail -1`
-	last_modified_file="${last_modified_output/[0-9]* \.\//}"
-	# Location fo the last modified file
-	temp_location="$PROJ/_resources/dumps/temp/$last_modified_file"
-	mysql_dump $import
-	find_and_replace_wp_url $find $replace $dump $last_modified_file
-	mysql_import $import "$temp_location"
 }
 
 mysql_sync()
@@ -1278,28 +1301,34 @@ case $ACTION in
 				mysql_import production "$sql_path"
 			;;
 		    -lts )
+				sql_path=$4
 				clear
-				mysql_sed_import local staging local_site_url staging_site_url
+				mysql_sed_import local staging local_site_url staging_site_url "$sql_path"
 			;;
 		    -ltp )
+				sql_path=$4
 				clear
-				mysql_sed_import local production local_site_url production_site_url
+				mysql_sed_import local production local_site_url production_site_url "$sql_path"
 			;;
 		    -stl )
+				sql_path=$4
 				clear
-				mysql_sed_import staging local staging_site_url local_site_url
+				mysql_sed_import staging local staging_site_url local_site_url "$sql_path"
 			;;
 		    -stp )
+				sql_path=$4
 				clear
-				mysql_sed_import staging production staging_site_url production_site_url
+				mysql_sed_import staging production staging_site_url production_site_url "$sql_path"
 			;;
 		    -ptl )
+				sql_path=$4
 				clear
-				mysql_sed_import production local production_site_url local_site_url
+				mysql_sed_import production local production_site_url local_site_url "$sql_path"
 			;;
 		    -pts )
+				sql_path=$4
 				clear
-				mysql_sed_import production staging production_site_url staging_site_url
+				mysql_sed_import production staging production_site_url staging_site_url "$sql_path"
 			;;
 		    *)
 				clear
