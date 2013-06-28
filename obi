@@ -759,14 +759,30 @@ set_environment()
 	MSG="\033[36m Please enter your $environment database $environmentvalue"
 	clear
 	main_menu
-	read environmentanswer
+	if [[ "$environmentvalue" == "password" ]]; then
+		read -s environmentanswer
+		MSG="\033[36m Please re enter your $environment database $environmentvalue"
+		clear
+		main_menu
+		read -s re_environmentanswer
+
+
+	else
+		read environmentanswer
+	fi
 	empty_string_check "$environmentanswer"
 	if [ "$ret6" == "6" ]
 	then
 		MSG="\033[33m Your input was empty please try again"
+	elif [[ "$environmentvalue" == "password" ]] && [[ $environmentanswer != $re_environmentanswer ]]; then
+		MSG="\033[33m Your $environment database $environmentvalue did not match, please start over and try again"
 	else
 		sed -i '' "${linenumber}s,$environment$environmentvalue=.*,$environment$environmentvalue='$environmentanswer'," $HOME/.obiconfig
-		MSG="\033[32m Your $environment database host has been set to \n\t $environmentanswer"
+		if [[ "$environmentvalue" == "password" ]]; then
+			MSG="\033[32m Your $environment database password has been set"
+		else
+			MSG="\033[32m Your $environment database host has been set to \n\t $environmentanswer"
+		fi
 	fi ;
 
 }
@@ -1004,17 +1020,17 @@ main_menu()
 	bprompt="2. Toggle local server settings. $localsettingsare"
 	cprompt="3. Change local database host currently set to \033[33m$localhost\033[0m"
 	dprompt="4. Change local database user currently set to \033[33m$localuser\033[0m"
-	eprompt="5. Change local database password currently set to \033[33m${localpassword//[a-z]/*}\033[0m"
+	eprompt="5. Change local database password currently set to \033[33m${localpassword//[a-zA-Z0-9\!\)\(\@\<\>\$\[\]\|\&\\\-\#\%\^\_\+\=\{\}\`\~]/*}\033[0m"
 	fprompt="6. Toggle staging server settings. $stagingsettingsare"
 	gprompt="7. Change staging database domain currently set to \033[33m$stagingdomain\033[0m"
 	hprompt="8. Change staging host currently set to \033[33m$staginghost\033[0m"
 	iprompt="9. Change staging database user currently set to \033[33m$staginguser\033[0m"
-	jprompt="10. Change staging database password currently set to \033[33m${stagingpassword//[a-z/*}\033[0m"
+	jprompt="10. Change staging database password currently set to \033[33m${stagingpassword//a-zA-Z0-9\!\)\(\@\<\>\$\[\]\|\&\\\-\#\%\^\_\+\=\{\}\`\~]/*}\033[0m"
 	kprompt="11. Toggle production server settings. $prodsettingsare"
 	lprompt="12. Change production database domain currently set to \033[33m$productiondomain\033[0m"
 	mprompt="13. Change production database host currently set to \033[33m$productionhost\033[0m"
 	nprompt="14. Change production database user currently set to \033[33m$productionuser\033[0m"
-	oprompt="15. Change production database password currently set to \033[33m${productionpassword//[a-z]/*}\033[0m"
+	oprompt="15. Change production database password currently set to \033[33m${productionpassword//a-zA-Z0-9\!\)\(\@\<\>\$\[\]\|\&\\\-\#\%\^\_\+\=\{\}\`\~]/*}\033[0m"
 
 
 	# Menu Output
