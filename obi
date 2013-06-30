@@ -57,7 +57,7 @@ obi_update()
 			all_r_dirs=${rsync_dirs[@]:0}
 			str_r_dir="${all_r_dirs// /' '}"
 			# Create a temp config file with the new structure and copy old variable values over
-			echo "#\n# Production ssh settings\n#\nenable_production_ssh='$enable_production_ssh'\nproduction_ssh='$production_ssh'\nproduction_remote_project_root='$production_remote_project_root'\nenable_production_sshmysql='$enable_production_sshmysql'\n\n#\n# Staging ssh settings\n#\nenable_staging_ssh='$enable_staging_ssh'\nstaging_ssh='$staging_ssh'\nstaging_remote_project_root='$staging_remote_project_root'\nenable_staging_sshmysql='$enable_staging_sshmysql'\n\n#\n# S3 settings\n#\nenable_S3='$enable_S3'\npublic_key='$public_key'\nsecret_key='$secret_key'\n\n#\n# RSync settings\n#\nenable_rsync='$enable_rsync'\nrsync_dirs=('""$str_r_dir""')" > config~
+			echo "#\n# Production ssh settings\n#\nenable_production_ssh='$enable_production_ssh'\nproduction_ssh='$production_ssh'\nproduction_remote_project_root='$production_remote_project_root'\nenable_production_sshmysql='$enable_production_sshmysql'\n\n#\n# Staging ssh settings\n#\nenable_staging_ssh='$enable_staging_ssh'\nstaging_ssh='$staging_ssh'\nstaging_remote_project_root='$staging_remote_project_root'\nenable_staging_sshmysql='$enable_staging_sshmysql'\n\n#\n# S3 settings\n#\nenable_S3='$enable_S3'\npublic_key='$public_key'\nsecret_key='$secret_key'\nmybucket='$mybucket'\n\n#\n# RSync settings\n#\nenable_rsync='$enable_rsync'\nrsync_dirs=('""$str_r_dir""')" > config~
 
 			# Cleanup
 			mv config "$HOME/.Trash/config"
@@ -935,6 +935,7 @@ zip_to_s3()
 		clear; echo; echo "obi: In order to backup to s3 it must first be enabled for this project by editing the \033[33m.obi/config\033[0m file in your project directory"; echo;
 		sleep 5
 	fi
+	exit
 }
 
 # -----------------------------------------------#
