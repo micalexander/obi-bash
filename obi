@@ -604,7 +604,7 @@ create_directories()
 	mkdir $PROJ_FOLDER_NAME
 	cd $PROJ_FOLDER_NAME
 	mkdir -p _resources/{assets/{ai,architecture,content,emails,estimates,fonts,gif,jpg,pdf,png,psd},dumps/{local,production,staging,temp}} .obi
-	echo "#\n# Production ssh settings\n#\nenable_production_ssh='0'\nproduction_ssh='0'\nproduction_remote_project_root='0'\nenable_production_sshmysql='0'\n\n#\n# Staging ssh settings\n#\nenable_staging_ssh='0'\nstaging_ssh='0'\nstaging_remote_project_root='0'\nenable_staging_sshmysql='0'\n\n#\n# S3 settings\n#\nenable_S3='0'\npublic_key='0'\nsecret_key='0'\n\n#\n# RSync settings\n#\nenable_rsync='0'\nrsync_dirs=('/change/this/to/first/sync/directory/' '/change/this/to/second/sync/directory/or/remove/entirely/')" > .obi/config
+	echo "#\n# Production ssh settings\n#\nenable_production_ssh='0'\nproduction_ssh='0'\nproduction_remote_project_root='0'\nenable_production_sshmysql='0'\n\n#\n# Staging ssh settings\n#\nenable_staging_ssh='0'\nstaging_ssh='0'\nstaging_remote_project_root='0'\nenable_staging_sshmysql='0'\n\n#\n# S3 settings\n#\nenable_S3='0'\npublic_key='0'\nsecret_key='0'\nmybucket='0'\n\n#\n# RSync settings\n#\nenable_rsync='0'\nrsync_dirs=('/change/this/to/first/sync/directory/' '/change/this/to/second/sync/directory/or/remove/entirely/')" > .obi/config
 	echo ".git\n.gitignore\n.htaccess\nsftp-config.json\n.DS_Store\n_resources\n.obi" > .obiignore
 }
 
@@ -662,7 +662,7 @@ recreate_folders_structure()
 
 	if [[ ! -f .obi/config ]]
 	then
-		echo "#\n# Production ssh settings\n#\nenable_production_ssh='0'\nproduction_ssh='0'\nproduction_remote_project_root='0'\nenable_production_sshmysql='0'\n\n#\n# Staging ssh settings\n#\nenable_staging_ssh='0'\nstaging_ssh='0'\nstaging_remote_project_root='0'\nenable_staging_sshmysql='0'\n\n#\n# S3 settings\n#\nenable_S3='0'\npublic_key='0'\nsecret_key='0'\n\n#\n# RSync settings\n#\nenable_rsync='0'\nrsync_dirs=('/change/this/to/first/sync/directory/' '/change/this/to/second/sync/directory/or/remove/entirely/')" > .obi/config
+		echo "#\n# Production ssh settings\n#\nenable_production_ssh='0'\nproduction_ssh='0'\nproduction_remote_project_root='0'\nenable_production_sshmysql='0'\n\n#\n# Staging ssh settings\n#\nenable_staging_ssh='0'\nstaging_ssh='0'\nstaging_remote_project_root='0'\nenable_staging_sshmysql='0'\n\n#\n# S3 settings\n#\nenable_S3='0'\npublic_key='0'\nsecret_key='0'\nmybucket='0'\n\n#\n# RSync settings\n#\nenable_rsync='0'\nrsync_dirs=('/change/this/to/first/sync/directory/' '/change/this/to/second/sync/directory/or/remove/entirely/')" > .obi/config
 	fi
 
 	if [[ ! -f .obiignore ]]
@@ -874,7 +874,7 @@ create_project_config()
 	else
 		cd "$PROJ"
 		mkdir -p _resources/{assets/{ai,architecture,content,emails,estimates,fonts,gif,jpg,pdf,png,psd},dumps/{local,production,staging,temp}} .obi
-		echo "#\n# Production ssh settings\n#\nenable_production_ssh='0'\nproduction_ssh='0'\nproduction_remote_project_root='0'\nenable_production_sshmysql='0'\n\n#\n# Staging ssh settings\n#\nenable_staging_ssh='0'\nstaging_ssh='0'\nstaging_remote_project_root='0'\nenable_staging_sshmysql='0'\n\n#\n# S3 settings\n#\nenable_S3='0'\npublic_key='0'\nsecret_key='0'\n\n#\n# RSync settings\n#\nenable_rsync='0'\nrsync_dirs=('/change/this/to/first/sync/directory/' '/change/this/to/second/sync/directory/or/remove/entirely/')" > .obi/config
+		echo "#\n# Production ssh settings\n#\nenable_production_ssh='0'\nproduction_ssh='0'\nproduction_remote_project_root='0'\nenable_production_sshmysql='0'\n\n#\n# Staging ssh settings\n#\nenable_staging_ssh='0'\nstaging_ssh='0'\nstaging_remote_project_root='0'\nenable_staging_sshmysql='0'\n\n#\n# S3 settings\n#\nenable_S3='0'\npublic_key='0'\nsecret_key='0'\nmybucket='0'\n\n#\n# RSync settings\n#\nenable_rsync='0'\nrsync_dirs=('/change/this/to/first/sync/directory/' '/change/this/to/second/sync/directory/or/remove/entirely/')" > .obi/config
 		echo ".git\n.gitignore\n.htaccess\nsftp-config.json\n.DS_Store\n_resources\n.obi" > .obiignore
 		. "$PROJ/.obi/config"
 	fi
@@ -926,7 +926,7 @@ zip_to_s3()
 			# Find files that are more than 7 days old and gzip then
 			find _resources/dumps/* -mtime +7 | xargs tar -s /dumps/$THE_DATE-$PROJ_FOLDER_NAME/ -czvPf $THE_DATE-$PROJ_FOLDER_NAME.tar.gz;
 			# Send the to s3
-			$php -f ~/obi/libs/s3/interface.php $public_key $secret_key  $THE_DATE-$PROJ_FOLDER_NAME.tar.gz;
+			$php -f ~/obi/libs/s3/interface.php $public_key $secret_key  $THE_DATE-$PROJ_FOLDER_NAME.tar.gz $mybucket;
 			files_set_to_s3=`find _resources/dumps/* -mtime +7`
 			mv $files_set_to_s3 ~/.Trash
 			mv $THE_DATE-$PROJ_FOLDER_NAME.tar.gz ~/.Trash
