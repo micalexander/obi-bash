@@ -935,7 +935,6 @@ zip_to_s3()
 		clear; echo; echo "obi: In order to backup to s3 it must first be enabled for this project by editing the \033[33m.obi/config\033[0m file in your project directory"; echo;
 		sleep 5
 	fi
-	exit
 }
 
 # -----------------------------------------------#
