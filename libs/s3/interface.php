@@ -6,7 +6,7 @@ $s3 =  new S3( $argv[1], $argv[2]);
 
 S3::putObject(
 	$s3->inputFile($argv[3], false),
-	'micalexander',
+	$argv[4],
 	$argv[3],
 	S3::ACL_PUBLIC_READ,
 	array(),
