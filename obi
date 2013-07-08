@@ -1155,7 +1155,7 @@ case $ACTION in
 
 		# Setup git
 		git init
-		echo ".DS_Store\n.sass-cache/\n_resources/\n.obi" > .gitignore
+		echo ".DS_Store\n.sass-cache/\n_resources/\n.obiignore\n.obi" > .gitignore
 
 		git add .
 		git commit -am "initial commit"
@@ -1216,7 +1216,7 @@ case $ACTION in
 
 		# Build project's .gitignore
 
-		echo ".DS_Store\n.sass-cache/\n_resources/\n.obi" > .gitignore
+		echo ".DS_Store\n.sass-cache/\n_resources/\n.obiignore\n.obi" > .gitignore
 
 		#load the database local credentials
 		host="$localhost" ; user="$localuser" ; pass="$localpassword" ; name="$PROJ_FOLDER_NAME"_local_wp
