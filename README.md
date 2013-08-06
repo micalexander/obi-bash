@@ -4,7 +4,7 @@ Obi is a all-in-one tool designed to make project management, WordPress developm
 
 ## Installation:
 
-If you haven't already, create a folder named "bin" and a file named ".bash_profile" with the following text on it `export PATH=$HOME/bin:$PATH`, and place them **separately** in your home directory root folder. Assuming you already have Git installed run this command from your terminal:
+If you haven't already, create a folder named "bin" and a file named ".bash_profile" with the following text on it `export PATH=$HOME/bin/obi:$PATH`, and place them **separately** in your home directory root folder. Assuming you already have Git installed run this command from your terminal:
 
 `cd $HOME/bin/ ; git clone https://github.com/micalexander/obi.git`
 
@@ -101,7 +101,7 @@ The `localsettings`, `stagingsettings` and `productionsetttings` control how obi
 
 `enabled`: obi will use the credentials that are set below it.
 
-`wp-enabled`: obi will use the credentials that are on the [wp-config.php](https://github.com/kylelarkin/klas/blob/master/wp-config.php) file.
+`wp-enabled`: obi will use the credentials that are on the [wp-config.php](https://github.com/micalexander/mask/blob/master/wp-config.php) file.
 
 `disabled`: obi will not use any credentials
 
@@ -143,7 +143,7 @@ The _resource directory is essential to obi's functionality. This is primarily b
 
 ## Database Backups
 
-With Obi there are two ways to back up a MySQL database. One is just a straight backup to a .sql file that is then placed in its respected folder in the _resources/dumps directory. The second is a backup to a .sql file that is placed in its respected directory as a backup and then imported it into the MySQL database specified when running the `obi -b` command. The latter of the two will also perform a find and replace on the URLs that are stored in the .sql file with the destination URL that is stored in the [wp-config.php](https://github.com/kylelarkin/klas/blob/master/wp-config.php) file before it's imported to it's destination database.
+With Obi there are two ways to back up a MySQL database. One is just a straight backup to a .sql file that is then placed in its respected folder in the _resources/dumps directory. The second is a backup to a .sql file that is placed in its respected directory as a backup and then imported it into the MySQL database specified when running the `obi -b` command. The latter of the two will also perform a find and replace on the URLs that are stored in the .sql file with the destination URL that is stored in the [wp-config.php](https://github.com/micalexander/mask/blob/master/wp-config.php) file before it's imported to it's destination database.
 
 After running `obi config` to ensure your environment settings are correct, Obi will be ready to backup your databases. To backup a database you can run the following commands below by replacing the [project_name] with your project name and the [environment] with your desired environment:
 
@@ -161,7 +161,7 @@ Example of a backup of the local database with a find and replace followed by an
 
     `obi -b myproject -ltp`
 
-Obi also handles the import of database files. There are two ways to accomplish this. One is just a straight import of a .sql file by explicitly providing the file path. The second is a import of a .sql file without providing the file path. If the file path is not provided then obi will look in the _resources/dumps/[environment(s)] directory for the last modified file to be used. By suppling two environments Obi will perform a find and replace on the URLs that are stored in the .sql file with the destination URL that is stored in the [wp-config.php](https://github.com/kylelarkin/klas/blob/master/wp-config.php) file before it's imported to it's destination database.
+Obi also handles the import of database files. There are two ways to accomplish this. One is just a straight import of a .sql file by explicitly providing the file path. The second is a import of a .sql file without providing the file path. If the file path is not provided then obi will look in the _resources/dumps/[environment(s)] directory for the last modified file to be used. By suppling two environments Obi will perform a find and replace on the URLs that are stored in the .sql file with the destination URL that is stored in the [wp-config.php](https://github.com/micalexander/mask/blob/master/wp-config.php) file before it's imported to it's destination database.
 
 After running `obi config` to ensure your environment settings are correct, Obi will be ready to import your databases. To import a database you can run the following commands below by replacing the [project_name] with your project name and the [environment] with your desired environment:
 
@@ -180,25 +180,30 @@ To sync two MySQL databases you can run the following commands below by replacin
 `obi -i [project_name] [environments]`
 
 Example of an import into the local database with a find and replace followed by an import to the production database
-
+week
     `obi -i myproject -ltp`
 
 Example of an import into the local database with a find and replace followed by an import to the production database by providing a file path
 
     `obi -i myproject -ltp /path/to/the/file.sql`
 
-By default Obi looks in the [wp-config.php](https://github.com/kylelarkin/klas/blob/master/wp-config.php) for the URLs to find and replace
+By default Obi looks in the [wp-config.php](https://github.com/micalexander/mask/blob/master/wp-config.php) for the URLs to find and replace
 
 ## wp-config.php
 
-Obi relies on a special [wp-config.php](https://github.com/kylelarkin/klas/blob/master/wp-config.php) file to perform it's find and replace function and any other of its MySQL tasks. This file is included in the [KLAS Wordpress Theme Framework](https://github.com/kylelarkin/klas) when running the `-w` argument.
+Obi relies on a special [wp-config.php](https://github.com/micalexander/mask/blob/master/wp-config.php) file to perform it's find and replace function and any other of its MySQL tasks. This file is included in the [KLAS Wordpress Theme Framework](https://github.com/micalexander/mask) when running the `-w` argument.
 
-When the `-w` argument is used to create a WordPress enabled git working directory, the `project_name` that is entered is also used in the [wp-config.php](https://github.com/kylelarkin/klas/blob/master/wp-config.php) and throughout the [KLAS Wordpress Theme Framework](https://github.com/kylelarkin/klas), changing the theme name from its default of klas to the  `project name` you entered as well as in other places that are necessary. Obi will also use this to change the table_prefix from wp_ to the first three letters of the `project_name`.
+When the `-w` argument is used to create a WordPress enabled and git working directory, the `project_name` that is entered is also used in the [wp-config.php](https://github.com/micalexander/mask/blob/master/wp-config.php) and throughout the [KLAS Wordpress Theme Framework](https://github.com/micalexander/mask), changing the theme name from its default of klas to the  `project name` you entered as well as in other places that are necessary. Obi will also use this to change the table_prefix from wp_ to the first three letters of the `project_name`.
 
 Obi will set the staging_tld (used to detect if Wordpress is on the staging server) to what ever the `stagingdomain` in the .obiconfig file is set to.
 
-Salts are also added to the [wp-config.php](https://github.com/kylelarkin/klas/blob/master/wp-config.php) file automatically.
+Salts are also added to the [wp-config.php](https://github.com/micalexander/mask/blob/master/wp-config.php) file automatically.
 
+## Syncing Remote and Local Directories
+
+## S3 Backups
+
+##
 
 ## Examples:
 
@@ -209,4 +214,4 @@ Salts are also added to the [wp-config.php](https://github.com/kylelarkin/klas/b
 ### Dependencies
 
 - Git (duh!)
-- Uses the [KLAS Wordpress Theme Framework](https://github.com/kylelarkin/klas) - A SASS based starter theme for WordPress.
+- Uses the [KLAS Wordpress Theme Framework](https://github.com/micalexander/mask) - A SASS based starter theme for WordPress.

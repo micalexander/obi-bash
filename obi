@@ -741,7 +741,7 @@ set_project_dir()
 	then
 		MSG="\033[31m Your input was empty or the directory does not exist"
 	else
-		sed -i '' "1s,localprojectdirectory=.*,localprojectdirectory='$DIRECTORY/'," $HOME/.obiconfig
+		sed -i '' "s,localprojectdirectory=.*,localprojectdirectory='$DIRECTORY/'," $HOME/.obiconfig
 		MSG="\033[32m Your project working directory has been set to \n     $DIRECTORY/"
 	fi ;
 
