@@ -1,6 +1,6 @@
 # Obi Version 2.0
 
-Obi is a all-in-one tool designed to make project management, WordPress development, MySQL database backups and syncing MySQL databases between multi-environments a breeze.
+Obi is a project management tool that simplifies, WordPress development.
 
 ## Installation:
 
