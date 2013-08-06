@@ -10,9 +10,9 @@ Obi is a all-in-one tool designed to make project management, WordPress developm
 
     If **either** of those command do not produce a path then you will need to install or locate the php or mysql that your system uses. After you have located where they are installed you will need to add them to your ".bash_profile".
 
-    *If you are running **MAMP PRO** your php will be located at `/Applications/MAMP/bin/php/[mampphpversion]/bin` (where you would replace [mampphpversion] with the version of php MAMP PRO is running) and mysql will be located at `/Applications/MAMP/Library/bin`.*
+    If you are running **MAMP PRO** your php will be located at `/Applications/MAMP/bin/php/[mampphpversion]/bin` (where you would replace [mampphpversion] with the version of php MAMP PRO is running) and mysql will be located at `/Applications/MAMP/Library/bin`.
 
-    *So say your **MAMP PRO** is running php version 5.4.4, you would need to add the folling lines to your ".bash_profile" along with the line in step one.*
+    So say your **MAMP PRO** is running php version 5.4.4, you would need to add the following lines to your ".bash_profile" along with the line in step one.
 
         export PATH=/Applications/MAMP/bin/php/php5.4.4/bin:$PATH
         export PATH=/Applications/MAMP/Library/bin:$PATH
