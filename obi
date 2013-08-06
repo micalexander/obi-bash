@@ -1,7 +1,93 @@
 #!/bin/sh
+
+# -----------------------------------------------#
+## Obi Version
+## ----------------------------------------------#
+this_version=2.0
+
+obi_version()
+{
+	if [[ -z "$version" ]] || [[ "$version" < $this_version ]] ;
+	then
+		clear ; echo ; echo "obi: You must first run \033[33mobi update\033[0m in order to continue" ; echo ;
+		exit
+	fi
+}
+
+obi_update()
+{
+	if [[ -z "$version" ]] || [[ "$version" < $this_version ]];
+	then
+		echo "version='$this_version'" | cat - $HOME/.obiconfig > $HOME/.obiconfig.tmp && mv $HOME/.obiconfig.tmp $HOME/.obiconfig
+
+		IFS=$'\n'
+		proj_dir_arrays=( $(find "$localprojectdirectory" -depth 1 -type d ) )
+		# Unset IFS (good practice)
+		unset IFS
+		for proj_dir_array in "${proj_dir_arrays[@]}";
+		do
+			PROJ_FOLDER_NAME=`echo "$proj_dir_array" | rev | cut -d/ -f1 | rev`
+			cd "$proj_dir_array"
+			recreate_folders_structure
+			# unset PROJ_FOLDER_NAME
+		done
+
+		IFS=$'\n'
+		# Create an array of all of the project folder paths that have a .obi folder in them
+		dir_arrays=( $(find "$localprojectdirectory"* -name ".obi" ) )
+		# Unset IFS (good practice)
+		unset IFS
+
+		# For each path that contains a .obi folder
+		for dir_array in "${dir_arrays[@]}";
+		do
+			# cd into each directory
+			cd "$dir_array"
+			. config
+			# Must give new variables a default value
+			if [[ -z "$enable_rsync" ]];
+			then
+				enable_rsync=0
+			fi
+			if [[ -z "$rsync_dirs" ]];
+			then
+				rsync_dirs="/change/this/to/first/sync/directory/ /change/this/to/second/sync/directory/or/remove/entirely/"
+			fi
+			# Store each of the rsync_dirs array elements in one variable and then delimit them by single quotes
+			all_r_dirs=${rsync_dirs[@]:0}
+			str_r_dir="${all_r_dirs// /' '}"
+			# Create a temp config file with the new structure and copy old variable values over
+			echo "#\n# Production ssh settings\n#\nenable_production_ssh='$enable_production_ssh'\nproduction_ssh='$production_ssh'\nproduction_remote_project_root='$production_remote_project_root'\nenable_production_sshmysql='$enable_production_sshmysql'\n\n#\n# Staging ssh settings\n#\nenable_staging_ssh='$enable_staging_ssh'\nstaging_ssh='$staging_ssh'\nstaging_remote_project_root='$staging_remote_project_root'\nenable_staging_sshmysql='$enable_staging_sshmysql'\n\n#\n# S3 settings\n#\nenable_S3='$enable_S3'\npublic_key='$public_key'\nsecret_key='$secret_key'\nmybucket='$mybucket'\n\n#\n# RSync settings\n#\nenable_rsync='$enable_rsync'\nrsync_dirs=('""$str_r_dir""')" > config~
+
+			# Cleanup
+			mv config "$HOME/.Trash/config"
+			mv config~ config
+
+			unset enable_production_ssh
+			unset production_ssh
+			unset production_remote_project_root
+			unset enable_production_sshmysql
+			unset enable_staging_ssh
+			unset staging_ssh
+			unset staging_remote_project_root
+			unset enable_staging_sshmysql
+			unset enable_S3
+			unset public_key
+			unset secret_key
+			unset enable_rsync
+			unset rsync_dirs
+
+		done
+	else
+		clear ; echo ; echo "obi: Already up to date" ; echo ;
+	fi
+}
+
+
 # -----------------------------------------------#
 ## Obi config
 ## ----------------------------------------------#
+
 
 create_obiconfig()
 {
@@ -11,7 +97,7 @@ create_obiconfig()
 	then
 		. $HOME/.obiconfig
 	else
-		echo "localprojectdirectory='0'\nlocalsettings='enabled'\nlocalhost='localhost'\nlocaluser='root'\nlocalpassword='root'\n\nstagingsettings='disabled'\nstagingdomain='0'\nstaginghost='0'\nstaginguser='0'\nstagingpassword='0'\n\nproductionsettings='disabled'\nproductiondomain='0'\nproductionhost='0'\nproductionuser='0'\nproductionpassword='0'" > $HOME/.obiconfig
+		echo "version='$this_version'\nlocalprojectdirectory='0'\nlocalsettings='enabled'\nlocalhost='localhost'\nlocaluser='root'\nlocalpassword='root'\n\nstagingsettings='disabled'\nstagingdomain='0'\nstaginghost='0'\nstaginguser='0'\nstagingpassword='0'\n\nproductionsettings='disabled'\nproductiondomain='0'\nproductionhost='0'\nproductionuser='0'\nproductionpassword='0'" > $HOME/.obiconfig
 	fi
 }
 
@@ -49,11 +135,23 @@ does_config_exist()
 	esac
 }
 
+
 create_obiconfig
+
+# Add version check
+case $1 in
+	update )
+		;;
+	* ) obi_version
+		;;
+esac
 
 # -----------------------------------------------#
 ## Variables
 ## ----------------------------------------------#
+php=`which php`
+mysql=`which mysql`
+mysqldump=`which mysqldump`
 
 # Store the type of project to create
 ACTION=$1
@@ -64,7 +162,7 @@ case "$2" in
 		input=`echo ${path//\// } | awk  ' { print ( $(NF-0) ) }'`;
 		case $1 in
 			-e|-g|-w|mysql|help|config )
-				clear ; echo ;echo "obi: The . subsitute only works with -b " ; echo ;exit
+				clear ; echo ;echo "obi: The . subsitution does not work with this command" ; echo ;exit
 			;;
 			* )
 				#  Chech input to see if it contains the word site
@@ -108,7 +206,6 @@ PROJ=$PROJ_PATH$PROJ_FOLDER_NAME
 
 CUT_NAME=`echo $PROJ_FOLDER_NAME | cut -c1-3`
 
-
 UPPER_CASE_PROJ_FOLDER_NAME=$(tr '[a-z]' '[A-Z]'<<<"${PROJ_FOLDER_NAME:0:1}")
 
 
@@ -116,6 +213,7 @@ UPPER_CASE_PROJ_FOLDER_NAME=$(tr '[a-z]' '[A-Z]'<<<"${PROJ_FOLDER_NAME:0:1}")
 # -----------------------------------------------#
 # Functions
 ## ----------------------------------------------#
+
 
 #
 # Mysql functions
@@ -153,6 +251,8 @@ mysql_credentials()
 		;;
 		staging )
 			serversettings="$stagingsettings"
+			mysqlssh="$enable_staging_sshmysql"
+			myssh="$staging_ssh"
 
 			case $serversettings in
 				enabled )
@@ -178,6 +278,8 @@ mysql_credentials()
 		;;
 		production )
 			serversettings="$productionsettings"
+			mysqlssh="$enable_production_sshmysql"
+			myssh="$production_ssh"
 
 			case "$serversettings" in
 				enabled )
@@ -208,7 +310,7 @@ mysql_credentials()
 mysql_timestamp()
 {
 	# Mysql variables
-	THE_DATE="$(date +%A-%m-%d-%Y)-"
+	THE_DATE="$(date +"%Y-%m-%d-%H-%M")"
 }
 
 mysql_dump()
@@ -219,9 +321,9 @@ mysql_dump()
 
 	cd "$PROJ"
 
-	if [ ! -d "dumps/local" ] || [ ! -d "dumps/staging" ] || [ ! -d "dumps/production" ] || [ ! -d "dumps/temp" ]
+	if [ ! -d "_resources/dumps/local" ] || [ ! -d "_resources/dumps/staging" ] || [ ! -d "_resources/dumps/production" ] || [ ! -d "_resources/dumps/temp" ]
 	then
-	mkdir -p dumps/local dumps/staging dumps/production dumps/temp
+		create_project_config
 	fi
 
 	wp_config_check
@@ -229,7 +331,22 @@ mysql_dump()
 	# Looks for database username, database password and database name in the wp-config file
 	mysql_credentials $database
 
-	/Applications/MAMP/Library/bin/mysqldump --net_buffer_length=50000 --verbose -h"$host" -u"$user" -p"$pass" "$name" > "dumps/$database/$THE_DATE$database.sql"
+	if [ "$mysqlssh" == "1" ] && [ $database != "local" ]
+	then
+		mysql_special_characters=('*' '?' '[' '<' '>' '&' ';' '!' '|' '$' '(' ')')
+
+		for mysql_special_characters in "${mysql_special_characters[@]}"
+		do
+			if [[ $pass =~ "$mysql_special_characters" ]];
+			then
+				pass=${pass//"$mysql_special_characters"/\\"$mysql_special_characters"}
+			fi
+		done
+		ssh -C $myssh mysqldump --opt --net_buffer_length=75000 --verbose -u"$user" -p"$pass" "$name" > "_resources/dumps/$database/$THE_DATE-$database.sql"
+
+	else
+		$mysqldump --opt --net_buffer_length=75000 --verbose -h"$host" -u"$user" -p"$pass" "$name" > "_resources/dumps/$database/$THE_DATE-$database.sql"
+	fi
 }
 
 mysql_import()
@@ -241,9 +358,9 @@ mysql_import()
 
 	cd "$PROJ"
 
-	if [ ! -d "dumps/local" ] || [ ! -d "dumps/staging" ] || [ ! -d "dumps/production" ] || [ ! -d "dumps/temp" ]
+	if [ ! -d "_resources/dumps/local" ] || [ ! -d "_resources/dumps/staging" ] || [ ! -d "_resources/dumps/production" ] || [ ! -d "_resources/dumps/temp" ]
 	then
-	mkdir -p dumps/local dumps/staging dumps/production dumps/temp
+		create_project_config
 	fi
 
 	wp_config_check
@@ -251,7 +368,21 @@ mysql_import()
 	# Looks for database username, database password and database name in the wp-config file
 	mysql_credentials $database
 
-	/Applications/MAMP/Library/bin/mysql -h"$host" -u"$user" -p"$pass" "$name" < "$from"
+	mysql_special_characters=('*' '?' '[' '<' '>' '&' ';' '!' '|' '$' '(' ')')
+
+	if [ "$mysqlssh" == "1" ] && [ $database != "local" ]
+	then
+		for mysql_special_characters in "${mysql_special_characters[@]}"
+		do
+			if [[ $pass =~ "$mysql_special_characters" ]];
+			then
+				pass=${pass//"$mysql_special_characters"/\\"$mysql_special_characters"}
+			fi
+		done
+		ssh -C $myssh mysql -u"$user" -p"$pass" "$name" < "$from"
+	else
+		$mysql -h"$host" -u"$user" -p"$pass" "$name" < "$from"
+	fi
 }
 
 mysql_sed_import()
@@ -260,20 +391,42 @@ mysql_sed_import()
 	import=$2
 	find=$3
 	replace=$4
+	explicit_path=$5
+	empty_string_check "$explicit_path"
+	strcheckret=$?
 
 	mysql_timestamp
 
-	cd "$PROJ/dumps/$dump/"
+	case $strcheckret in
+		6 )
+			cd "$PROJ/_resources/dumps/$dump/"
+			# Get the last modified file
+			last_modified_output=`find . -type f -exec stat -f "%m %N" {} \; | sort -n | tail -1`
+			last_modified_file="${last_modified_output/[0-9]* \.\//}"
+			# Location fo the last modified file
+			temp_location="$PROJ/_resources/dumps/temp/$last_modified_file"
+			mysql_dump $import
+			find_and_replace_wp_url $find $replace $dump $last_modified_file
+			mysql_import $import "$temp_location"
+			;;
+		0 )
+			file_exist_check "$explicit_path";
+			fileexistreturn=$?
+			case "$fileexistreturn" in
+				10 )
+					clear ; echo ; echo "obi: The file name you entered does not exist" ; echo ;
+					;;
+				9 )
+					find_and_replace_wp_url $find $replace $dump "$explicit_path"
+					last_modified_file="${last_modified_output/[0-9]* \.\//}"
+					# Location fo the last modified temp file
+					temp_location="$PROJ/_resources/dumps/temp/$last_modified_file"
+					mysql_import $import "$temp_location"
+					;;
+			esac
+			;;
+	esac
 
-	# Get the last modified file
-	last_modified_output=`find . -type f -exec stat -f "%m %N" {} \; | sort -n | tail -1`
-	last_modified_file="${last_modified_output/[0-9]* \.\//}"
-
-	# Location fo the last modified file
-	temp_location="$PROJ/dumps/$dump/$last_modified_file"
-	mysql_dump $import
-	find_and_replace_wp_url $find $replace $dump $last_modified_file
-	mysql_import $dump "$temp_location"
 }
 
 mysql_sync()
@@ -285,11 +438,17 @@ mysql_sync()
 
 	mysql_timestamp
 
-	temp_location="dumps/temp/$THE_DATE$dump.sql"
+	cd "$PROJ""/_resources/dumps/$dump/"
+
+	# Get the last modified file
+	last_modified_output=`find . -type f -exec stat -f "%m %N" {} \; | sort -n | tail -1`
+	last_modified_file="${last_modified_output/[0-9]* \.\//}"
 
 	mysql_dump $import
 	mysql_dump $dump
-	find_and_replace_wp_url $find $replace $dump "$THE_DATE$dump.sql"
+	find_and_replace_wp_url $find $replace $dump "$last_modified_file"
+
+	temp_location="_resources/dumps/temp/$last_modified_file"
 	mysql_import $import "$temp_location"
 }
 
@@ -302,24 +461,31 @@ find_and_replace_wp_url()
 	find_url=$1
 	replace_url=$2
 	folder=$3
-	temp_file=$4
+	# temp_file=$4
+
+	if [ ! -d "_resources/dumps/local" ] || [ ! -d "_resources/dumps/staging" ] || [ ! -d "_resources/dumps/production" ] || [ ! -d "_resources/dumps/temp" ]
+	then
+	mkdir -p _resources/dumps/{local,production,staging,temp}
+	fi
+
+	cd "$PROJ/_resources/dumps/$dump/"
+
+	# Get the last modified file
+	last_modified_output=`find . -type f -exec stat -f "%m %N" {} \; | sort -n | tail -1`
+	last_modified_file="${last_modified_output/[0-9]* \.\//}"
 
 	cd "$PROJ"
 
-	cp "dumps/$folder/$temp_file" "dumps/temp/$temp_file"
+	cp "_resources/dumps/$folder/$last_modified_file" "_resources/dumps/temp/$last_modified_file"
 
-	if [ ! -d "dumps/local" ] || [ ! -d "dumps/staging" ] || [ ! -d "dumps/production" ] || [ ! -d "dumps/temp" ]
-	then
-	mkdir -p dumps/local dumps/staging dumps/production dumps/temp
-	fi
 
 	wp_config_check
 
 	find=`awk -F'"' -v  find="$find_url" '$0 ~ find {print $2}' "$wpconfiglocation" | awk -F: '{print $2}' | cut -c 3-`
 	replace=`awk -F'"' -v  replace="$replace_url" '$0 ~ replace {print $2}' "$wpconfiglocation" | awk -F: '{print $2}' | cut -c 3-`
-	# echo "$temp_file"; exit
+
 	echo ; echo "obi: Replacing \033[31m$find\033[0m with \033[32m$replace\033[0m"
-	sed -i '' -e "s,$find,$replace,g" "$PROJ/dumps/temp/$temp_file"
+	sed -i '' -e "s,$find,$replace,g" "$PROJ/_resources/dumps/temp/$last_modified_file"
 }
 
 #
@@ -374,7 +540,7 @@ add_salts()
 }
 
 
-empty_second_string_check()
+empty_string_check()
 {
 	string=$1
 
@@ -428,7 +594,7 @@ file_exist_check ()
 create_directories()
 {
 	does_config_exist
-	empty_second_string_check "$PROJ_FOLDER_NAME"
+	empty_string_check "$PROJ_FOLDER_NAME"
 	strcheckret=$?
 	project_exist_check "$PROJ"
 	dircheckret=$?
@@ -437,8 +603,102 @@ create_directories()
 	cd "$PROJ_PATH"
 	mkdir $PROJ_FOLDER_NAME
 	cd $PROJ_FOLDER_NAME
-	mkdir -p architecture/estimates assets/ai assets/content assets/images/gif assets/images/jpg assets/images/png assets/images assets/pdf assets/psd assets/fonts dumps/local dumps/production dumps/staging dumps/temp emails "$PROJ_FOLDER_NAME"-site
-	cd "$PROJ_FOLDER_NAME"-site
+	mkdir -p _resources/{assets/{ai,architecture,content,emails,estimates,fonts,gif,jpg,pdf,png,psd},dumps/{local,production,staging,temp}} .obi
+	echo "#\n# Production ssh settings\n#\nenable_production_ssh='0'\nproduction_ssh='0'\nproduction_remote_project_root='0'\nenable_production_sshmysql='0'\n\n#\n# Staging ssh settings\n#\nenable_staging_ssh='0'\nstaging_ssh='0'\nstaging_remote_project_root='0'\nenable_staging_sshmysql='0'\n\n#\n# S3 settings\n#\nenable_S3='0'\npublic_key='0'\nsecret_key='0'\nmybucket='0'\n\n#\n# RSync settings\n#\nenable_rsync='0'\nrsync_dirs=('/change/this/to/first/sync/directory/' '/change/this/to/second/sync/directory/or/remove/entirely/')" > .obi/config
+	echo ".git\n.gitignore\n.htaccess\nsftp-config.json\n.DS_Store\n_resources\n.obi" > .obiignore
+}
+
+recreate_folders_structure()
+{
+	mkdir "$PROJ_FOLDER_NAME"
+
+	if [[ -d "$PROJ_FOLDER_NAME"-site ]]
+	then
+		rsync -aru "$PROJ_FOLDER_NAME"-site/ . ; cp -r "$PROJ_FOLDER_NAME"-site "$PROJ_FOLDER_NAME" ; rm -rf "$PROJ_FOLDER_NAME"-site ;
+	elif  [[ -d site ]]
+	then
+		rsync -aru site/ . ; cp -r site "$PROJ_FOLDER_NAME" ; rm -rf site ;
+	fi
+
+	if [[ ! -d _resources ]]
+	then
+		mkdir -p _resources/{assets/{ai,architecture,content,emails,estimates,fonts,gif,jpg,pdf,png,psd},dumps/{local,production,staging,temp}}
+	fi
+
+	if [[ ! -d  .obi ]];
+	then
+		mkdir .obi
+	fi
+
+	if [[ -d architecture ]];
+	then
+		rsync -aru architecture/estimates/ _resources/assets/estimates/ ; cp -r architecture/estimates "$PROJ_FOLDER_NAME"  ; rm -rf architecture/estimates ; rsync -aru architecture/ _resources/assets/architecture/ ; cp -r architecture "$PROJ_FOLDER_NAME" ; rm -rf architecture ;
+	fi
+
+	if [[ -d assets ]];
+	then
+		rsync -aru assets/images/ assets/ ; cp -r assets/images "$PROJ_FOLDER_NAME" ; rm -rf assets/images ; rsync -aru assets/ _resources/assets/ ; cp -r assets "$PROJ_FOLDER_NAME" ; rm -rf assets ;
+	fi
+
+	if [[ -d mock-ups ]];
+	then
+		mkdir -p _resources/assets/mock-ups ; rsync -aru mock-ups/ _resources/assets/mock-ups/ ; cp -r mock-ups "$PROJ_FOLDER_NAME" ; rm -rf mock-ups ;
+	fi
+
+	if [[ -d emails ]];
+	then
+		rsync -aru emails/ _resources/assets/emails/ ; cp -r emails "$PROJ_FOLDER_NAME" ; rm -rf emails ;
+	fi
+
+	if [[ -d fonts ]];
+	then
+		rsync -aru fonts/ _resources/assets/fonts/ ; cp -r fonts "$PROJ_FOLDER_NAME" ; rm -rf fonts ;
+	fi
+
+	if [[ -d dumps ]];
+	then
+		rsync -aru dumps/ _resources/dumps/ ; cp -r dumps "$PROJ_FOLDER_NAME" ; rm -rf dumps ;
+	fi
+
+	if [[ ! -f .obi/config ]]
+	then
+		echo "#\n# Production ssh settings\n#\nenable_production_ssh='0'\nproduction_ssh='0'\nproduction_remote_project_root='0'\nenable_production_sshmysql='0'\n\n#\n# Staging ssh settings\n#\nenable_staging_ssh='0'\nstaging_ssh='0'\nstaging_remote_project_root='0'\nenable_staging_sshmysql='0'\n\n#\n# S3 settings\n#\nenable_S3='0'\npublic_key='0'\nsecret_key='0'\nmybucket='0'\n\n#\n# RSync settings\n#\nenable_rsync='0'\nrsync_dirs=('/change/this/to/first/sync/directory/' '/change/this/to/second/sync/directory/or/remove/entirely/')" > .obi/config
+	fi
+
+	if [[ ! -f .obiignore ]]
+	then
+		echo ".git\n.gitignore\n.htaccess\nsftp-config.json\n.DS_Store\n_resources\n.obi" > .obiignore
+	fi
+
+	if [[ -f .gitignore ]];
+	then
+		echo "_resources/\n.obi\n.obiignore" >> .gitignore
+	fi
+
+	if [[ -d "$PROJ_FOLDER_NAME" ]];
+	then
+		mysql_timestamp
+		tar -zcf "$PROJ_FOLDER_NAME".tar.gz "$PROJ_FOLDER_NAME"
+		mv "$PROJ_FOLDER_NAME".tar.gz $THE_DATE-"$PROJ_FOLDER_NAME".tar.gz
+		rm -rf "$PROJ_FOLDER_NAME"
+		cp $THE_DATE-"$PROJ_FOLDER_NAME".tar.gz ~/.Trash
+		rm $THE_DATE-"$PROJ_FOLDER_NAME".tar.gz
+	fi
+}
+
+obi_init()
+{
+	does_config_exist
+	empty_string_check "$PROJ_FOLDER_NAME"
+	strcheckret=$?
+	directory_exist_check "$PROJ"
+	dircheckret=$?
+	check_returns
+	clear
+	cd "$PROJ_PATH"
+	cd $PROJ_FOLDER_NAME
+
+	recreate_folders_structure
 }
 
 check_returns()
@@ -455,8 +715,10 @@ check_returns()
 	;;
 	esac
 }
+
 set_project_dir()
-{	MSG="\033[36m Please enter your desired project working directory without the trailing slash or \n     simply drag and drop the desired folder into this window and press ENTER"
+{
+	MSG="\033[36m Please enter your desired project working directory without the trailing slash or \n     simply drag and drop the desired folder into this window and press ENTER"
 
 	clear
 
@@ -464,7 +726,7 @@ set_project_dir()
 
 	read DIRECTORY
 
-	empty_second_string_check "$DIRECTORY"
+	empty_string_check "$DIRECTORY"
 	ret6=$?
 	directory_exist_check "$DIRECTORY"
 	ret5=$?
@@ -479,7 +741,7 @@ set_project_dir()
 	then
 		MSG="\033[31m Your input was empty or the directory does not exist"
 	else
-		sed -i '' "1s,localprojectdirectory=.*,localprojectdirectory='$DIRECTORY/'," $HOME/.obiconfig
+		sed -i '' "s,localprojectdirectory=.*,localprojectdirectory='$DIRECTORY/'," $HOME/.obiconfig
 		MSG="\033[32m Your project working directory has been set to \n     $DIRECTORY/"
 	fi ;
 
@@ -497,14 +759,30 @@ set_environment()
 	MSG="\033[36m Please enter your $environment database $environmentvalue"
 	clear
 	main_menu
-	read environmentanswer
-	empty_second_string_check "$environmentanswer"
+	if [[ "$environmentvalue" == "password" ]]; then
+		read -s environmentanswer
+		MSG="\033[36m Please re enter your $environment database $environmentvalue"
+		clear
+		main_menu
+		read -s re_environmentanswer
+
+
+	else
+		read environmentanswer
+	fi
+	empty_string_check "$environmentanswer"
 	if [ "$ret6" == "6" ]
 	then
 		MSG="\033[33m Your input was empty please try again"
+	elif [[ "$environmentvalue" == "password" ]] && [[ $environmentanswer != $re_environmentanswer ]]; then
+		MSG="\033[33m Your $environment database $environmentvalue did not match, please start over and try again"
 	else
 		sed -i '' "${linenumber}s,$environment$environmentvalue=.*,$environment$environmentvalue='$environmentanswer'," $HOME/.obiconfig
-		MSG="\033[32m Your $environment database host has been set to \n\t $environmentanswer"
+		if [[ "$environmentvalue" == "password" ]]; then
+			MSG="\033[32m Your $environment database password has been set"
+		else
+			MSG="\033[32m Your $environment database host has been set to \n\t $environmentanswer"
+		fi
 	fi ;
 
 }
@@ -568,7 +846,6 @@ toggle_environment_settings()
 
 	environment=$1
 	environmentvalue=$2
-	linenumber=$3
 
 	setting="$environment""settings"
 
@@ -583,9 +860,147 @@ toggle_environment_settings()
 		;;
 	esac
 
-	sed -i '' "${linenumber}s,$setting=.*,$setting='$switchsettings'," $HOME/.obiconfig
+	sed -i '' "s,$setting=.*,$setting='$switchsettings'," $HOME/.obiconfig
 	MSG="\033[32m Your $environment server settings has been set to \n\t $switchsettings"
 
+}
+create_project_config()
+{
+	project_config="$PROJ/.obi/config"
+
+	if [ -f "$project_config" ]
+	then
+		. "$PROJ/.obi/config"
+	else
+		cd "$PROJ"
+		mkdir -p _resources/{assets/{ai,architecture,content,emails,estimates,fonts,gif,jpg,pdf,png,psd},dumps/{local,production,staging,temp}} .obi
+		echo "#\n# Production ssh settings\n#\nenable_production_ssh='0'\nproduction_ssh='0'\nproduction_remote_project_root='0'\nenable_production_sshmysql='0'\n\n#\n# Staging ssh settings\n#\nenable_staging_ssh='0'\nstaging_ssh='0'\nstaging_remote_project_root='0'\nenable_staging_sshmysql='0'\n\n#\n# S3 settings\n#\nenable_S3='0'\npublic_key='0'\nsecret_key='0'\nmybucket='0'\n\n#\n# RSync settings\n#\nenable_rsync='0'\nrsync_dirs=('/change/this/to/first/sync/directory/' '/change/this/to/second/sync/directory/or/remove/entirely/')" > .obi/config
+		echo ".git\n.gitignore\n.htaccess\nsftp-config.json\n.DS_Store\n_resources\n.obi" > .obiignore
+		. "$PROJ/.obi/config"
+	fi
+}
+
+project_configerror()
+{
+	clear ; echo ; echo "obi: You must first set your ssh access" ; echo "obi: You can set it by running \033[33mobi onfig\033[0m" ; echo ;
+	exit
+}
+does_project_config_exist()
+{
+	ssh=$1
+	file_exist_check "$PROJ/.obi/config"
+	fileexistreturn=$?
+	case "$fileexistreturn" in
+		9 )
+			create_project_config
+			case "$ssh" in
+				0 )
+				project_configerror
+				exit
+				;;
+			esac
+			;;
+		10 )
+			create_project_config
+			project_configerror
+			exit
+			;;
+	esac
+}
+
+# -----------------------------------------------#
+## S3
+## ----------------------------------------------#
+zip_to_s3()
+{
+	if [ "$enable_S3" == "1" ];
+	then
+		cd "$PROJ";
+		mysql_timestamp
+		file_count=`ls -1 _resources/dumps/* | wc -l`
+		old_files=`find _resources/dumps/* -mtime +7`
+
+		if [ $file_count -gt 30 ] && [ ! -z "$old_files" ];
+		then
+			find _resources/dumps/* -type f -name ".DS_Store" -exec rm -f {} \;
+			# Find files that are more than 7 days old and gzip then
+			find _resources/dumps/* -mtime +7 | xargs tar -s /dumps/$THE_DATE-$PROJ_FOLDER_NAME/ -czvPf $THE_DATE-$PROJ_FOLDER_NAME.tar.gz;
+			# Send the to s3
+			$php -f ~/obi/libs/s3/interface.php $public_key $secret_key  $THE_DATE-$PROJ_FOLDER_NAME.tar.gz $mybucket;
+			files_set_to_s3=`find _resources/dumps/* -mtime +7`
+			mv $files_set_to_s3 ~/.Trash
+			mv $THE_DATE-$PROJ_FOLDER_NAME.tar.gz ~/.Trash
+		fi
+	else
+		clear; echo; echo "obi: In order to backup to s3 it must first be enabled for this project by editing the \033[33m.obi/config\033[0m file in your project directory"; echo;
+		sleep 5
+	fi
+}
+
+# -----------------------------------------------#
+## Rsync Directories
+## ----------------------------------------------#
+
+rsync_dir()
+{
+	ORIGIN=$1
+	DESTINATION=$2
+	empty_string_check $4
+	strcheckret=$?
+	if [ "$enable_rsync" == "1" ];
+	then
+		case "$strcheckret" in
+			6 )
+				for rsync_dirs in "${rsync_dirs[@]}"
+				do
+					rsync -rvuz --exclude-from="$PROJ/.obiignore" "$ORIGIN$rsync_dirs" "$DESTINATION$rsync_dirs"
+				done
+			;;
+			* )
+				rsync -rvuz --exclude-from="$PROJ/.obiignore" "$ORIGIN" "$DESTINATION"
+			;;
+		esac
+	else
+	clear; echo; echo "obi: In order to rsync directories it must first be enabled this for this project by editing the \033[33m.obi/config\033[0m file in your project directory"; echo;
+	exit
+	fi
+}
+# -----------------------------------------------#
+## Help
+## ----------------------------------------------#
+
+help() {
+cat<<EOF
+Usage: obi [argument]
+   or: obi [argument] [project_name | . ] [environment(s)]
+
+Arguments:
+
+   config: configure obi
+   help: prints usage to the terminal
+   mysql: login local mysql database
+
+   -e: Create an empty working directory
+   -g: Create a git repository working directory
+   -w: Create a wordpress enabled git repository working directory
+   -b: Backup mysql database.
+   -r: rsync remote directories to and from local
+
+Project name: Name of the folder that contains your project.
+
+Environments:
+
+   -l: local
+   -s: staging
+   -p: production
+   -lts: local to staging
+   -ltp: local to production
+   -stl: staging to local
+   -stp: staging to production
+   -ptl: production to local
+   -pts: production to staging
+
+EOF
 }
 
 # -----------------------------------------------#
@@ -605,17 +1020,17 @@ main_menu()
 	bprompt="2. Toggle local server settings. $localsettingsare"
 	cprompt="3. Change local database host currently set to \033[33m$localhost\033[0m"
 	dprompt="4. Change local database user currently set to \033[33m$localuser\033[0m"
-	eprompt="5. Change local database password currently set to \033[33m${localpassword//[a-z]/*}\033[0m"
+	eprompt="5. Change local database password currently set to \033[33m${localpassword//[a-zA-Z0-9\!\)\(\@\<\>\$\[\]\|\&\\\-\#\%\^\_\+\=\{\}\`\~]/*}\033[0m"
 	fprompt="6. Toggle staging server settings. $stagingsettingsare"
 	gprompt="7. Change staging database domain currently set to \033[33m$stagingdomain\033[0m"
 	hprompt="8. Change staging host currently set to \033[33m$staginghost\033[0m"
 	iprompt="9. Change staging database user currently set to \033[33m$staginguser\033[0m"
-	jprompt="10. Change staging database password currently set to \033[33m${stagingpassword//[a-z/*}\033[0m"
+	jprompt="10. Change staging database password currently set to \033[33m${stagingpassword//a-zA-Z0-9\!\)\(\@\<\>\$\[\]\|\&\\\-\#\%\^\_\+\=\{\}\`\~]/*}\033[0m"
 	kprompt="11. Toggle production server settings. $prodsettingsare"
 	lprompt="12. Change production database domain currently set to \033[33m$productiondomain\033[0m"
 	mprompt="13. Change production database host currently set to \033[33m$productionhost\033[0m"
 	nprompt="14. Change production database user currently set to \033[33m$productionuser\033[0m"
-	oprompt="15. Change production database password currently set to \033[33m${productionpassword//[a-z]/*}\033[0m"
+	oprompt="15. Change production database password currently set to \033[33m${productionpassword//a-zA-Z0-9\!\)\(\@\<\>\$\[\]\|\&\\\-\#\%\^\_\+\=\{\}\`\~]/*}\033[0m"
 
 
 	# Menu Output
@@ -663,20 +1078,20 @@ MSG="Your project working directory is currently set to:\n     \033[32m$localpro
 
 # Menu Choices
 achoice() {	set_project_dir ; }
-bchoice() { toggle_environment_settings local "$localsettings" 2 ; }
-cchoice() { set_environment local host 3 ; }
-dchoice() { set_environment local user 4 ;}
-echoice() { set_environment local password 5 ; }
-fchoice() { toggle_environment_settings staging "$stagingsettings" 7 ; }
-gchoice() { set_environment staging domain 8 ; }
-hchoice() { set_environment staging host 9 ; }
-ichoice() { set_environment staging user 10 ; }
-jchoice() { set_environment staging password 11 ; }
-kchoice() { toggle_environment_settings production "$productionsettings" 13 ; }
-lchoice() { set_environment production domain 14 ; }
-mchoice() { set_environment production host 15 ; }
-nchoice() { set_environment production user 16 ; }
-ochoice() { set_environment production password 17 ; }
+bchoice() { toggle_environment_settings local "$localsettings" ; }
+cchoice() { set_environment local host ; }
+dchoice() { set_environment local user ; }
+echoice() { set_environment local password ; }
+fchoice() { toggle_environment_settings staging "$stagingsettings" ; }
+gchoice() { set_environment staging domain ; }
+hchoice() { set_environment staging host ; }
+ichoice() { set_environment staging user ; }
+jchoice() { set_environment staging password ; }
+kchoice() { toggle_environment_settings production "$productionsettings" ; }
+lchoice() { set_environment production domain ; }
+mchoice() { set_environment production host ; }
+nchoice() { set_environment production user ; }
+ochoice() { set_environment production password ; }
 
 invalidchoice () { MSG="\033[33m Invalid Selection ... Please Try Again" ; }
 
@@ -740,7 +1155,10 @@ case $ACTION in
 
 		# Setup git
 		git init
-		echo ".DS_Store" > .gitignore
+		echo ".DS_Store\n.sass-cache/\n_resources/\n.obiignore\n.obi" > .gitignore
+
+		git add .
+		git commit -am "initial commit"
 
 		# List directory contents and their location
 		ls -laO
@@ -797,12 +1215,16 @@ case $ACTION in
 		add_salts
 
 		# Build project's .gitignore
-		echo ".DS_Store\n.sass-cache/" > .gitignore
+
+		echo ".DS_Store\n.sass-cache/\n_resources/\n.obiignore\n.obi" > .gitignore
 
 		#load the database local credentials
 		host="$localhost" ; user="$localuser" ; pass="$localpassword" ; name="$PROJ_FOLDER_NAME"_local_wp
 		# Create project's database
-		/Applications/MAMP/Library/bin/mysql -u"$user" -h"$host" -p"$pass" -Bse "CREATE DATABASE ${name};"
+		$mysql -u"$user" -h"$host" -p"$pass" -Bse "CREATE DATABASE ${name};"
+
+		git add .
+		git commit -am "initial commit"
 
 		# List directory contents and their location
 		ls -laO
@@ -810,11 +1232,13 @@ case $ACTION in
 	;;
 	-b )
 		does_config_exist
-		empty_second_string_check "$PROJ_FOLDER_NAME"
+		empty_string_check "$PROJ_FOLDER_NAME"
 		strcheckret=$?
 		directory_exist_check "$PROJ"
 		dircheckret=$?
 		check_returns
+		create_project_config
+		zip_to_s3
 
 		case $3 in
 			-l )
@@ -866,11 +1290,12 @@ case $ACTION in
 		;;
 	-i )
 		does_config_exist
-		empty_second_string_check "$PROJ_FOLDER_NAME"
+		empty_string_check "$PROJ_FOLDER_NAME"
 		strcheckret=$?
 		directory_exist_check "$PROJ"
 		dircheckret=$?
 		check_returns
+		create_project_config
 
 		case $3 in
 			-l )
@@ -892,28 +1317,95 @@ case $ACTION in
 				mysql_import production "$sql_path"
 			;;
 		    -lts )
+				sql_path=$4
 				clear
-				mysql_sed_import local staging local_site_url staging_site_url
+				mysql_sed_import local staging local_site_url staging_site_url "$sql_path"
 			;;
 		    -ltp )
+				sql_path=$4
 				clear
-				mysql_sed_import local production local_site_url production_site_url
+				mysql_sed_import local production local_site_url production_site_url "$sql_path"
+			;;
+		    -stl )
+				sql_path=$4
+				clear
+				mysql_sed_import staging local staging_site_url local_site_url "$sql_path"
+			;;
+		    -stp )
+				sql_path=$4
+				clear
+				mysql_sed_import staging production staging_site_url production_site_url "$sql_path"
+			;;
+		    -ptl )
+				sql_path=$4
+				clear
+				mysql_sed_import production local production_site_url local_site_url "$sql_path"
+			;;
+		    -pts )
+				sql_path=$4
+				clear
+				mysql_sed_import production staging production_site_url staging_site_url "$sql_path"
+			;;
+		    *)
+				clear
+				echo
+				echo "obi: Please specify database sync order"
+				echo
+				echo "obi: Usage: obi [-b] [project_name] [location]"
+				echo
+				exit 0
+				;;
+			esac
+		;;
+	-r )
+		does_config_exist
+		empty_string_check "$PROJ_FOLDER_NAME"
+		strcheckret=$?
+		directory_exist_check "$PROJ"
+		dircheckret=$?
+		check_returns
+		create_project_config
+
+		case $3 in
+		    -lts )
+				clear
+				does_project_config_exist $staging_ssh
+
+				rsync_dir "$PROJ$4" "$staging_ssh:$staging_remote_project_root$4"
+			;;
+		    -ltp )
+
+				clear
+				does_project_config_exist $production_ssh
+
+				rsync_dir "$PROJ$4" "$production_ssh:$production_remote_project_root$4"
 			;;
 		    -stl )
 				clear
-				mysql_sed_import staging local staging_site_url local_site_url
+				does_project_config_exist $staging_ssh
+
+				rsync_dir "$staging_ssh:$staging_remote_project_root$4" "$PROJ$4"
 			;;
 		    -stp )
 				clear
-				mysql_sed_import staging production staging_site_url production_site_url
+				does_project_config_exist $staging_ssh
+				does_project_config_exist $production_ssh
+
+				rsync_dir "$staging_ssh:$staging_remote_project_root$4" "$production_ssh:$production_remote_project_root$4"
 			;;
 		    -ptl )
+
 				clear
-				mysql_sed_import production local production_site_url local_site_url
+				does_project_config_exist $production_ssh
+
+				rsync_dir "$production_ssh:$production_remote_project_root$4" "$PROJ$4"
 			;;
 		    -pts )
 				clear
-				mysql_sed_import production staging production_site_url staging_site_url
+				does_project_config_exist $production_ssh
+				does_project_config_exist $staging_ssh
+
+				rsync_dir "$production_ssh:$production_remote_project_root$4" "$staging_ssh:$staging_remote_project_root$4"
 			;;
 		    *)
 				clear
@@ -928,7 +1420,7 @@ case $ACTION in
 		;;
 	mysql )
 		does_config_exist
-		empty_second_string_check "$2"
+		empty_string_check "$2"
 		strcheckret=$?
 		check_returns
 
@@ -940,51 +1432,38 @@ case $ACTION in
 			-p ) user="$productionuser" ; host="$productionhost" ; pass="$productionpassword"
 			;;
 		esac
-		/Applications/MAMP/Library/bin/mysql -u"$user" -h"$host" -p"$pass"
+		$mysql -u"$user" -h"$host" -p"$pass"
 		;;
+	update )
+		does_config_exist
+		clear
+		obi_update
+		exit
+	;;
+	init )
+		does_config_exist
+		obi_init
+
+		# List directory contents and their location
+		ls -laO
+		echo ; echo "obi: Your project is located at" `pwd` ; echo
+	;;
 	kill )
 		does_config_exist
-		empty_second_string_check "$PROJ_FOLDER_NAME"
+		empty_string_check "$PROJ_FOLDER_NAME"
 		strcheckret=$?
 		directory_exist_check "$PROJ"
 		dircheckret=$?
 		check_returns
 
-		mysql_dump local ; cp -r "$PROJ" ~/.Trash ; rm -rf "$PROJ" ; /Applications/MAMP/Library/bin/mysql -u"$user" -h"$host" -p"$pass" -Bse "DROP database $name"
+		mysql_dump local ; cp -r "$PROJ" ~/.Trash ; rm -rf "$PROJ" ; $mysql -u"$user" -h"$host" -p"$pass" -Bse "DROP database $name"
 
 		;;
 	help )
+		does_config_exist
 		clear
-		echo
-		echo "\tUsage: obi [argument]"
-		echo "\t   or: obi [argument] [project_name] [environment(s)]"
-		echo
-		echo "\tArguments:"
-		echo
-		echo "\t   config: configure obi"
-		echo "\t   help: prints usage to the terminal"
-		echo "\t   mysql: login local mysql database"
-		echo
-		echo "\t   -e: Create an empty working directory"
-		echo "\t   -g: Create a git repository working directory"
-		echo "\t   -w: Create a wordpress enabled git repository working directory"
-		echo "\t   -b: Backup mysql database."
-		echo
-		echo "\tProject name: Name of the folder that contains your project."
-		echo
-		echo "\tEnvironments:"
-		echo
-		echo "\t   -l: local"
-		echo "\t   -s: staging"
-		echo "\t   -p: production"
-		echo "\t   -lts: local to staging"
-		echo "\t   -ltp: local to production"
-		echo "\t   -stl: staging to local"
-		echo "\t   -stp: staging to production"
-		echo "\t   -ptl: production to local"
-		echo "\t   -pts: production to staging"
-		echo
-		echo
+		help
+
 		exit
 	;;
 	* )
