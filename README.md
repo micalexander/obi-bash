@@ -1,6 +1,6 @@
 # Obi Version 2.0
 
-Obi is a project management tool that simplifies, WordPress development.
+Obi is a project management tool that simplifies WordPress development.
 
 ## Installation:
 
