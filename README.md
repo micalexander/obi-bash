@@ -319,7 +319,7 @@ To enable staging SSH MySQL settings the `enable_staging_sshmysql='0'` must be e
     enable_staging_sshmysql='1'
 
 
-## Rsync (Syncing Remote and Local Directories)
+## RSync (Syncing Remote and Local Directories)
 
 Obi can be used to sync local and remote directories. To use this feature the SSH feature (explained above) **must** be enabled along with the RSync settings that resemble the section below. Both of these settings are located in the `.obi/config` file that is in the root of your project working directory.
 
