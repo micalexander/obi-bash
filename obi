@@ -1198,6 +1198,7 @@ case $ACTION in
 		# Find and replace the mask name with the project name
 		sed -i '' "s,mask,${UPPER_CASE_PROJ_FOLDER_NAME}${PROJ_FOLDER_NAME:1},g" wp-content/plugins/$PROJ_FOLDER_NAME-specific-plugin/$PROJ_FOLDER_NAME-plugin.php
 		sed -i '' "s,mask,${PROJ_FOLDER_NAME},g" wp-content/themes/$PROJ_FOLDER_NAME/functions.php
+		sed -i '' "s,mask,${PROJ_FOLDER_NAME},g" Guardfile
 		sed -i '' "s,themes/mask,themes/${PROJ_FOLDER_NAME},g" wp-content/themes/$PROJ_FOLDER_NAME/sass/ie.scss
 
 		# Load the local database credentials
