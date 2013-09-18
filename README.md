@@ -370,4 +370,4 @@ The next three setting should speak for them-self. Once you have enabled Obi's S
 ### Dependencies
 
 - Git (duh!)
-- Uses the [mask Wordpress Theme Framework](https://github.com/micalexander/mask) - A SASS based starter theme for WordPress.
+- Uses the [MASK Wordpress Theme Framework](https://github.com/micalexander/mask) - A SASS based starter theme for WordPress.
