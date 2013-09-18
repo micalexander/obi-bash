@@ -1183,8 +1183,10 @@ case $ACTION in
 		git clone https://github.com/micalexander/mask.git wp-content/themes/$PROJ_FOLDER_NAME
 		rm -Rf wp-content/themes/$PROJ_FOLDER_NAME/.git ; rm wp-content/themes/$PROJ_FOLDER_NAME/.gitignore ;
 
-		# Move the wp-config and the .htaccess file to the site root
+		# Move the wp-config, .htaccess, Guardfile, Gemfile, and Gemfile.lock files to the site root
 		mv wp-content/themes/$PROJ_FOLDER_NAME/.htaccess . ; mv wp-content/themes/$PROJ_FOLDER_NAME/wp-config.php .
+		mv wp-content/themes/$PROJ_FOLDER_NAME/Guardfile . ; mv wp-content/themes/$PROJ_FOLDER_NAME/Gemfile .
+		mv wp-content/themes/$PROJ_FOLDER_NAME/Gemfile.lock .
 
 		# Move site specific plugin to the plugins folder
 		mv wp-content/themes/$PROJ_FOLDER_NAME/mask-specific-plugin wp-content/plugins/$PROJ_FOLDER_NAME-specific-plugin
