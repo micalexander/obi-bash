@@ -2,7 +2,7 @@
 
 Obi is a project management tool that simplifies WordPress development.
 
-https://github.com/micalexander/obi-bash.git
+THIS VERSION HAS BEEN DEPRECATED SEE [HERE](https://github.com/micalexander/obi) FOR THE UPDATED VERSION
 
 ## Installation:
 
